@@ -1,7 +1,7 @@
 {
     "x-axis": {
-        "motor": 1,
-        "current": 0.2,
+        "motor": 2,
+        "current": 1.0,
         "steps-per-mm": 1280,
         "max-speed": 300,
         "max-acceleration": 3000,
@@ -12,7 +12,7 @@
         "end-stops": {
             "left": {
                 "polarity": "virtual",
-                "position": 200
+		"position": 200
             },
             "right": {
                 "polarity": "negative"
@@ -23,8 +23,8 @@
         "home-precision-speed": 5
     },
     "y-axis": {
-        "motor": 2,
-        "current": 0.2,
+        "motor": 1,
+        "current": 1.0,
         "steps-per-mm": 1280,
         "max-speed": 300,
         "max-acceleration": 3000,
@@ -36,7 +36,7 @@
             },
             "right": {
                 "polarity": "virtual",
-                "position": 200
+		"position": 200
             }
         },
         "home-speed": 300,
@@ -45,7 +45,7 @@
     },
     "z-axis": {
         "motors": [4, 5],
-        "current": 0.2,
+        "current": 0.5,
         "inverted": {
             "4": true,
             "5": true
@@ -102,7 +102,6 @@
         "inverted_comment": "not fully functional yet",
         "heater": {
             "pwm": 1,
-            "sensor": 1,
             "type": "epcos-100k",
             "max-duty-cycle": 50,
             "pid-config": {
