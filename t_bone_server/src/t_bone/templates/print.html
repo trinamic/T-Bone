@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-    <div class="row">
+    <div class="row" xmlns="http://www.w3.org/1999/html">
         <h1>Print File</h1>
 
         <p>Upload and print a GCODE file to the t-bone</p>
@@ -18,10 +18,32 @@
             </p>
         </form>
     {% else %}
+        {% if files %}
+            <h2>Print File</h2>
+
+            <p>Select a file to upload to the t-bone</p>
+            <form action="/print" method="post" enctype="multipart/form-data">
+                <div class="control-group">
+                    <label class="control-label" for="printfile">Select file to print</label>
+
+                    <div class="controls">
+                        <select id="printfile" name="printfile">
+                            {% for file in files %}
+                                <option>{{ file }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-lg printer_function">Print</button>
+            </form>
+        {% endif %}
+        <h2>Upload File</h2>
+
+        <p>Select a file to print on the t-bone</p>
         <form action="/print" method="post" enctype="multipart/form-data">
             <div class="form-group">
-                <label for="printfile">Model</label>
-                <input type="file" class="form-control" id="printfile" name="printfile" placeholder="Email">
+                <label for="uploadfile">Upload Model</label>
+                <input type="file" class="form-control" id="uploadfile" name="uploadfile" placeholder="File to upload">
             </div>
             <p>
                 <button type="submit" class="btn btn-lg printer_function">Upload

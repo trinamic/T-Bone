@@ -1,5 +1,9 @@
+from dircache import listdir
+import fnmatch
+from genericpath import isfile
 import logging
 import os
+from string import join
 import threading
 
 from flask import Flask, render_template, request
@@ -64,33 +68,33 @@ def print_page():
     if not _printer:
         return "there is no printer", 400
     if request.method == 'POST':
-        if request.files and 'printfile' in request.files:
-            file = request.files['printfile']
+        if request.files and 'uploadfile' in request.files:
+            file = request.files['uploadfile']
             if file and beaglebone_helpers.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 try:
                     _logger.info("Saving file %s to %s", filename, upload_path)
                     file.save(upload_path)
-                    _printer.prepared_file = upload_path
                 except:
                     _logger.warn("unable to save file %s to %s", filename, upload_path)
-        else:
-            if _printer.prepared_file:
-                if request.form and 'really' in request.form:
-                    _logger.info("Printing %s", _printer.prepared_file)
-                    global _print_thread
-                    _print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)
-                    _print_thread.start()
-                else:
-                    try:
-                        if os.path.exists(_printer.prepared_file):
-                            os.remove(_printer.prepared_file)
-                    except:
-                        _logger.warn("unable to delete %s", _printer.prepared_file)
-                    _printer.prepared_file = None
+        elif 'printfile' in request.form:
+            filename = request.form['printfile']
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if isfile(file_path) and beaglebone_helpers.allowed_file(filename):
+                _printer.prepared_file = file_path
+                _logger.info("Printing %s", _printer.prepared_file)
+                global _print_thread
+                _print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)
+                _print_thread.start()
 
     template_dictionary = templating_defaults()
+    files = [f for f in listdir(app.config['UPLOAD_FOLDER'])
+             if isfile(app.config['UPLOAD_FOLDER'] + "/" + f) and fnmatch.fnmatch(f, '*.gcode')]
+    #todo would like to http://stackoverflow.com/questions/6591931/getting-file-size-in-python
+    #http://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+    #http://stackoverflow.com/questions/237079/how-to-get-file-creation-modification-date-times-in-python
+    template_dictionary['files'] = files
     if _printer.prepared_file:
         template_dictionary['print_file'] = _printer.prepared_file.rsplit('/', 1)[1]
     return render_template("print.html", **template_dictionary)
@@ -109,14 +113,16 @@ def control():
     template_dictionary['axis_directions'] = axis_directions
     return render_template("move.html", **template_dictionary)
 
+
 @app.route('/move/<axis>/<amount>')
-def move_axis(axis,amount):
+def move_axis(axis, amount):
     _printer.relative_move_to(
         {
             str(axis): float(amount)
         }
     )
     return "ok"
+
 
 @app.route('/home/<axis>')
 @busy_function
