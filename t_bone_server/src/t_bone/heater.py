@@ -53,8 +53,6 @@ class Heater(Thread):
 
     def stop(self):
         self.active = False
-        with _PWM_LOCK:
-            PWM.stop(self._output)
 
     def set_temperature(self, temperature):
         if not self.max_temperature or temperature < self.max_temperature:
@@ -65,6 +63,7 @@ class Heater(Thread):
 
     def get_set_temperature(self):
         return self._set_temperature
+
 
     def run(self):
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
@@ -77,6 +76,7 @@ class Heater(Thread):
                 time.sleep(self.readout_delay)
         except Exception as e:
             _logger.error("Heater thread crashed %s", e)
+        finally:
             PWM.stop(self._output)
 
     def _apply_duty_cycle(self):

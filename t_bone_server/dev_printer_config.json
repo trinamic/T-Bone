@@ -5,7 +5,7 @@
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 20.0,
+        "bow-acceleration": 1000,
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
@@ -15,7 +15,7 @@
             },
             "right": {
                 "polarity": "virtual",
-                "position": 20.2
+                "position": 200.2
             }
         },
         "home-speed": 300,
@@ -28,7 +28,7 @@
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 20.0,
+        "bow-acceleration": 1000,
         "time-reference": "time",
         "end-stops": {
             "left": {
@@ -36,7 +36,7 @@
             },
             "right": {
                 "polarity": "virtual",
-                "position": 20.2
+                "position": 200.2
             }
         },
         "home-speed": 300,
@@ -99,7 +99,7 @@
         "hint": "this may be wrong and  we may want more realistic extrusion values - as in real volume",
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 10000,
+        "bow-acceleration": 1000,
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
