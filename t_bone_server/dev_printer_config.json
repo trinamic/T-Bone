@@ -1,21 +1,21 @@
 {
     "x-axis": {
-        "motor": 2,
+        "motor": 1,
         "current": 0.2,
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 10000,
+        "bow-acceleration": 20.0,
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
         "end-stops": {
             "left": {
-                "polarity": "virtual",
-		"position": 20.2
+                "polarity": "positive"
             },
             "right": {
-                "polarity": "negative"
+                "polarity": "virtual",
+                "position": 20.2
             }
         },
         "home-speed": 300,
@@ -23,16 +23,16 @@
         "home-precision-speed": 5
     },
     "y-axis": {
-        "motor": 1,
+        "motor": 2,
         "current": 0.2,
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 10000,
+        "bow-acceleration": 20.0,
         "time-reference": "time",
         "end-stops": {
             "left": {
-                "polarity": "negative"
+                "polarity": "positive"
             },
             "right": {
                 "polarity": "virtual",
@@ -57,7 +57,7 @@
         "time-reference": "clock signal",
         "end-stops": {
             "left": {
-                "polarity": "negative",
+                "polarity": "positive",
                 "motor": 4
             },
             "right": {
@@ -88,7 +88,8 @@
                 "Kd": 1.66
             }
         },
-        "default-speed": 10
+        "default-speed": 10,
+        "fan-duty-cycle":20.0
     },
     "extruder": {
         "motor": 3,

@@ -87,7 +87,8 @@
                 "Kd":1.66
             }
         },
-        "default-speed": 10
+        "default-speed": 10,
+        "fan-duty-cycle":20.0
     },
     "extruder": {
         "motor": 3,
