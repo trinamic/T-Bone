@@ -42,7 +42,7 @@ class Machine():
         time.sleep(15)
         _logger.info("waiting for arduino")
         if not self.machine_connection:
-            machineSerial = serial.Serial(self.serial_port, 115200, timeout=_default_timeout)
+            machineSerial = serial.Serial(self.serial_port, 38400, timeout=_default_timeout)
             self.machine_connection = _MachineConnection(machineSerial)
         init_command = MachineCommand()
         init_command.command_number = 9
@@ -211,7 +211,7 @@ class Machine():
             command.arguments.append(float(motor['speed']))
             command.arguments.append(float(motor['acceleration']))
             command.arguments.append(int(motor['startBow']))
-            _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
+            _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
                          motor['speed'])
 
         reply = self.machine_connection.send_command(command)

@@ -59,10 +59,11 @@ def read_gcode_to_printer(line, printer):
     elif "G21" == gcode.code:
         _logger.info("Using metric units according to the g code")
     elif "G28" == gcode.code:
-        #TODO in'st taht also to enqueue??
+        #TODO in'st that also to enqueue??
         positions = _decode_positions(gcode, line)
         homing_axis = []
-        if positions:
+        if not printer.homed and positions:
+            printer.homed = True
             for axis_name in positions:
                 if axis_name in printer.axis:
                     if printer.axis[axis_name]['homeable']:
@@ -104,14 +105,15 @@ def read_gcode_to_printer(line, printer):
         options = _decode_positions(gcode, line)
         if 's' in options:
             fan_speed = options['s'] / 255.0
-            printer.set_fan(fan_speed)
+           # printer.set_fan(fan_speed)
         else:
             _logger.info("No fan speed given in %", gcode)
     elif "M107" == gcode.code:
         try:
-            printer.set_fan(0)
+            #printer.set_fan(0)
+            pass
         except RuntimeError as e:
-            _logger.error("Unable to set printer fan to 0:%s", 0, e)
+            _logger.error("Unable to set printer fan to 0:%s", e)
     elif "M109" == gcode.code:
         options = _decode_positions(gcode, line)
         #Set extruder heater temperature in degrees celsius and wait for this temperature to be achieved
