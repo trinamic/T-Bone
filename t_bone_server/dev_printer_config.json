@@ -1,6 +1,6 @@
 {
     "x-axis": {
-        "motor": 1,
+        "motor": 2,
         "current": 0.2,
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
@@ -11,11 +11,11 @@
         "inverted_comment": "not fully functional yet",
         "end-stops": {
             "left": {
-                "polarity": "positive"
+                "polarity": "virtual",
+		"position": 20.2
             },
             "right": {
-                "polarity": "virtual",
-                "position": 20.2
+                "polarity": "negative"
             }
         },
         "home-speed": 300,
@@ -23,7 +23,7 @@
         "home-precision-speed": 5
     },
     "y-axis": {
-        "motor": 2,
+        "motor": 1,
         "current": 0.2,
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
@@ -32,7 +32,7 @@
         "time-reference": "time",
         "end-stops": {
             "left": {
-                "polarity": "positive"
+                "polarity": "negative"
             },
             "right": {
                 "polarity": "virtual",
@@ -57,7 +57,7 @@
         "time-reference": "clock signal",
         "end-stops": {
             "left": {
-                "polarity": "positive",
+                "polarity": "negative",
                 "motor": 4
             },
             "right": {
