@@ -12,7 +12,7 @@
         "end-stops": {
             "left": {
                 "polarity": "virtual",
-		"position": 200
+		"position": 220
             },
             "right": {
                 "polarity": "negative"
@@ -79,7 +79,7 @@
         "home-retract": 10,
         "heated-bed-disabled": {
             "pwm": 1,
-            "type": "epcos-100k",
+            "type": "epcos-100k-reprapteile",
             "max-duty-cycle": 100,
             "pid-config": {
                 "Kp":20.0,
@@ -88,7 +88,7 @@
             }
         },
         "default-speed": 10,
-        "fan-duty-cycle":20.0,
+        "fan-duty-cycle":100.0,
         "fan-frequency": 280
     },
     "extruder": {
@@ -105,10 +105,10 @@
         "heater": {
             "pwm": 1,
             "type": "epcos-100k",
-            "max-duty-cycle": 50,
+            "max-duty-cycle": 100,
             "pid-config": {
-                "Kp": 1.66,
-                "Ki": 0.22,
+                "Kp": 15.0,
+                "Ki": 1.0,
                 "Kd": 0
             }
         }
