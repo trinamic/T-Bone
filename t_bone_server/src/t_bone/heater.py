@@ -86,8 +86,8 @@ class Heater(Thread):
                 self._wait_for_current_readout = 0
                 with _PWM_LOCK:
                     PWM.set_duty_cycle(self._output, 100.0)
-                self.current_consumption = self._machine.read_current(self._current_measurement) \
-                                           / 1024.0 * 1.8 * 121.0 / 10.0
+                #self.current_consumption = self._machine.read_current(self._current_measurement) \
+                #                           / 1024.0 * 1.8 * 121.0 / 10.0
             else:
                 self._wait_for_current_readout += self.readout_delay
         finally:

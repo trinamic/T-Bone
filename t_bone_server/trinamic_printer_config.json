@@ -5,7 +5,7 @@
         "steps-per-mm": 1280,
         "max-speed": 300,
         "max-acceleration": 150,
-        "bow-acceleration": 20.0,
+        "bow-acceleration": 100.0,
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
@@ -28,7 +28,7 @@
         "steps-per-mm": 1280,
         "max-speed": 300,
         "max-acceleration": 150,
-        "bow-acceleration": 20.0,
+        "bow-acceleration": 100.0,
         "time-reference": "time",
         "end-stops": {
             "left": {
@@ -94,7 +94,7 @@
     "extruder": {
         "motor": 3,
         "current": 0.8,
-        "steps-per-mm": 11792.23,
+        "steps-per-mm": 1179.223,
         "max-speed": 300,
         "max-acceleration": 10,
         "bow-acceleration": 10,
