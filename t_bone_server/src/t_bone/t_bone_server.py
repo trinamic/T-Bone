@@ -273,7 +273,11 @@ if __name__ == '__main__':
         app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
         app.run(
             host='0.0.0.0',
+<<<<<<< HEAD
 	    port=80,
+=======
+            port=80,
+>>>>>>> f42be67744150446bdce4fb0a646ab15a8e7c40a
             debug=True,
             use_reloader=False
         )
