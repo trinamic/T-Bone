@@ -19,7 +19,7 @@ void startMotion(char initial_min_buffer_depth) {
   //TODO initialize drivers??
   for (char i=0; i<nr_of_coordinated_motors;i++) {
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
-    digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
+    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
     writeRegister(i, TMC4361_INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
   }

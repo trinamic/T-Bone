@@ -9,7 +9,7 @@ import Adafruit_BBIO.GPIO as GPIO
 
 __author__ = 'marcus'
 
-_default_timeout = 30
+_default_timeout = 120
 _commandEndMatcher = re.compile(";")  #needed to search for command ends
 _min_command_buffer_free_space = 5  # how much arduino buffer to preserve
 _initial_buffer_length = 20  #how much buffer do we need befoer starting to print
@@ -234,17 +234,20 @@ class Machine():
                     info_command = MachineCommand()
                     info_command.command_number = 31
                     reply = self.machine_connection.send_command(info_command)
-                    command_buffer_length = int(reply.arguments[0])
-                    command_max_buffer_length = int(reply.arguments[1])
-                    command_buffer_free = command_max_buffer_length - command_buffer_length
-                    buffer_free = (command_buffer_free > _min_command_buffer_free_space)
-                    if (wait_time > _buffer_warn_waittime):
-                        _logger.warning(
-                            "Waiting for free arduino command buffer: %s free of % s total, waiting for %s free",
-                            command_buffer_free, command_buffer_length, _min_command_buffer_free_space)
-                        wait_time = 0
+                    if reply:
+                        command_buffer_length = int(reply.arguments[0])
+                        command_max_buffer_length = int(reply.arguments[1])
+                        command_buffer_free = command_max_buffer_length - command_buffer_length
+                        buffer_free = (command_buffer_free > _min_command_buffer_free_space)
+                        if (wait_time > _buffer_warn_waittime):
+                            _logger.warning(
+                                "Waiting for free arduino command buffer: %s free of % s total, waiting for %s free",
+                                command_buffer_free, command_buffer_length, _min_command_buffer_free_space)
+                            wait_time = 0
+                        else:
+                            _logger.debug("waiting for free buffer")
                     else:
-                        _logger.debug("waiting for free buffer")
+                        _logger.warn("Waiting for a free command timed out!")
         else:
             #while self.machine_connection.internal_queue_length > 0:
             pass  # just wait TODO timeout??

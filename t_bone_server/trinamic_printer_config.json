@@ -88,7 +88,8 @@
             }
         },
         "default-speed": 10,
-        "fan-duty-cycle":20.0
+        "fan-duty-cycle":20.0,
+        "fan-frequency": 280
     },
     "extruder": {
         "motor": 3,

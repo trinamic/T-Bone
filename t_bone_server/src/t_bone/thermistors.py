@@ -19,6 +19,8 @@ def get_thermistor_reading(thermistor, value):
         thermistortable = thermistor_parcan_100k
     elif thermistor == "epcos-100k":
         thermistortable = thermistor_epcos_100k
+    elif thermistor == "epcos-100k-reprapteile":
+        thermistortable = thermistor_epcos_100k_reprapteile
     elif thermistor == "honeywell-100k":
         thermistortable = thermistor_honeywell_100k
     elif thermistor == "honeywell-135_104_LAF_J01":
@@ -37,7 +39,7 @@ def get_thermistor_reading(thermistor, value):
     #find upper value
     upper_index = int(comparable_value)
     upper_temperature = None
-    while upper_index < 1024:
+    while upper_index <= 1024:
         if upper_index in thermistortable:
             upper_temperature = thermistortable[upper_index]
             break
@@ -54,12 +56,12 @@ def get_thermistor_reading(thermistor, value):
     if upper_temperature and lower_temperature:
         value_difference = float(lower_index - upper_index)
         if value_difference == 0.0:
-            return upper_index
+            return upper_temperature
         else:
             temperature_difference = float(upper_temperature - lower_temperature)
             return float(upper_temperature) \
-                + temperature_difference / value_difference \
-                * (value - lower_index) / value_difference
+                   - temperature_difference / value_difference * (upper_index - comparable_value)
+
     elif lower_temperature:
         return lower_temperature
     elif upper_temperature:
@@ -308,6 +310,70 @@ thermistor_epcos_100k = {
     978: 22,
     1008: 3,
     1023: 0  #to allow internal 0 degrees C
+}
+
+thermistor_epcos_100k_reprapteile = {
+	1010: 0,
+	1006: 5,
+	1001: 10,
+	995: 15,
+	987: 20,
+	978: 25,
+	967: 30,
+	955: 35,
+	940: 40,
+	923: 45,
+	904: 50,
+	882: 55,
+	857: 60,
+	830: 65,
+	801: 70,
+	769: 75,
+	736: 80,
+	701: 85,
+	664: 90,
+	627: 95,
+	589: 100,
+	552: 105,
+	514: 110,
+	478: 115,
+	443: 120,
+	409: 125,
+	377: 130,
+	347: 135,
+	318: 140,
+	291: 145,
+	267: 150,
+	244: 155,
+	223: 160,
+	204: 165,
+	186: 170,
+	170: 175,
+	155: 180,
+	142: 185,
+	130: 190,
+	119: 195,
+	108: 200,
+	100: 205,
+	91: 210,
+	84: 215,
+	77: 220,
+	71: 225,
+	65: 230,
+	60: 235,
+	55: 240,
+	51: 245,
+	47: 250,
+	44: 255,
+	41: 260,
+	38: 265,
+	35: 270,
+	32: 275,
+	30: 280,
+	28: 285,
+	26: 290,
+	25: 295,
+	23: 300
 }
 
 # 100k Honeywell 135-104LAG-J01
