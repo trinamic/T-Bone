@@ -89,11 +89,11 @@
         },
         "default-speed": 10,
         "fan-duty-cycle":100.0,
-        "fan-frequency": 280
+        "fan-frequency": 500
     },
     "extruder": {
         "motor": 3,
-        "current": 0.5,
+        "current": 0.8,
         "steps-per-mm": 8254.561,
         "max-speed": 300,
         "max-acceleration": 3000,
@@ -104,7 +104,7 @@
         "heater": {
             "pwm": 1,
             "type": "epcos-100k",
-            "max-duty-cycle": 100,
+            "max-duty-cycle": 50,
             "pid-config": {
                 "Kp": 15.0,
                 "Ki": 1.0,
