@@ -4,7 +4,7 @@ ConditionPathExists=|/usr/bin
 After=network.target
  
 [Service]
-ExecStart=/home/root/t3d/start_bone_server.sh
+ExecStart=/home/root/trinamic3d/t_bone_server/start_bone_server.sh
 Restart=always
 RestartSec=10
 StartLimitInterval=0
