@@ -305,8 +305,18 @@ char readMovementParameters(movement* move) {
     isWaypoint = true;
   } 
   else {
-    messenger.sendCmd (kError,-2);
+    /*
+    TODO this occassionally does not work - is this an indication for a serial speed problem (noise)
+    
+    messenger.sendCmdStart(kError);
+    messenger.sendCmdArg(-2);
+    messenger.sendCmdArg(movementType);
+    messenger.sendCmdEnd();
+
     return -3;
+    */
+    isWaypoint = false;
+    
   }  
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
@@ -635,11 +645,54 @@ void watchDogPing() {
   }  
   Serial.println();
 #endif
+#ifdef DEBUG_STATUS_SHORT
+  Serial.print('Q');
+  Serial.print(moveQueue.count());
+  
+  Serial.print('/');
+  Serial.print(min_buffer_depth);
+  
+  if (next_move_prepared) {
+    Serial.print('+');
+  }
+  if (move_executing) {
+    Serial.print('~');
+  }
+  
+  if (current_motion_state==no_motion) {
+    Serial.println('s');
+  } 
+  else if (current_motion_state==in_motion) {
+    Serial.println('m');
+  } 
+  else if (current_motion_state==finishing_motion) {
+    Serial.println('f');
+  } 
+  else {
+    Serial.println(F("Unkmown motion"));
+  }  
+#endif
 #ifdef DEBUG_TMC5041_STATUS
   Serial.print(F("#1: "));
   Serial.print(readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1),HEX);
   Serial.print(F("\t#2: "));
   Serial.println(readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2),HEX);
+  Serial.println();
+#endif
+#ifdef DEBUG_TMC4361_STATUS
+  for (char i=0; i<nr_of_coordinated_motors;i++) {
+    Serial.print(readRegister(i, TMC4361_STATUS_REGISTER),HEX);
+    Serial.print(' ');
+    Serial.print(readRegister(i, TMC4361_START_CONFIG_REGISTER),HEX);
+    Serial.print(' ');
+    Serial.print((long)readRegister(i, TMC4361_X_ACTUAL_REGISTER),DEC);
+    Serial.print(' ');
+    Serial.print((long)readRegister(i, TMC4361_X_TARGET_REGISTER),DEC);
+    Serial.print(' ');
+    Serial.print((long)readRegister(i, TMC4361_V_ACTUAL_REGISTER),DEC);
+    Serial.print(' ');
+    Serial.println((long)readRegister(i, TMC4361_V_MAX_REGISTER),DEC);
+  }
   Serial.println();
 #endif
 }

@@ -1,5 +1,10 @@
 volatile long next_pos_comp[nr_of_coordinated_motors];
 long last_target[nr_of_coordinated_motors];
+const unsigned long default_4361_start_config = 0
+| _BV(0) //x_target requires start
+| _BV(4)  //use shaddow motion profiles
+| _BV(5) //external start is an start
+;
 
 void prepareTMC4361() {
   pinModeFast(START_SIGNAL_PIN,INPUT);
@@ -17,14 +22,21 @@ void prepareTMC4361() {
   for (char i=0; i<nr_of_coordinated_motors; i++) {
     pinModeFast(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
+    writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
+      | _BV(5) //external start is an start (to ensure start is an input)
+    );   
   }
+
+  pinModeFast(START_SIGNAL_PIN,OUTPUT);
+  digitalWriteFast(START_SIGNAL_PIN,HIGH);
+
 }
 
 void initialzeTMC4361() {
   //reset the quirrel
   resetTMC4361(true,false);
 
-  digitalWriteFast(START_SIGNAL_PIN,LOW);
+  digitalWriteFast(START_SIGNAL_PIN,HIGH);
 
   //initialize CS pin
   digitalWriteFast(CS_4361_1_PIN,LOW);
@@ -49,11 +61,10 @@ void initialzeTMC4361() {
     writeRegister(i,TMC4361_START_DELAY_REGISTER, 512); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
-    writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
-      | _BV(0) //x_target requires start
-    | _BV(4)  //use shaddow motion profiles
-    | _BV(5) //external start is an start
-    );   
+    writeRegister(i, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
+    unsigned long filter = (2<<16) | (4<<20);
+    Serial.println(filter);
+    writeRegister(i,TMC4361_INPUT_FILTER_REGISTER,filter);
 
     last_target[i]=0;
   }
@@ -247,6 +258,9 @@ unsigned long right_homing_point)
           } 
           else {
             writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,0);
+            writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
+
           }
           last_target[motor_nr]=0;
           homed=0xff;
@@ -300,6 +314,16 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   Serial.print(jerk);
   Serial.println();
 #endif    
+#ifdef DEBUG_MOTION_SHORT
+  Serial.print('M');
+  Serial.print(motor_nr,DEC);
+  if (isWaypoint) {
+    Serial.print(F(" v "));
+    Serial.print(target_pos);
+  }  
+  Serial.print(F(" t "));
+  Serial.println(aim_target);
+#endif
 
   long fixed_a_max = FIXED_22_2_MAKE(aMax);
 
@@ -325,11 +349,6 @@ inline void signal_start() {
     readRegister(i, TMC4361_EVENTS_REGISTER);
     writeRegister(i, TMC4361_POS_COMP_REGISTER,next_pos_comp[i]);
   }
-  //carefully trigger the start pin 
-  digitalWriteFast(START_SIGNAL_PIN,HIGH);
-  pinModeFast(START_SIGNAL_PIN,OUTPUT);
-  digitalWriteFast(START_SIGNAL_PIN,LOW);
-  pinModeFast(START_SIGNAL_PIN,INPUT);
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     if (target_motor_status & _BV(i)) {
       unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
@@ -344,6 +363,9 @@ inline void signal_start() {
       Serial.println();
 #endif
     }
+    digitalWriteFast(START_SIGNAL_PIN,LOW);
+    delayMicroseconds(3); //the call by itself may have been eough
+    digitalWriteFast(START_SIGNAL_PIN,HIGH);
     next_pos_comp[i] = 0;
   }    
 #ifdef DEBUG_MOTION_TRACE
@@ -361,10 +383,18 @@ inline void signal_start() {
 }
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
+#ifdef DEBUG_MOTION_SHORT
+  Serial.print('M');
+  Serial.print(motor_nr);
+  Serial.println(F(":=0"));
+#endif
   //we write x_actual, x_target and pos_comp to the same value to be safe 
+  writeRegister(motor_nr, TMC4361_V_MAX_REGISTER,0);
+  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0);   
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,position);
   writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,position);
   writeRegister(motor_nr, TMC4361_POS_COMP_REGISTER,position);
+  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
   last_target[motor_nr]=position;
 }
 
@@ -509,6 +539,11 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
+
+
+
+
 
 
 
