@@ -1,10 +1,19 @@
 unsigned char status;
 
-void send43x(unsigned char tmc43x_register, unsigned long datagram) {
+
+void write43x(unsigned char tmc43x_register, unsigned long datagram) {
+  send43x(tmc43x_register,datagram,true);
+}
+
+void send43x(unsigned char tmc43x_register, unsigned long datagram, boolean write_access) {
   unsigned long i_datagram;
 
   //select the TMC driver
   digitalWrite(cs_squirrel,LOW);
+
+  if (write_access) {
+    tmc43x_register |= 0x80;
+  }  
 
 
 #ifdef DEBUG
@@ -32,4 +41,5 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
   //deselect the TMC chip
   digitalWrite(cs_squirrel,HIGH); 
 }
+
 
