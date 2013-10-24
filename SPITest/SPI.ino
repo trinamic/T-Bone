@@ -14,12 +14,13 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
   //the first value is irgnored
   SPI.transfer(tmc43x_register);
   //write/read the values
+  i_datagram = SPI.transfer((datagram >> 24) & 0xff);
+  i_datagram <<= 8;
   i_datagram = SPI.transfer((datagram >> 16) & 0xff);
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram >>  8) & 0xff);
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram) & 0xff);
-  i_datagram >>= 4;
 
 #ifdef DEBUG
   Serial.print("Received ");

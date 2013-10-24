@@ -21,5 +21,7 @@ void loop() {
   Serial.print("x actual:");
   send43x(0x21,0);
   Serial.println();
+  send43x(0xA2,0x00ABCDEFul);
+  send43x(0xA2,0x00123456ul);
   delay(1000);
 }
