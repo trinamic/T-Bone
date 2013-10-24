@@ -32,6 +32,34 @@ void setup() {
   unsigned long motorconfig = 0xff; //we want closed loop operation
   motorconfig |= steps_per_revolution<<4;
   write43x(STEP_CONF,motorconfig);
+  //TODO untested
+  send43x(0x84,0x8440000a,false); //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom
+  send43x(0xEC,0x00000000,false); //Cover-Register: Einstellung des DRVCTRL mit uS=256/FS
+  
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+
+  send43x(0xEC,0x00090585,false); // Cover-Register: Einstellung des CHOPCONF mit hysterese
+  
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+
+  send43x(0xEC,0x000a0000, false);  //Cover-Register: Einstellung des SMARTEN=aus
+  
+  
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  
+  send43x(0xEC,0x000c001f, false); //Cover-Register: Einstellung des SGCSCONF mit CS=31
+  
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+
+  send43x(0xEC,0x000ef080, false); //Cover-Register: Einstellung des DRVCONF mit S/D aus, VSENSE=0
 }
 
 unsigned long tmc43xx_write;
