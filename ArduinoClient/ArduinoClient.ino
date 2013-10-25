@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <TMC26XGenerator.h>
 #include <Metro.h>
+#include <CmdMessenger.h>
 
 #include "constants.h"
 
@@ -19,9 +20,17 @@ long vmax = 5000;
 long amax = vmax/100;
 long dmax = amax;
 
+//somebody must deal with our commands
+CmdMessenger messenger = CmdMessenger(Serial);
+
 void setup() {
-  //initialize the serial port for debugging
-  Serial.begin(9600);
+  //initialize the serial port for commands
+  Serial.begin(115200); //TODO we will use serial 1
+  // Adds newline to every command
+  messenger.printLfCr();   
+
+  // Attach my application's user-defined callback methods
+  attachCommandCallbacks();
 
 
 }
@@ -32,5 +41,8 @@ unsigned long tmc43xx_read;
 unsigned long target=0;
 
 void loop() {
+  // Process incoming serial data, and perform callbacks
+  messenger.feedinSerialData();
+  Serial.println(".");
 }
 
