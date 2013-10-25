@@ -14,10 +14,10 @@ unsigned char steps_per_revolution = 200;
 #define STATUS_REGISTER 0x0e
 
 //values
-#define TMC_26X_CONFIG 0xA
+#define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 
 //we have a TMC260 at the end so we configure a configurer
-TMC26XGenerator tmc260 = TMC26XGenerator(700,25);
+TMC26XGenerator tmc260 = TMC26XGenerator(700,150);
 
 
 int cs_squirrel = 7;
@@ -32,42 +32,16 @@ void setup() {
   //configure the TMC26x
   tmc260.setMicrosteps(256);
   write43x(SPIOUT_CONF_REGISTER,TMC_26X_CONFIG);
+  set260Register(tmc260.getDriverControlRegisterValue());
+  set260Register(tmc260.getChopperConfigRegisterValue());
+  set260Register(tmc260.getStallGuard2RegisterValue());
+  set260Register(tmc260.getDriverConfigurationRegisterValue() | 0x80);
+
   //configure the motor type
   unsigned long motorconfig = 0xff; //we want closed loop operation
   motorconfig |= steps_per_revolution<<4;
   write43x(STEP_CONF_REGISTER,motorconfig);
   
-  
-  //TODO untested
-  /*
-  send43x(0x84,0x8440000a,false); //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom
-  send43x(0xEC,0x00000000,false); //Cover-Register: Einstellung des DRVCTRL mit uS=256/FS
-  
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-
-  send43x(0xEC,0x9C7D7,false); // Cover-Register: Einstellung des CHOPCONF mit hysterese
-  
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-
-  send43x(0xEC,0x000a0000, false);  //Cover-Register: Einstellung des SMARTEN=aus
-  
-  
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  
-  send43x(0xEC,0xC0002, false); //Cover-Register: Einstellung des SGCSCONF mit CS=31
-  
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
-
-  send43x(0xEC,0xE0050, false); //Cover-Register: Einstellung des DRVCONF mit S/D aus, VSENSE=0
-  */
 }
 
 unsigned long tmc43xx_write;
@@ -91,7 +65,7 @@ void loop() {
   Serial.println(tmc260.getStallGuard2RegisterValue(),HEX);
   
   Serial.print("driver config:");
-  Serial.println(tmc260.getDriverConfigurationRegisterValue(),HEX);
+  Serial.println(tmc260.getDriverConfigurationRegisterValue() | 0x80,HEX);
   
   Serial.println();
   delay(1000);
