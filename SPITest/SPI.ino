@@ -42,4 +42,15 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram, boolean writ
   digitalWrite(cs_squirrel,HIGH); 
 }
 
+set260Register(unsigned long value) {
+  //santitize to 20 bits 
+  value &= 0xFFFFF;
+  send43x(0xEC,value, false);  //Cover-Register: Einstellung des SMARTEN=aus
+
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+  send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
+}
+
+
 

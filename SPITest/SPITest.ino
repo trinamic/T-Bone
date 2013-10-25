@@ -57,13 +57,13 @@ void setup() {
   send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
   send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
   
-  send43x(0xEC,0x000c001f, false); //Cover-Register: Einstellung des SGCSCONF mit CS=31
+  send43x(0xEC,0xC0002, false); //Cover-Register: Einstellung des SGCSCONF mit CS=31
   
   send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
   send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
   send43x(0x0e,0x0,false); //Abfrage Status, um SPI-Transfer zu beenden
 
-  send43x(0xEC,0x000ef080, false); //Cover-Register: Einstellung des DRVCONF mit S/D aus, VSENSE=0
+  send43x(0xEC,0xE0050, false); //Cover-Register: Einstellung des DRVCONF mit S/D aus, VSENSE=0
   */
 }
 
