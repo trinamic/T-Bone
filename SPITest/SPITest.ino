@@ -7,8 +7,8 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 1000;
-long amax = 10;
+long vmax = 5000;
+long amax = vmax/100;
 long dmax = amax;
 
 //register
@@ -21,6 +21,7 @@ long dmax = amax;
 #define V_MAX_REGISTER 0x24
 #define A_MAX_REGISTER 0x28
 #define D_MAX_REGISTER 0x29
+#define CLK_FREQ_REGISTER 0x31
 #define X_TARGET_REGISTER 0x37
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
@@ -28,6 +29,7 @@ long dmax = amax;
 //values
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
+#define CLOCK_FREQUENCY 16000000ul
 
 //we have a TMC260 at the end so we configure a configurer
 TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_MO);
@@ -48,7 +50,8 @@ void setup() {
   digitalWrite(cs_squirrel,HIGH);
   //configure the TMC26x
   tmc260.setMicrosteps(256);
-  write43x(GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
+  write43x(GENERAL_CONFIG_REGISTER,_BV(9) | _BV(1) | _BV(2)); //we use xtarget
+  write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps
   write43x(V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
@@ -61,7 +64,7 @@ void setup() {
   set260Register(tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
   //configure the motor type
-  unsigned long motorconfig = 0xff; //we want closed loop operation
+  unsigned long motorconfig = 0x00; //we want closed loop operation
   motorconfig |= steps_per_revolution<<4;
   write43x(STEP_CONF_REGISTER,motorconfig);
 
