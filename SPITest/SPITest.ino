@@ -8,8 +8,8 @@
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
 long vmax = 1000;
-long amax = 1;
-long dmax = 1;
+long amax = 10;
+long dmax = amax;
 
 //register
 #define GENERAL_CONFIG_REGISTER 0x0
@@ -74,7 +74,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(1000);
+    target=random(10000);
     write43x(X_TARGET_REGISTER,target);
     Serial.print("Move to ");
     Serial.println(target);
