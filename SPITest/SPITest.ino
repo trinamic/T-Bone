@@ -17,7 +17,7 @@ unsigned char steps_per_revolution = 200;
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 
 //we have a TMC260 at the end so we configure a configurer
-TMC26XGenerator tmc260 = TMC26XGenerator(700,150);
+TMC26XGenerator tmc260 = TMC26XGenerator(500,150);
 
 
 int cs_squirrel = 7;
