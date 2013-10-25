@@ -22,6 +22,8 @@ long dmax = amax;
 
 //somebody must deal with our commands
 CmdMessenger messenger = CmdMessenger(Serial);
+//watchdog Metro
+Metro watchDogMetro = Metro(1000);
 
 void setup() {
   //initialize the serial port for commands
@@ -43,6 +45,9 @@ unsigned long target=0;
 void loop() {
   // Process incoming serial data, and perform callbacks
   messenger.feedinSerialData();
-  Serial.println(".");
+  if (watchDogMetro.check()) {
+    watchDogPing();
+  }
 }
+
 

@@ -7,7 +7,10 @@ enum
   kMotorCurrent = 100,
   kStepsPerRev = 101,
   //Sonstiges
+  kOK = 0,
   kError = -1,
+  kWarn = -2,
+  kInfo = -128,
 };
 
 
@@ -24,5 +27,9 @@ void attachCommandCallbacks()
 void OnUnknownCommand()
 {
   messenger.sendCmd(kError,"Command without attached callback");
+}
+
+void watchDogPing() {
+    messenger.sendCmd(kInfo,"still Alive");
 }
 
