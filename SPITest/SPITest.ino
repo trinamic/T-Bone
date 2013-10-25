@@ -7,8 +7,11 @@
 unsigned char steps_per_revolution = 200;
 
 //register
-#define SPIOUT_CONF 0x04
-#define STEP_CONF 0x0A
+#define SPIOUT_CONF_REGISTER 0x04
+#define STEP_CONF_REGISTER 0x0A
+#define COVER_LOW_REGISTER 0x6c
+#define COVER_HIGH_REGISTER 0x6d
+#define STATUS_REGISTER 0x0e
 
 //values
 #define TMC_26X_CONFIG 0xA
@@ -28,11 +31,11 @@ void setup() {
   Serial.begin(9600);
   //configure the TMC26x
   tmc260.setMicrosteps(256);
-  write43x(SPIOUT_CONF,TMC_26X_CONFIG);
+  write43x(SPIOUT_CONF_REGISTER,TMC_26X_CONFIG);
   //configure the motor type
   unsigned long motorconfig = 0xff; //we want closed loop operation
   motorconfig |= steps_per_revolution<<4;
-  write43x(STEP_CONF,motorconfig);
+  write43x(STEP_CONF_REGISTER,motorconfig);
   
   
   //TODO untested
@@ -72,11 +75,11 @@ unsigned long tmc43xx_read;
 
 void loop() {
   // put your main code here, to run repeatedly: 
-  send43x(0x21,0,false);
+  read43x(0x21,0);
   Serial.print("x actual:");
-  send43x(0x21,0,false);
-  send43x(0xA2,0x00ABCDEFul,false);
-  send43x(0xA2,0x00123456ul,false);
+  read43x(0x21,0);
+  read43x(0xA2,0x00ABCDEFul);
+  read43x(0xA2,0x00123456ul);
   
   Serial.print("control:");
   Serial.println(tmc260.getDriverControlRegisterValue(),HEX);
