@@ -9,12 +9,13 @@ void intializeTMC260() {
   setTMC260Registers();
 }
 
-char* setCurrent(int newCurrent) {
+const __FlashStringHelper* setCurrent(int newCurrent) {
   if (newCurrent>MAX_MOTOR_CURRENT) {
-    return "Current too high";
+    return F("Current too high");
   } 
   tmc260.setCurrent(newCurrent);
   setTMC260Registers();
+  return NULL;
 }
 
 void setTMC260Registers() {

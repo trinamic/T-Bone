@@ -25,14 +25,14 @@ void attachCommandCallbacks() {
 
 // Fehlerfunktion wenn ein Kommand nicht bekannt ist
 void OnUnknownCommand() {
-  messenger.sendCmd(kError,"Unknonwn command");
+  messenger.sendCmd(kError,F("Unknonwn command"));
 }
 
 //Motor Strom einstellen
 void onConfigMotorCurrent() {
   int newCurrent = messenger.readIntArg();
   if (newCurrent<0) {
-    messenger.sendCmd (kError,"Current too low"); 
+    messenger.sendCmd (kError,F("Current too low")); 
     return;
   }
   if (newCurrent==0) {
@@ -41,20 +41,20 @@ void onConfigMotorCurrent() {
     messenger.sendCmdEnd();
     return;
   }
-  char* error = setCurrent(newCurrent);
+  const __FlashStringHelper* error = setCurrent(newCurrent);
   if (error==NULL) {
-    messenger.sendCmd(kOK,"Current is OK");
+    messenger.sendCmd(kOK,F("Current is OK"));
   } else {
     messenger.sendCmd(kError,error);
   }
 }
 
 void watchDogPing() {
-  messenger.sendCmd(kKeepAlive,"still alive");
+  messenger.sendCmd(kKeepAlive,F("still alive"));
 }
 
 void watchDogStart() {
-  messenger.sendCmd(kOK,"ready");
+  messenger.sendCmd(kOK,F("ready"));
   watchDogPing();
 }
 
