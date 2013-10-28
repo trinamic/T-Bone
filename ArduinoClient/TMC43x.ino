@@ -10,8 +10,6 @@ void initialzeTMC43x() {
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps
   write43x(V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
-  write43x(A_MAX_REGISTER,amax); //set maximum acceleration
-  write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
 
   setStepsPerRevolution(steps_per_revolution);
 }
@@ -24,3 +22,4 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned int steps) {
   steps_per_revolution = steps;
   return NULL;
 }
+

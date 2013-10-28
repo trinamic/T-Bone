@@ -4,8 +4,7 @@ enum {
 
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
-  kStepsPerRev = 2,
-  kAccMax = 3,
+  kStepsPerRev = 50, //TODO reenable when needed
   //Sonstiges
   kOK = 0,
   kError =  -9,
@@ -45,7 +44,8 @@ void onConfigMotorCurrent() {
   const __FlashStringHelper* error = setCurrent(newCurrent);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Current set"));
-  } else {
+  } 
+  else {
     messenger.sendCmd(kError,error);
   }
 }
@@ -66,7 +66,8 @@ void onStepsPerRevolution() {
   const __FlashStringHelper* error =  setStepsPerRevolution(newSteps);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Steps set"));
-  } else {
+  } 
+  else {
     messenger.sendCmd(kError,error);
   }
 }
@@ -79,6 +80,7 @@ void watchDogStart() {
   messenger.sendCmd(kOK,F("ready"));
   watchDogPing();
 }
+
 
 
 
