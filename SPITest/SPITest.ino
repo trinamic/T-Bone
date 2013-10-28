@@ -7,7 +7,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 5000;
+long vmax = 10000;
 long amax = vmax/100;
 long dmax = amax;
 
@@ -77,7 +77,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(10000);
+    target=random(100000ul);
     write43x(X_TARGET_REGISTER,target);
     Serial.print("Move to ");
     Serial.println(target);
