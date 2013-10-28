@@ -4,7 +4,8 @@ enum {
 
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
-  kStepsPerRev = 50, //TODO reenable when needed
+  kStepsPerRev = 2,
+  kMove = 10,
   //Sonstiges
   kOK = 0,
   kError =  -9,
@@ -19,6 +20,7 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
+  messenger.attach(kMove,onMove);
 }
 
 // ------------------  C A L L B A C K S -----------------------
@@ -72,6 +74,33 @@ void onStepsPerRevolution() {
   }
 }
 
+void onMove() {
+  int newPos = messenger.readIntArg();
+  if (newPos<0) {
+    messenger.sendCmd (kError,F("cannot move beyond home"));
+  }
+  int vMax = messenger.readIntArg();
+  if (vMax<=0) {
+    messenger.sendCmd (kError,F("cannot move with negative speed"));
+  }
+  int aMax = messenger.readIntArg();
+  if (aMax<=0) {
+    messenger.sendCmd(kError,F("cannot move with negative speed"));
+  }
+  int dMax = messenger.readIntArg();
+  if (dMax<0) {
+    messenger.sendCmd(kError,F("cannot move with negative speed"));
+  }
+  const __FlashStringHelper* error =  moveMotor(newPos, vMax, aMax, dMax);
+  if (error==NULL) {
+    messenger.sendCmd(kOK,F("Moving"));
+  } 
+  else {
+    messenger.sendCmd(kError,error);
+  }} 
+
+
+
 void watchDogPing() {
   messenger.sendCmd(kKeepAlive,F("still alive"));
 }
@@ -80,6 +109,7 @@ void watchDogStart() {
   messenger.sendCmd(kOK,F("ready"));
   watchDogPing();
 }
+
 
 
 
