@@ -38,11 +38,12 @@ void onConfigMotorCurrent() {
     messenger.sendCmd(kError,"Current too high");
     return;
   } 
-    messenger.sendCmd(kOK,"Current is OK");
+  messenger.sendCmd(kOK,"Current is OK");
 }
 
 void watchDogPing() {
   messenger.sendCmd(kInfo,"still Alive");
 }
+
 
 
