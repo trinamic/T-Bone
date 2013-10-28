@@ -2,6 +2,7 @@
 void initialzeTMC43x() {
   //initialize SPI
   SPI.begin();
+  //
   pinMode(cs_squirrel,OUTPUT);
   digitalWrite(cs_squirrel,HIGH);
   write43x(GENERAL_CONFIG_REGISTER,_BV(9) | _BV(1) | _BV(2)); //we use xtarget
@@ -12,8 +13,14 @@ void initialzeTMC43x() {
   write43x(A_MAX_REGISTER,amax); //set maximum acceleration
   write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
 
+  setStepsPerRevolution(steps_per_revolution);
+}
+
+const __FlashStringHelper* setStepsPerRevolution(unsigned int steps) {
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want closed loop operation
   motorconfig |= steps_per_revolution<<4;
   write43x(STEP_CONF_REGISTER,motorconfig);
+  steps_per_revolution = steps;
+  return NULL;
 }

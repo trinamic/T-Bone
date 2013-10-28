@@ -15,6 +15,7 @@ const __FlashStringHelper* setCurrent(int newCurrent) {
   } 
   tmc260.setCurrent(newCurrent);
   setTMC260Registers();
+  current_in_ma = newCurrent;
   return NULL;
 }
 
