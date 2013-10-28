@@ -35,17 +35,18 @@ void onConfigMotorCurrent() {
     messenger.sendCmd (kError,"Current too low"); 
     return;
   }
-  if (newCurrent>MAX_MOTOR_CURRENT) {
-    messenger.sendCmd(kError,"Current too high");
-    return;
-  } 
   if (newCurrent==0) {
     messenger.sendCmdStart(kMotorCurrent);
     messenger.sendCmdArg(current_in_ma);
     messenger.sendCmdEnd();
     return;
   }
-  messenger.sendCmd(kOK,"Current is OK");
+  char* error = setCurrent(newCurrent);
+  if (error==NULL) {
+    messenger.sendCmd(kOK,"Current is OK");
+  } else {
+    messenger.sendCmd(kError,error);
+  }
 }
 
 void watchDogPing() {

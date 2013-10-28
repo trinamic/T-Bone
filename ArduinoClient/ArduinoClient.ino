@@ -15,7 +15,7 @@ int cs_squirrel = 7;
 
 //config
 unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 500;
+unsigned int current_in_ma = 1;
 long vmax = 5000;
 long amax = vmax/100;
 long dmax = amax;
@@ -34,9 +34,14 @@ void setup() {
   // Attach my application's user-defined callback methods
   attachCommandCallbacks();
 
+  //initialize the 43x
+  initialzeTMC43x();
+  //start the tmc260 driver
+  intializeTMC260();
+
+
   //finally signal that we are ready
   watchDogStart();
-
 }
 
 unsigned long tmc43xx_write;
@@ -51,6 +56,8 @@ void loop() {
     watchDogPing();
   }
 }
+
+
 
 
 
