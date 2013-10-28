@@ -1,3 +1,5 @@
+//hard coded value
+#define MAX_MOTOR_CURRENT 1500
 //register
 #define GENERAL_CONFIG_REGISTER 0x0
 #define START_CONFIG_REGISTER 0x2
