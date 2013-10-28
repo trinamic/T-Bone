@@ -3,13 +3,14 @@ enum {
   // Kommandos zur Bewegung
 
   //Komandos zur Konfiguration
-  kMotorCurrent = 10,
-  kStepsPerRev = 11,
+  kMotorCurrent = 1,
+  kStepsPerRev = 2,
   //Sonstiges
   kOK = 0,
-  kError =  9,
-  kWarn = 5,
-  kInfo = 1,
+  kError =  -9,
+  kWarn = -5,
+  kInfo = -1,
+  kKeepAlive = -128,
 };
 
 
@@ -30,7 +31,7 @@ void OnUnknownCommand() {
 //Motor Strom einstellen
 void onConfigMotorCurrent() {
   int newCurrent = messenger.readIntArg();
-  if (newCurrent<=0) {
+  if (newCurrent<0) {
     messenger.sendCmd (kError,"Current too low"); 
     return;
   }
@@ -38,11 +39,22 @@ void onConfigMotorCurrent() {
     messenger.sendCmd(kError,"Current too high");
     return;
   } 
+  if (newCurrent==0) {
+    messenger.sendCmdStart(kMotorCurrent);
+    messenger.sendCmdArg(current_in_ma);
+    messenger.sendCmdEnd();
+    return;
+  }
   messenger.sendCmd(kOK,"Current is OK");
 }
 
 void watchDogPing() {
-  messenger.sendCmd(kInfo,"still Alive");
+  messenger.sendCmd(kKeepAlive,"still alive");
+}
+
+void watchDogStart() {
+  messenger.sendCmd(kOK,"ready");
+  watchDogPing();
 }
 
 

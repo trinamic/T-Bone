@@ -34,6 +34,8 @@ void setup() {
   // Attach my application's user-defined callback methods
   attachCommandCallbacks();
 
+  //finally signal that we are ready
+  watchDogStart();
 
 }
 
@@ -49,5 +51,6 @@ void loop() {
     watchDogPing();
   }
 }
+
 
 
