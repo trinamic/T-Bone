@@ -75,7 +75,7 @@ void onStepsPerRevolution() {
 }
 
 void onMove() {
-  int newPos = messenger.readIntArg();
+  long newPos = messenger.readLongArg();
   if (newPos<0) {
     messenger.sendCmd (kError,F("cannot move beyond home"));
   }
