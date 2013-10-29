@@ -7,7 +7,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 10000;
+long vmax = 6000000ul;
 long amax = vmax/100;
 long dmax = amax;
 
@@ -55,7 +55,7 @@ void setup() {
   pinMode(cs_squirrel,OUTPUT);
   digitalWrite(cs_squirrel,HIGH);
   //configure the TMC26x
-  write43x(GENERAL_CONFIG_REGISTER,_BV(9) | _BV(1) | _BV(2)); //we use xtarget
+  write43x(GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
   write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps
@@ -69,7 +69,7 @@ void setup() {
   set260Register(tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
   //configure the motor type
-  unsigned long motorconfig = 0x00; //we want closed loop operation
+  unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
   write43x(STEP_CONF_REGISTER,motorconfig);
 
