@@ -36,7 +36,7 @@ const __FlashStringHelper* moveMotor(unsigned long pos, unsigned long vMax, unsi
   write43x(V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
   write43x(A_MAX_REGISTER,amax); //set maximum acceleration
   write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
-  write43x(X_TARGET_REGISTER,target);
+  write43x(X_TARGET_REGISTER,pos);
   Serial.print("moving to ");
   Serial.println(pos);
   return NULL;

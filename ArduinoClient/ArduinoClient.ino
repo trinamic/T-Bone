@@ -49,8 +49,6 @@ void setup() {
 unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
-unsigned long target=0;
-
 void loop() {
   // Process incoming serial data, and perform callbacks
   messenger.feedinSerialData();
