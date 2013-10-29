@@ -1,5 +1,10 @@
 
 void initialzeTMC43x() {
+  //reset the quirrel
+  pinMode(reset_squirrel,OUTPUT);
+  digitalWrite(reset_squirrel, LOW);
+  delay(1);
+  digitalWrite(reset_squirrel, HIGH);
   //initialize SPI
   SPI.begin();
   //

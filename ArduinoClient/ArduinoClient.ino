@@ -9,6 +9,8 @@
 
 //standards
 int cs_squirrel = 7;
+int reset_squirrel = 2;
+
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define CLOCK_FREQUENCY 16000000ul
