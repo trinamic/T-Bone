@@ -1,24 +1,24 @@
 unsigned char status;
 
 
-void write43x(unsigned char tmc43x_register, unsigned long datagram) {
+void write43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
   //select the TMC driver
-  digitalWrite(cs_squirrel,LOW);
+  digitalWrite(motor,LOW);
 
   send43x(tmc43x_register | 0x80,datagram);
 
   //deselect the TMC chip
-  digitalWrite(cs_squirrel,HIGH); 
+  digitalWrite(motor,HIGH); 
 }
 
-void read43x(unsigned char tmc43x_register, unsigned long datagram) {
+void read43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
   //select the TMC driver
-  digitalWrite(cs_squirrel,LOW);
+  digitalWrite(motor,LOW);
 
   send43x(tmc43x_register, datagram);
 
   //deselect the TMC chip
-  digitalWrite(cs_squirrel,HIGH); 
+  digitalWrite(motor,HIGH); 
 }
 
 void send43x(unsigned char tmc43x_register, unsigned long datagram) {
@@ -48,14 +48,14 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
 #endif
 }
 
-void set260Register(unsigned long value) {
+void set260Register(unsigned char motor, unsigned long value) {
   //santitize to 20 bits 
   value &= 0xFFFFF;
-  write43x(COVER_LOW_REGISTER,value);  //Cover-Register: Einstellung des SMARTEN=aus
+  write43x(motor, COVER_LOW_REGISTER,value);  //Cover-Register: Einstellung des SMARTEN=aus
 
-  read43x(STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  read43x(STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  read43x(STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
 }
 
 
