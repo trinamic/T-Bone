@@ -5,7 +5,10 @@ enum {
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
   kStepsPerRev = 2,
+  //Kommandos die Aktionen auslösen
   kMove = 10,
+  //Kommandos zur Information
+  kPos = 30,
   //Sonstiges
   kOK = 0,
   kError =  -9,
@@ -20,7 +23,8 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
-  messenger.attach(kMove,onMove);
+  messenger.attach(kMove, onMove);
+  messenger.attach(kPos, onPosition);
 }
 
 // ------------------  C A L L B A C K S -----------------------
@@ -97,9 +101,15 @@ void onMove() {
   } 
   else {
     messenger.sendCmd(kError,error);
-  }} 
+  }
+} 
 
-
+void onPosition() {
+  unsigned long position = read43x(X_ACTUAL_REGISTER,0);
+  messenger.sendCmdStart(kPos);
+  messenger.sendCmdArg(position);
+  messenger.sendCmdEnd();
+}  
 
 void watchDogPing() {
   messenger.sendCmd(kKeepAlive,F("still alive"));
@@ -109,6 +119,7 @@ void watchDogStart() {
   messenger.sendCmd(kOK,F("ready"));
   watchDogPing();
 }
+
 
 
 
