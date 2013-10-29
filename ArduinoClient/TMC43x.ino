@@ -22,7 +22,7 @@ void initialzeTMC43x() {
 
 const __FlashStringHelper* setStepsPerRevolution(unsigned int steps) {
   //configure the motor type
-  unsigned long motorconfig = 0x00; //we want closed loop operation
+  unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
   write43x(STEP_CONF_REGISTER,motorconfig);
   steps_per_revolution = steps;

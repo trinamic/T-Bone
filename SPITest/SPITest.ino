@@ -84,9 +84,9 @@ void loop() {
   if (target==0 | moveMetro.check()) {
     target=random(100000ul);
     unsigned long this_v = vmax+random(100)*vmax;
-  write43x(V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-  write43x(A_MAX_REGISTER,amax); //set maximum acceleration
-  write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
+    write43x(V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+    write43x(A_MAX_REGISTER,amax); //set maximum acceleration
+    write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
     write43x(X_TARGET_REGISTER,target);
     Serial.print("Move to ");
     Serial.println(target);
@@ -100,4 +100,5 @@ void loop() {
     Serial.println();
   }
 }
+
 
