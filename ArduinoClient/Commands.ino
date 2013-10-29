@@ -5,6 +5,7 @@ enum {
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
   kStepsPerRev = 2,
+  kRampBows = 3,
   //Kommandos die Aktionen auslösen
   kMove = 10,
   //Kommandos zur Information
@@ -23,6 +24,7 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
+  messenger.attach(kRampBows, onRampBows);
   messenger.attach(kMove, onMove);
   messenger.attach(kPos, onPosition);
 }
@@ -72,6 +74,33 @@ void onStepsPerRevolution() {
   const __FlashStringHelper* error =  setStepsPerRevolution(newSteps);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Steps set"));
+  } 
+  else {
+    messenger.sendCmd(kError,error);
+  }
+}
+
+void onRampBows() {
+  long startBow = messenger.readLongArg();
+  if (startBow==0) {
+    messenger.sendCmdStart(kRampBows);
+    messenger.sendCmdArg(current_startbow);
+    messenger.sendCmdArg(current_endbow);
+    messenger.sendCmdEnd();
+    return;
+  }
+  if (startBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return;
+  }
+  long endBow = messenger.readLongArg();
+  if (endBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return;
+  }
+  const __FlashStringHelper* error = setRampBows(startBow, endBow);
+  if (error==NULL) {
+    messenger.sendCmd(kOK,F("Ramp Bows set"));
   } 
   else {
     messenger.sendCmd(kError,error);

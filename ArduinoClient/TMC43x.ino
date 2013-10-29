@@ -12,10 +12,11 @@ void initialzeTMC43x() {
   //initialize SPI
   SPI.begin();
   //preconfigure the TMC43x
-  write43x(GENERAL_CONFIG_REGISTER,_BV(9) | _BV(1) | _BV(2)); //we use xtarget
+  write43x(GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
   write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
-  write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps
+  write43x(RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
+  setRampBows(current_startbow,current_endbow);
 
   setStepsPerRevolution(steps_per_revolution);
 }
@@ -27,6 +28,18 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned int steps) {
   write43x(STEP_CONF_REGISTER,motorconfig);
   steps_per_revolution = steps;
   return NULL;
+}
+
+const __FlashStringHelper* setRampBows(long startbow, long endbow) {
+  if (endbow==0) {
+    endbow=startbow;
+  }
+  write43x(BOW_1_REGISTER,startbow);
+  write43x(BOW_2_REGISTER,endbow);
+  write43x(BOW_3_REGISTER,endbow);
+  write43x(BOW_4_REGISTER,startbow);
+  current_startbow=startbow;
+  current_endbow=endbow;
 }
 
 const __FlashStringHelper* moveMotor(unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {

@@ -21,6 +21,9 @@ unsigned int current_in_ma = 1;
 long vmax = 5000;
 long amax = vmax/100;
 long dmax = amax;
+long current_startbow = 1000000;
+long current_endbow = current_startbow;
+
 
 //somebody must deal with our commands
 CmdMessenger messenger = CmdMessenger(Serial);
