@@ -7,8 +7,9 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-int bow=100000ul;
 long vmax = 100000000ul;
+long bow = vmax/1000;
+long end_bow = bow;
 long amax = vmax/100;
 long dmax = amax;
 
@@ -65,8 +66,8 @@ void setup() {
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(BOW_1_REGISTER,bow);
-  write43x(BOW_2_REGISTER,bow);
-  write43x(BOW_3_REGISTER,bow);
+  write43x(BOW_2_REGISTER,end_bow);
+  write43x(BOW_3_REGISTER,end_bow);
   write43x(BOW_4_REGISTER,bow);
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
