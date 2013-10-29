@@ -1,15 +1,16 @@
 
 void initialzeTMC43x() {
+  //initialize CS pin
+  pinMode(cs_squirrel,OUTPUT);
+  digitalWrite(cs_squirrel,HIGH);
   //reset the quirrel
   pinMode(reset_squirrel,OUTPUT);
   digitalWrite(reset_squirrel, LOW);
   delay(1);
   digitalWrite(reset_squirrel, HIGH);
+  delay(10);
   //initialize SPI
   SPI.begin();
-  //
-  pinMode(cs_squirrel,OUTPUT);
-  digitalWrite(cs_squirrel,HIGH);
   //preconfigure the TMC43x
   write43x(GENERAL_CONFIG_REGISTER,_BV(9) | _BV(1) | _BV(2)); //we use xtarget
   write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
