@@ -7,7 +7,8 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 6000000ul;
+int bow=100000ul;
+long vmax = 100000000ul;
 long amax = vmax/100;
 long dmax = amax;
 
@@ -21,6 +22,10 @@ long dmax = amax;
 #define V_MAX_REGISTER 0x24
 #define A_MAX_REGISTER 0x28
 #define D_MAX_REGISTER 0x29
+#define BOW_1_REGISTER 0x2d
+#define BOW_2_REGISTER 0x2e
+#define BOW_3_REGISTER 0x2f
+#define BOW_4_REGISTER 0x30
 #define CLK_FREQ_REGISTER 0x31
 #define X_TARGET_REGISTER 0x37
 #define COVER_LOW_REGISTER 0x6c
@@ -58,7 +63,11 @@ void setup() {
   write43x(GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
   write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
-  write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(BOW_1_REGISTER,bow);
+  write43x(BOW_2_REGISTER,bow);
+  write43x(BOW_3_REGISTER,bow);
+  write43x(BOW_4_REGISTER,bow);
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
@@ -81,7 +90,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(100000ul);
+    target=random(1000000ul);
     unsigned long this_v = vmax+random(100)*vmax;
     write43x(V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(A_MAX_REGISTER,amax); //set maximum acceleration
