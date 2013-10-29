@@ -58,9 +58,12 @@ void setup() {
   write43x(GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
   write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
-  write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps
+  write43x(RAMP_MODE_REGISTER,_BV(2) | 1); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  //configure the motor type
+  unsigned long motorconfig = 0x00; //we want 256 microsteps
+  motorconfig |= steps_per_revolution<<4;
 
-
+  write43x(STEP_CONF_REGISTER,motorconfig);
   tmc260.setMicrosteps(256);
   write43x(SPIOUT_CONF_REGISTER,TMC_26X_CONFIG);
   set260Register(tmc260.getDriverControlRegisterValue());
@@ -68,10 +71,6 @@ void setup() {
   set260Register(tmc260.getStallGuard2RegisterValue());
   set260Register(tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
-  //configure the motor type
-  unsigned long motorconfig = 0x00; //we want 256 microsteps
-  motorconfig |= steps_per_revolution<<4;
-  write43x(STEP_CONF_REGISTER,motorconfig);
 
 }
 
@@ -100,5 +99,6 @@ void loop() {
     Serial.println();
   }
 }
+
 
 
