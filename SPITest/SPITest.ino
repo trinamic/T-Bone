@@ -39,11 +39,17 @@ Metro moveMetro = Metro(5000ul);
 Metro checkMetro = Metro(1000ul);
 
 int cs_squirrel = 7;
+int reset_squirrel = 2;
 
 void setup() {
   //initialize the serial port for debugging
   Serial.begin(9600);
 
+  //reset the quirrel
+  pinMode(reset_squirrel,OUTPUT);
+  digitalWrite(reset_squirrel, LOW);
+  delay(1);
+  digitalWrite(reset_squirrel, HIGH);
   //initialize SPI
   SPI.begin();
   pinMode(cs_squirrel,OUTPUT);
@@ -77,7 +83,7 @@ unsigned long target=0;
 void loop() {
   if (target==0 | moveMetro.check()) {
     target=random(100000ul);
-    unsigned long this_v = vmax+random(10)*vmax;
+    unsigned long this_v = vmax+random(100)*vmax;
   write43x(V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
   write43x(A_MAX_REGISTER,amax); //set maximum acceleration
   write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
