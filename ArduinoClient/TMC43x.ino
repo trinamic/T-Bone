@@ -40,6 +40,7 @@ const __FlashStringHelper* setRampBows(long startbow, long endbow) {
   write43x(BOW_4_REGISTER,startbow);
   current_startbow=startbow;
   current_endbow=endbow;
+  return NULL;
 }
 
 const __FlashStringHelper* moveMotor(unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
