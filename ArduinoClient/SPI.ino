@@ -9,7 +9,9 @@ unsigned long read43x(unsigned char tmc43x_register, unsigned long datagram) {
   send43x(tmc43x_register, datagram);
   digitalWrite(cs_squirrel,HIGH); 
   digitalWrite(cs_squirrel,LOW);
-  return send43x(tmc43x_register, datagram);
+  unsigned long result =  send43x(tmc43x_register, datagram);
+  digitalWrite(cs_squirrel,HIGH); 
+  return result;
 }
 
 long send43x(unsigned char tmc43x_register, unsigned long datagram) {
