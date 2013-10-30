@@ -2,7 +2,7 @@
 #include <TMC26XGenerator.h>
 #include <Metro.h>
 
-#define DEBUG
+//#define DEBUG
 
 //config
 unsigned char steps_per_revolution = 200;
@@ -19,7 +19,9 @@ long dmax = amax;
 #define SPIOUT_CONF_REGISTER 0x04
 #define STEP_CONF_REGISTER 0x0A
 #define STATUS_REGISTER 0x0e
+#define GEAR_RATIO_REGISTER 0x12
 #define RAMP_MODE_REGISTER 0x20
+#define X_ACTUAL_REGISTER 0x21
 #define V_MAX_REGISTER 0x24
 #define A_MAX_REGISTER 0x28
 #define D_MAX_REGISTER 0x29
@@ -33,7 +35,8 @@ long dmax = amax;
 #define COVER_HIGH_REGISTER 0x6d
 
 //values
-#define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
+#define TMC_26X_CONFIG_SPI 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
+#define TMC_26X_CONFIG_SD 0x8440000b //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define CLOCK_FREQUENCY 16000000ul
 
@@ -44,8 +47,8 @@ TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_
 Metro moveMetro = Metro(5000ul);
 Metro checkMetro = Metro(1000ul);
 
-int squirrel_a = 7;
-int squirrel_b = 8;
+int squirrel_a = 8;
+int squirrel_b = 7;
 int reset_squirrel = 2;
 
 void setup() {
@@ -64,7 +67,7 @@ void setup() {
   //initialize SPI
   SPI.begin();
   //configure the TMC26x A
-  write43x(squirrel_a, GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
+  write43x(squirrel_a, GENERAL_CONFIG_REGISTER,_BV(9) | _BV(6)); //we use xtarget
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -78,14 +81,14 @@ void setup() {
 
   write43x(squirrel_a, STEP_CONF_REGISTER,motorconfig);
   tmc260.setMicrosteps(256);
-  write43x(squirrel_a, SPIOUT_CONF_REGISTER,TMC_26X_CONFIG);
+  write43x(squirrel_a, SPIOUT_CONF_REGISTER,TMC_26X_CONFIG_SD);
   set260Register(squirrel_a, tmc260.getDriverControlRegisterValue());
   set260Register(squirrel_a, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
-  set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
+  set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
 
   //configure the TMC26x B
-  write43x(squirrel_b, GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
+  write43x(squirrel_b, GENERAL_CONFIG_REGISTER,_BV(9) | _BV(6)); //we use xtarget
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -99,11 +102,11 @@ void setup() {
 
   write43x(squirrel_b, STEP_CONF_REGISTER,motorconfig);
   tmc260.setMicrosteps(256);
-  write43x(squirrel_b, SPIOUT_CONF_REGISTER,TMC_26X_CONFIG);
+  write43x(squirrel_b, SPIOUT_CONF_REGISTER,TMC_26X_CONFIG_SPI);
   set260Register(squirrel_b, tmc260.getDriverControlRegisterValue());
   set260Register(squirrel_b, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
-  set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
+  set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
 }
 
@@ -112,34 +115,38 @@ unsigned long tmc43xx_read;
 
 unsigned long target=0;
 
-unsigned char motor_to_move = 0;
-
 void loop() {
   if (target==0 | moveMetro.check()) {
     target=random(1000000ul);
     unsigned long this_v = vmax+random(100)*vmax;
-    unsigned char motor;
-    if (motor_to_move++ & 1) {
-      motor=squirrel_a;
-    } else {
-      motor=squirrel_b;
-    }
-    write43x(motor, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-    write43x(motor, A_MAX_REGISTER,amax); //set maximum acceleration
-    write43x(motor, D_MAX_REGISTER,dmax); //set maximum deceleration
-    write43x(motor, X_TARGET_REGISTER,target);
+    write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+    write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+    write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
+    write43x(squirrel_a, X_TARGET_REGISTER,target);
     Serial.print("Move to ");
     Serial.println(target);
     Serial.println();
   }
   if (checkMetro.check()) {
-    // put your main code here, to run repeatedly: 
-    read43x(squirrel_a, 0x21,0);
-    Serial.print("x actual:");
-    read43x(squirrel_a, 0x21,0);
+    unsigned long position;
+    Serial.print("XPOS A: ");
+    position = read43x(squirrel_a,X_ACTUAL_REGISTER,0);
+    Serial.print(position);
+    Serial.print(" -> ");
+    position  = read43x(squirrel_a,X_TARGET_REGISTER,0);
+    Serial.println(position);
+
+    Serial.print("XPOS B: ");
+    position = read43x(squirrel_b,X_ACTUAL_REGISTER,0);
+    Serial.print(position);
+    Serial.print(" -> ");
+    position  = read43x(squirrel_b,X_TARGET_REGISTER,0);
+    Serial.println(position);
     Serial.println();
   }
 }
+
+
 
 
 
