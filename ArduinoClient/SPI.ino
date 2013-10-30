@@ -7,10 +7,7 @@ void write43x(unsigned char tmc43x_register, unsigned long datagram) {
 
 unsigned long read43x(unsigned char tmc43x_register, unsigned long datagram) {
   send43x(tmc43x_register, datagram);
-  digitalWrite(cs_squirrel,HIGH); 
-  digitalWrite(cs_squirrel,LOW);
   unsigned long result =  send43x(tmc43x_register, datagram);
-  digitalWrite(cs_squirrel,HIGH); 
   return result;
 }
 
