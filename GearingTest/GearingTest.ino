@@ -67,7 +67,7 @@ void setup() {
   //initialize SPI
   SPI.begin();
   //configure the TMC26x A
-  write43x(squirrel_a, GENERAL_CONFIG_REGISTER,_BV(9) | _BV(6)); //we use xtarget
+  write43x(squirrel_a, GENERAL_CONFIG_REGISTER, 0); //we use xtarget
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -88,7 +88,8 @@ void setup() {
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
 
   //configure the TMC26x B
-  write43x(squirrel_b, GENERAL_CONFIG_REGISTER,_BV(9) | _BV(6)); //we use xtarget
+  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6) | _BV(16)); //we use xtarget
+  write43x(squirrel_b,GEAR_RATIO_REGISTER,0x1000000ul);
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -117,7 +118,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(1000000ul);
+    target=random(10000ul);
     unsigned long this_v = vmax+random(100)*vmax;
     write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
