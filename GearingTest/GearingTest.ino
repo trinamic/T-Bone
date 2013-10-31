@@ -131,6 +131,11 @@ void setup() {
   write43x(squirrel_b, SH_BOW_2_REGISTER,end_bow);
   write43x(squirrel_b, SH_BOW_3_REGISTER,end_bow);
   write43x(squirrel_b, SH_BOW_4_REGISTER,bow);
+  write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
+  write43x(squirrel_a, SH_A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
+
   //configure the motor type
   motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
@@ -169,19 +174,19 @@ void loop() {
     Serial.println();
     if (isMoving) {
       toMove=false;
-      write43x(squirrel_a, SH_V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-      write43x(squirrel_a, SH_A_MAX_REGISTER,amax); //set maximum acceleration
-      write43x(squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
-      write43x(squirrel_a, X_TARGET_PIPE_0_REGSISTER,target);
+      write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
     } 
     else {
       isMoving=true;
       write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-      write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
-      write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
       write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
+      write43x(squirrel_b, START_CONFIG_REGISTER,
+        _BV(0) | //xtargets requires start
+        _BV(1) | //vmax requires start
+        _BV(6)); 
     }
   }
   if (checkMetro.check()) {
@@ -206,6 +211,8 @@ void loop() {
 void interrupt_a_handler() {
   toMove=true;
 }
+
+
 
 
 
