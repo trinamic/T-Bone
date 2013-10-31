@@ -51,22 +51,28 @@ Metro moveMetro = Metro(5000ul);
 Metro checkMetro = Metro(1000ul);
 
 int squirrel_a = 7;
+int interrupt_a = 2;
 int squirrel_b = 8;
+int interrupt_b = 3;
 int reset_squirrel = 4;
 
 void setup() {
-  //initialize the serial port for debugging
-  Serial.begin(9600);
-
   //reset the quirrel
   pinMode(reset_squirrel,OUTPUT);
   digitalWrite(reset_squirrel, LOW);
-  delay(1);
+  delay(10);
   digitalWrite(reset_squirrel, HIGH);
   pinMode(squirrel_a,OUTPUT);
   digitalWrite(squirrel_a,HIGH);
   pinMode(squirrel_b,OUTPUT);
   digitalWrite(squirrel_b,HIGH);
+  //configure the interrupt routines
+  pinMode(interrupt_a,INPUT);
+  digitalWrite(interrupt_a,LOW);
+  pinMode(interrupt_b,INPUT);
+  digitalWrite(interrupt_b,LOW);
+  //initialize the serial port for debugging
+  Serial.begin(9600);
   //initialize SPI
   SPI.begin();
   //configure the TMC26x A
