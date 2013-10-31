@@ -27,16 +27,25 @@ long dmax = amax;
 #define STATUS_REGISTER 0x0e
 #define GEAR_RATIO_REGISTER 0x12
 #define RAMP_MODE_REGISTER 0x20
+#define SH_RAMP_MODE_REGISTER 0x40
 #define X_ACTUAL_REGISTER 0x21
 #define V_MAX_REGISTER 0x24
+#define SH_V_MAX_REGISTER 0x41
 #define A_MAX_REGISTER 0x28
+#define SH_A_MAX_REGISTER 0x44
 #define D_MAX_REGISTER 0x29
+#define SH_D_MAX_REGISTER 0x46
 #define BOW_1_REGISTER 0x2d
+#define SH_BOW_1_REGISTER 0x49
 #define BOW_2_REGISTER 0x2e
+#define SH_BOW_2_REGISTER 0x4a
 #define BOW_3_REGISTER 0x2f
+#define SH_BOW_3_REGISTER 0x4b
 #define BOW_4_REGISTER 0x30
+#define SH_BOW_4_REGISTER 0x4c
 #define CLK_FREQ_REGISTER 0x31
 #define X_TARGET_REGISTER 0x37
+#define X_TARGET_PIPE_0_REGSISTER 0x38
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
 
@@ -84,10 +93,15 @@ void setup() {
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(squirrel_a, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, BOW_1_REGISTER,bow);
   write43x(squirrel_a, BOW_2_REGISTER,end_bow);
   write43x(squirrel_a, BOW_3_REGISTER,end_bow);
   write43x(squirrel_a, BOW_4_REGISTER,bow);
+  write43x(squirrel_a, SH_BOW_1_REGISTER,bow);
+  write43x(squirrel_a, SH_BOW_2_REGISTER,end_bow);
+  write43x(squirrel_a, SH_BOW_3_REGISTER,end_bow);
+  write43x(squirrel_a, SH_BOW_4_REGISTER,bow);
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
@@ -108,10 +122,15 @@ void setup() {
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(squirrel_b, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_b, BOW_1_REGISTER,bow);
   write43x(squirrel_b, BOW_2_REGISTER,end_bow);
   write43x(squirrel_b, BOW_3_REGISTER,end_bow);
   write43x(squirrel_b, BOW_4_REGISTER,bow);
+  write43x(squirrel_b, SH_BOW_1_REGISTER,bow);
+  write43x(squirrel_b, SH_BOW_2_REGISTER,end_bow);
+  write43x(squirrel_b, SH_BOW_3_REGISTER,end_bow);
+  write43x(squirrel_b, SH_BOW_4_REGISTER,bow);
   //configure the motor type
   motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
@@ -131,26 +150,39 @@ unsigned long tmc43xx_read;
 
 unsigned long target=0;
 volatile boolean toMove = true;
+boolean isMoving =false;
 
 void loop() {
-  if (toMove) {
+  if (toMove || !isMoving) {
     target=random(100000ul);
-    toMove=false;
     unsigned long this_v = vmax+random(10)*vmax;
-    write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-    write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
-    write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
-    write43x(squirrel_a, X_TARGET_REGISTER,target);
     float gear_ratio = (float)random(101)/100.0;
+    Serial.print("Move to ");
+    Serial.println(target);
+    Serial.print(" with ");
+    Serial.println(this_v);
     Serial.print("Gaer ration: ");
     Serial.println(gear_ratio);
     unsigned long digital_ratio = FIXED_8_24_MAKE(gear_ratio);
     Serial.print(" ");
     Serial.println(digital_ratio, HEX);  
-    write43x(squirrel_b,GEAR_RATIO_REGISTER,digital_ratio);
-    Serial.print("Move to ");
-    Serial.println(target);
     Serial.println();
+    if (isMoving) {
+      toMove=false;
+      write43x(squirrel_a, SH_V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, SH_A_MAX_REGISTER,amax); //set maximum acceleration
+      write43x(squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
+      write43x(squirrel_a, X_TARGET_PIPE_0_REGSISTER,target);
+      write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
+    } 
+    else {
+      isMoving=true;
+      write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+      write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
+      write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
+    }
   }
   if (checkMetro.check()) {
     unsigned long position;
@@ -174,6 +206,7 @@ void loop() {
 void interrupt_a_handler() {
   toMove=true;
 }
+
 
 
 
