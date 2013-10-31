@@ -92,7 +92,6 @@ void setup() {
 
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6)); //we use xtarget
-  write43x(squirrel_b,GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0.8));
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -127,6 +126,13 @@ void loop() {
     write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
     write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
     write43x(squirrel_a, X_TARGET_REGISTER,target);
+    float gear_ratio = (float)random(101)/100.0;
+    Serial.print("Gaer ration: ");
+    Serial.println(gear_ratio);
+    unsigned long digital_ratio = FIXED_8_24_MAKE(gear_ratio);
+    Serial.print(" ");
+    Serial.println(digital_ratio, HEX);  
+    write43x(squirrel_b,GEAR_RATIO_REGISTER,digital_ratio);
     Serial.print("Move to ");
     Serial.println(target);
     Serial.println();
@@ -149,6 +155,7 @@ void loop() {
     Serial.println();
   }
 }
+
 
 
 
