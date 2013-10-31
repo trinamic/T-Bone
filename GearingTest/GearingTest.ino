@@ -130,11 +130,13 @@ unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
 unsigned long target=0;
+volatile boolean toMove = true;
 
 void loop() {
-  if (target==0 | moveMetro.check()) {
+  if (toMove) {
     target=random(100000ul);
-    unsigned long this_v = vmax+random(100)*vmax;
+    toMove=false;
+    unsigned long this_v = vmax+random(10)*vmax;
     write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
     write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
@@ -170,7 +172,7 @@ void loop() {
 }
 
 void interrupt_a_handler() {
-  Serial.println("A is there");
+  toMove=true;
 }
 
 
