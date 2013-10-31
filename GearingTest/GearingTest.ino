@@ -52,7 +52,7 @@ Metro checkMetro = Metro(1000ul);
 
 int squirrel_a = 7;
 int squirrel_b = 8;
-int reset_squirrel = 2;
+int reset_squirrel = 4;
 
 void setup() {
   //initialize the serial port for debugging
