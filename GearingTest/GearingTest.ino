@@ -25,6 +25,7 @@ long dmax = amax;
 #define INTERRUPT_REGISTER 0x0d
 #define EVENTS_REGISTER 0x0e
 #define STATUS_REGISTER 0x0e
+#define START_OUT_ADD_REGISTER 0x11
 #define GEAR_RATIO_REGISTER 0x12
 #define RAMP_MODE_REGISTER 0x20
 #define SH_RAMP_MODE_REGISTER 0x40
@@ -102,6 +103,7 @@ void setup() {
   write43x(squirrel_a, SH_BOW_2_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_3_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_4_REGISTER,bow);
+  write43x(squirrel_a, START_OUT_ADD_REGISTER,1);
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
@@ -159,7 +161,7 @@ boolean isMoving =false;
 
 void loop() {
   if (toMove || !isMoving) {
-    target=random(100000ul);
+    target=random(1000ul);
     unsigned long this_v = vmax+random(10)*vmax;
     float gear_ratio = (float)random(101)/100.0;
     Serial.print("Move to ");
