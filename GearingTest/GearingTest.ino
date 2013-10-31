@@ -10,7 +10,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 1000000ul;
+long vmax = 10000000ul;
 long bow = 1000000;
 long end_bow = bow;
 long amax = vmax/100;
@@ -121,7 +121,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(1000000ul);
+    target=random(100000ul);
     unsigned long this_v = vmax+random(100)*vmax;
     write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
