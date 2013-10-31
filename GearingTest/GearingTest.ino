@@ -3,12 +3,14 @@
 #include <Metro.h>
 
 //#define DEBUG
-#define FIXED_8_24_MAKE(a)     (int32_t)((a*(1 << 24ul)))
+
+//simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
+#define FIXED_8_24_MAKE(a)     (int32_t)((a*(1ul << 24ul)))
 
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 100000000ul;
+long vmax = 1000000ul;
 long bow = 1000000;
 long end_bow = bow;
 long amax = vmax/100;
@@ -48,8 +50,8 @@ TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_
 Metro moveMetro = Metro(5000ul);
 Metro checkMetro = Metro(1000ul);
 
-int squirrel_a = 8;
-int squirrel_b = 7;
+int squirrel_a = 7;
+int squirrel_b = 8;
 int reset_squirrel = 2;
 
 void setup() {
@@ -89,8 +91,8 @@ void setup() {
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
 
   //configure the TMC26x B
-  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6) | _BV(16)); //we use xtarget
-  write43x(squirrel_b,GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(1.0));
+  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6)); //we use xtarget
+  write43x(squirrel_b,GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0.8));
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -104,11 +106,11 @@ void setup() {
 
   write43x(squirrel_b, STEP_CONF_REGISTER,motorconfig);
   tmc260.setMicrosteps(256);
-  write43x(squirrel_b, SPIOUT_CONF_REGISTER,TMC_26X_CONFIG_SPI);
+  write43x(squirrel_b, SPIOUT_CONF_REGISTER,TMC_26X_CONFIG_SD);
   set260Register(squirrel_b, tmc260.getDriverControlRegisterValue());
   set260Register(squirrel_b, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
-  set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
+  set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue());
 
 }
 
@@ -119,7 +121,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(100000ul);
+    target=random(1000000ul);
     unsigned long this_v = vmax+random(100)*vmax;
     write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
