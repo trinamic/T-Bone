@@ -21,6 +21,9 @@ long dmax = amax;
 #define START_CONFIG_REGISTER 0x2
 #define SPIOUT_CONF_REGISTER 0x04
 #define STEP_CONF_REGISTER 0x0A
+#define EVENT_CLEAR_CONF_REGISTER 0x0c
+#define INTERRUPT_REGISTER 0x0d
+#define EVENTS_REGISTER 0x0e
 #define STATUS_REGISTER 0x0e
 #define GEAR_RATIO_REGISTER 0x12
 #define RAMP_MODE_REGISTER 0x20
@@ -71,6 +74,7 @@ void setup() {
   digitalWrite(interrupt_a,LOW);
   pinMode(interrupt_b,INPUT);
   digitalWrite(interrupt_b,LOW);
+  attachInterrupt(1,interrupt_a_handler,RISING);
   //initialize the serial port for debugging
   Serial.begin(9600);
   //initialize SPI
@@ -95,6 +99,9 @@ void setup() {
   set260Register(squirrel_a, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
+
+  //test the events
+  write43x(squirrel_a, INTERRUPT_REGISTER,_BV(0));
 
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6)); //we use xtarget
@@ -160,6 +167,10 @@ void loop() {
     Serial.println(position);
     Serial.println();
   }
+}
+
+void interrupt_a_handler() {
+  Serial.println("A is there");
 }
 
 
