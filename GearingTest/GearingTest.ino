@@ -113,7 +113,10 @@ void setup() {
   write43x(squirrel_a, SH_BOW_2_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_3_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_4_REGISTER,bow);
-  write43x(squirrel_a, START_OUT_ADD_REGISTER,4);
+  write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
+  write43x(squirrel_a, SH_A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
