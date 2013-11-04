@@ -140,10 +140,10 @@ void setup() {
   write43x(squirrel_b, SH_BOW_2_REGISTER,end_bow);
   write43x(squirrel_b, SH_BOW_3_REGISTER,end_bow);
   write43x(squirrel_b, SH_BOW_4_REGISTER,bow);
-  write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
-  write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
-  write43x(squirrel_a, SH_A_MAX_REGISTER,amax); //set maximum acceleration
-  write43x( squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
+  write43x(squirrel_b, A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_b, D_MAX_REGISTER,dmax); //set maximum deceleration
+  write43x(squirrel_b, SH_A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_b, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
 
   //configure the motor type
   motorconfig = 0x00; //we want 256 microsteps
@@ -186,7 +186,8 @@ void loop() {
     Serial.println();
     if (isMoving) {
       toMove=false;
-      write43x(squirrel_a, V_MAX_REGISTER, FIXED_24_8_MAKE(this_v)); //set the velocity - TODO recalculate float numbers
+      unsigned long v_max_fpm = FIXED_24_8_MAKE(this_v);
+      write43x(squirrel_a, V_MAX_REGISTER, v_max_fpm); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
     } 
