@@ -24,9 +24,10 @@ long dmax = amax;
 #define EVENT_CLEAR_CONF_REGISTER 0x0c
 #define INTERRUPT_REGISTER 0x0d
 #define EVENTS_REGISTER 0x0e
-#define STATUS_REGISTER 0x0e
+#define STATUS_REGISTER 0x0f
 #define START_OUT_ADD_REGISTER 0x11
 #define GEAR_RATIO_REGISTER 0x12
+#define START_DELAY_REGISTER 0x13
 #define RAMP_MODE_REGISTER 0x20
 #define SH_RAMP_MODE_REGISTER 0x40
 #define X_ACTUAL_REGISTER 0x21
@@ -66,10 +67,12 @@ Metro checkMetro = Metro(1000ul);
 int squirrel_a = 8;
 int interrupt_a = 3;
 int target_reached_interrupt_a=0;
-int squirrel_b = 7;
+
+int squirrel_b = 12;
 int interrupt_b = 2;
 int reset_squirrel = 4;
 int target_reached_interrupt_b=1;
+int start_signal_pin = 7;
 
 
 void setup() {
@@ -87,7 +90,10 @@ void setup() {
   digitalWrite(interrupt_a,LOW);
   pinMode(interrupt_b,INPUT);
   digitalWrite(interrupt_b,LOW);
+  pinMode(start_signal_pin,INPUT);
+  digitalWrite(start_signal_pin,LOW);
   attachInterrupt(target_reached_interrupt_a,interrupt_a_handler,RISING);
+  attachInterrupt(4,start_handler,RISING);
   //initialize the serial port for debugging
   Serial.begin(9600);
   //initialize SPI
@@ -95,7 +101,7 @@ void setup() {
   //configure the TMC26x A
   write43x(squirrel_a, GENERAL_CONFIG_REGISTER, 0); //we use xtarget
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-  write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10)); //start automatically
+  write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10) | _BV(6)); //start automatically
   write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, BOW_1_REGISTER,bow);
@@ -106,7 +112,7 @@ void setup() {
   write43x(squirrel_a, SH_BOW_2_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_3_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_4_REGISTER,bow);
-  write43x(squirrel_a, START_OUT_ADD_REGISTER,1000);
+  write43x(squirrel_a, START_OUT_ADD_REGISTER,4);
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
@@ -118,9 +124,6 @@ void setup() {
   set260Register(squirrel_a, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
-
-  //test the events
-  write43x(squirrel_a, INTERRUPT_REGISTER,_BV(0));
 
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6)); //we use xtarget
@@ -139,7 +142,7 @@ void setup() {
   write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
   write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
   write43x(squirrel_a, SH_A_MAX_REGISTER,amax); //set maximum acceleration
-  write43x(squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
+  write43x( squirrel_a, SH_D_MAX_REGISTER,dmax); //set maximum deceleration
 
   //configure the motor type
   motorconfig = 0x00; //we want 256 microsteps
@@ -164,18 +167,16 @@ boolean isMoving =false;
 
 void loop() {
   if (toMove || !isMoving) {
-    target=random(1000ul);
+    target=random(100000ul);
     unsigned long this_v = vmax+random(10)*vmax;
     float gear_ratio = (float)random(101)/100.0;
     Serial.print("Move to ");
-    Serial.println(target);
+    Serial.print(target);
     Serial.print(" with ");
     Serial.println(this_v);
     Serial.print("Gaer ration: ");
     Serial.println(gear_ratio);
     unsigned long digital_ratio = FIXED_8_24_MAKE(gear_ratio);
-    Serial.print(" ");
-    Serial.println(digital_ratio, HEX);  
     Serial.println();
     if (isMoving) {
       toMove=false;
@@ -187,12 +188,16 @@ void loop() {
       isMoving=true;
       write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, X_TARGET_REGISTER,target);
-      write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
+      write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10) | _BV(6) | _BV(0)); //from now on listen to your own start signal
+
+     // write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
       write43x(squirrel_b, START_CONFIG_REGISTER,
-        _BV(0) | //xtargets requires start
-        _BV(1) | //vmax requires start
-        _BV(6)); 
+        _BV(3) | //gear ration requires start
+        _BV(5) | //external start is an event
+        _BV(10) | //we start w/o timer 
+        _BV(0));  //and due to a bug we NEED an internal start signal 
     }
+
   }
   if (checkMetro.check()) {
     unsigned long position;
@@ -215,6 +220,10 @@ void loop() {
 
 void interrupt_a_handler() {
   toMove=true;
+}
+
+void start_handler() {
+  Serial.println("start");
 }
 
 
