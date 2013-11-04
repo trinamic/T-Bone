@@ -168,22 +168,24 @@ unsigned long tmc43xx_read;
 volatile boolean toMove = true;
 boolean isMoving =false;
 
-unsigned long next_v =vmax+random(10)*vmax;
-unsigned long next_target = random(100000ul);
 unsigned long target=0;
-unsigned long last_target = 0;
+unsigned long next_target = random(100000ul);
+unsigned long after_next_target = random(100000ul);
+
+unsigned long this_v=0;
+unsigned long next_v =vmax+random(10)*vmax;
 
 void loop() {
   if (toMove || !isMoving) {
-    last_target = target;
     target = next_target;
+    next_target=after_next_target;
     next_target = random(100000ul);
-    long last_dir = target-last_target;
-    last_dir /= abs(last_dir);
-    long next_dir = next_target - target;
+    long dir = next_target-target;
+    dir /= abs(dir);
+    long next_dir = after_next_target - next_target;
     next_dir /= abs(next_dir);
     Serial.print ("Going from ");
-    Serial.print(last_dir);
+    Serial.print(dir);
     Serial.print(" to ");
     Serial.println(next_dir);
     unsigned long this_v = next_v;
@@ -203,7 +205,6 @@ void loop() {
       write43x(squirrel_a, V_MAX_REGISTER, v_max_fpm); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
-      if (next_dir==last_dir) {
         
     } 
     else {
