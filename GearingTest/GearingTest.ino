@@ -165,17 +165,21 @@ void setup() {
 unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
-unsigned long target=0;
 volatile boolean toMove = true;
 boolean isMoving =false;
 
 unsigned long next_v =vmax+random(10)*vmax;
 unsigned long next_target = random(100000ul);
+unsigned long target=0;
+unsigned long last_target = 0;
 
 void loop() {
   if (toMove || !isMoving) {
+    last_target = target;
     target = next_target;
     next_target = random(100000ul);
+    long last_dir = target-last_target;
+    long next_dir = next_target - target;
     unsigned long this_v = next_v;
     next_v = vmax+random(10)*vmax;
     float gear_ratio = (float)random(101)/100.0;
