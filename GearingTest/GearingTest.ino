@@ -6,6 +6,7 @@
 
 //simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
 #define FIXED_8_24_MAKE(a)     (int32_t)((a*(1ul << 24ul)))
+#define FIXED_24_8_MAKE(a)     (int32_t)((a*(1ul << 8ul)))
 
 //config
 unsigned char steps_per_revolution = 200;
@@ -165,10 +166,15 @@ unsigned long target=0;
 volatile boolean toMove = true;
 boolean isMoving =false;
 
+unsigned long next_v =vmax+random(10)*vmax;
+unsigned long next_target = random(100000ul);
+
 void loop() {
   if (toMove || !isMoving) {
-    target=random(100000ul);
-    unsigned long this_v = vmax+random(10)*vmax;
+    target = next_target;
+    next_target = random(100000ul);
+    unsigned long this_v = next_v;
+    next_v = vmax+random(10)*vmax;
     float gear_ratio = (float)random(101)/100.0;
     Serial.print("Move to ");
     Serial.print(target);
@@ -180,7 +186,7 @@ void loop() {
     Serial.println();
     if (isMoving) {
       toMove=false;
-      write43x(squirrel_a, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, V_MAX_REGISTER, FIXED_24_8_MAKE(this_v)); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
     } 
