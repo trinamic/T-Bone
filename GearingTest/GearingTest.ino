@@ -102,7 +102,7 @@ void setup() {
   //configure the TMC26x A
   write43x(squirrel_a, GENERAL_CONFIG_REGISTER, 0); //we use xtarget
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-  write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10) | _BV(6)); //start automatically
+  write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10) | _BV(6) | _BV(11)); //start automatically
   write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, BOW_1_REGISTER,bow);
@@ -132,7 +132,7 @@ void setup() {
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6)); //we use xtarget
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-  write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10)); //start automatically
+  write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10) | _BV(11)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_b, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_b, BOW_1_REGISTER,bow);
@@ -200,12 +200,14 @@ void loop() {
       write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10) | _BV(6) | _BV(0)); //from now on listen to your own start signal
 
-     // write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
+      write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
       write43x(squirrel_b, START_CONFIG_REGISTER,
-        _BV(3) | //gear ration requires start
-        _BV(5) | //external start is an event
-        _BV(10) | //we start w/o timer 
-        _BV(0));  //and due to a bug we NEED an internal start signal 
+      _BV(3) | //gear ration requires start
+      _BV(5) | //external start is an event
+      _BV(10) | //we start w/o timer 
+      _BV(4) | //use shaddow motion profiles
+      _BV(11) | // the shaddow registers cycle
+      _BV(0));  //and due to a bug we NEED an internal start signal 
     }
 
   }
@@ -235,6 +237,7 @@ void interrupt_a_handler() {
 void start_handler() {
   Serial.println("start");
 }
+
 
 
 
