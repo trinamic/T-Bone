@@ -63,11 +63,14 @@ TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_
 Metro moveMetro = Metro(5000ul);
 Metro checkMetro = Metro(1000ul);
 
-int squirrel_a = 7;
-int interrupt_a = 2;
-int squirrel_b = 8;
-int interrupt_b = 3;
+int squirrel_a = 8;
+int interrupt_a = 3;
+int target_reached_interrupt_a=0;
+int squirrel_b = 7;
+int interrupt_b = 2;
 int reset_squirrel = 4;
+int target_reached_interrupt_b=1;
+
 
 void setup() {
   //reset the quirrel
@@ -84,7 +87,7 @@ void setup() {
   digitalWrite(interrupt_a,LOW);
   pinMode(interrupt_b,INPUT);
   digitalWrite(interrupt_b,LOW);
-  attachInterrupt(1,interrupt_a_handler,RISING);
+  attachInterrupt(target_reached_interrupt_a,interrupt_a_handler,RISING);
   //initialize the serial port for debugging
   Serial.begin(9600);
   //initialize SPI
@@ -103,7 +106,7 @@ void setup() {
   write43x(squirrel_a, SH_BOW_2_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_3_REGISTER,end_bow);
   write43x(squirrel_a, SH_BOW_4_REGISTER,bow);
-  write43x(squirrel_a, START_OUT_ADD_REGISTER,1);
+  write43x(squirrel_a, START_OUT_ADD_REGISTER,1000);
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps_per_revolution<<4;
