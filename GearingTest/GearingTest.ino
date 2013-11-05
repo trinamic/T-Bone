@@ -11,7 +11,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 1000000ul;
+long vmax = 1000ul;
 long bow = vmax;
 long end_bow = bow;
 long amax = vmax/10;
@@ -206,14 +206,14 @@ void loop() {
       v_start = prev_v;
     } 
     else {
-      v_start = 0;
+      v_start = 1;
     }
     long v_end;
     if (dir == next_dir) {
       v_end = this_v;
     } 
     else {
-      v_end = 0;
+      v_end = 1;
     }
 
     unsigned long digital_ratio = 0;//FIXED_8_24_MAKE(gear_ratio);
