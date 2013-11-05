@@ -51,6 +51,10 @@ long dmax = amax;
 #define X_TARGET_PIPE_0_REGSISTER 0x38
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
+#define V_START_REGISTER 0x25
+#define SH_V_START_REGISTER 0x42
+#define V_STOP_REGISTER 0x26
+#define SH_V_STOP_REGISTER 0x43
 
 //values
 #define TMC_26X_CONFIG_SPI 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -168,29 +172,51 @@ unsigned long tmc43xx_read;
 volatile boolean toMove = true;
 boolean isMoving =false;
 
+unsigned long prev_target = 0;
 unsigned long target=0;
 unsigned long next_target = random(100000ul);
-unsigned long after_next_target = random(100000ul);
 
-unsigned long this_v=0;
+unsigned long prev_v = 0;
+unsigned long this_v = 0;
 unsigned long next_v =vmax+random(10)*vmax;
+long dir = 0;
 
 void loop() {
   if (toMove || !isMoving) {
+    prev_target = target;
     target = next_target;
-    next_target=after_next_target;
-    next_target = random(100000ul);
-    long dir = next_target-target;
+    next_target= random(100000ul);
+    
+    long prev_dir = dir;
+    
+    dir = target-prev_target;
     dir /= abs(dir);
-    long next_dir = after_next_target - next_target;
+    
+    long next_dir = next_target - target;
     next_dir /= abs(next_dir);
+    
+    prev_v = this_v;
+    this_v = next_v;
+    next_v = vmax+random(10)*vmax;
+    float gear_ratio = (float)random(101)/100.0;
+    
+    long v_start;
+    if (prev_dir == dir) {
+      v_start = prev_v;
+    } else {
+      v_start = 0;
+    }
+    long v_end;
+    if (dir == next_dir) {
+      v_end = this_v;
+    } else {
+      v_end = 0;
+    }
+    
     Serial.print ("Going from ");
     Serial.print(dir);
     Serial.print(" to ");
     Serial.println(next_dir);
-    unsigned long this_v = next_v;
-    next_v = vmax+random(10)*vmax;
-    float gear_ratio = (float)random(101)/100.0;
     Serial.print("Move to ");
     Serial.print(target);
     Serial.print(" with ");
@@ -205,7 +231,6 @@ void loop() {
       write43x(squirrel_a, V_MAX_REGISTER, v_max_fpm); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, X_TARGET_REGISTER,target);
       write43x(squirrel_b, GEAR_RATIO_REGISTER,digital_ratio);
-        
     } 
     else {
       isMoving=true;
