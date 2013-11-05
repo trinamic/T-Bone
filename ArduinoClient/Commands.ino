@@ -141,7 +141,10 @@ void onPosition() {
 }  
 
 void watchDogPing() {
-  messenger.sendCmd(kKeepAlive,F("still alive"));
+  messenger.sendCmdStart(kKeepAlive);
+  messenger.sendCmdArg(moveQueue.count());
+  messenger.sendCmdArg("still alive");
+  messenger.sendCmdEnd();
 }
 
 void watchDogStart() {
