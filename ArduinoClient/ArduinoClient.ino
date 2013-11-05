@@ -1,11 +1,16 @@
+#include <QueueArray.h>
+
 #include <SPI.h>
 #include <TMC26XGenerator.h>
 #include <Metro.h>
 #include <CmdMessenger.h>
 
 #include "constants.h"
+#include "types.h"
 
 #define DEBUG
+
+#define COMMAND_QUEUE_LENGTH 100
 
 //standards
 int cs_squirrel = 7;
@@ -24,6 +29,8 @@ long dmax = amax;
 long current_startbow = 1000000;
 long current_endbow = current_startbow;
 
+QueueArray<movement> moveQueue;
+
 
 //somebody must deal with our commands
 CmdMessenger messenger = CmdMessenger(Serial);
@@ -31,6 +38,7 @@ CmdMessenger messenger = CmdMessenger(Serial);
 Metro watchDogMetro = Metro(1000);
 
 void setup() {
+
   //initialize the serial port for commands
   Serial.begin(115200); //TODO we will use serial 1
   // Adds newline to every command
