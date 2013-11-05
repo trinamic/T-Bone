@@ -180,7 +180,7 @@ unsigned char decodeMotorNumber() {
     messenger.sendCmdArg(motor);
     messenger.sendCmdArg(1);
     messenger.sendCmdArg(nr_of_motors);
-    messenger.sendCmdArg("motor number too small");
+    messenger.sendCmdArg(F("motor number too small"));
     messenger.sendCmdEnd();
     return -1;
   } 
@@ -189,7 +189,7 @@ unsigned char decodeMotorNumber() {
     messenger.sendCmdArg(motor);
     messenger.sendCmdArg(1);
     messenger.sendCmdArg(nr_of_motors);
-    messenger.sendCmdArg("motor number too big");
+    messenger.sendCmdArg(F("motor number too big"));
     messenger.sendCmdEnd();
     return -1;
   } 
