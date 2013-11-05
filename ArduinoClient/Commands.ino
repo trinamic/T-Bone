@@ -159,6 +159,7 @@ void onPosition() {
 void watchDogPing() {
   messenger.sendCmdStart(kKeepAlive);
   messenger.sendCmdArg(moveQueue.count());
+  messenger.sendCmdArg(freeRam());
   messenger.sendCmdArg(F("still alive"));
   messenger.sendCmdEnd();
 }
@@ -193,6 +194,12 @@ unsigned char decodeMotorNumber() {
   }
 }
 
+// see rollerprojects.com/2011/05/23/determining-sram-usage-on-arduino/ 
+int freeRam() {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
 
 
 
