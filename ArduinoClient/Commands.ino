@@ -126,18 +126,22 @@ void onMove() {
   long newPos = messenger.readLongArg();
   if (newPos<0) {
     messenger.sendCmd (kError,F("cannot move beyond home"));
+    return;
   }
   int vMax = messenger.readIntArg();
   if (vMax<=0) {
     messenger.sendCmd (kError,F("cannot move with negative speed"));
+    return;
   }
   int aMax = messenger.readIntArg();
   if (aMax<=0) {
     messenger.sendCmd(kError,F("cannot move with negative speed"));
+    return;
   }
   int dMax = messenger.readIntArg();
   if (dMax<0) {
     messenger.sendCmd(kError,F("cannot move with negative speed"));
+    return;
   }
   const __FlashStringHelper* error =  moveMotor(motor,newPos, vMax, aMax, dMax);
   if (error==NULL) {
