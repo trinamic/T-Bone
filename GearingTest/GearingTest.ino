@@ -198,7 +198,7 @@ void loop() {
     prev_v = this_v;
     this_v = next_v;
     next_v = vmax+random(10)*vmax;
-    float gear_ratio = (float)random(101)/100.0;
+    float gear_ratio = (float)random(201)/100.0;
     
     long v_start;
     if (prev_dir == dir) {
@@ -213,15 +213,21 @@ void loop() {
       v_end = 0;
     }
     
-    Serial.print ("Going from ");
-    Serial.print(dir);
-    Serial.print(" to ");
-    Serial.println(next_dir);
     Serial.print("Move to ");
     Serial.print(target);
     Serial.print(" with ");
     Serial.println(this_v);
-    Serial.print("Gaer ration: ");
+    Serial.print (prev_dir);
+    Serial.print(" -> ");
+    Serial.print(dir);
+    Serial.print(" -> ");
+    Serial.println(next_dir);
+    Serial.print (v_start);
+    Serial.print(" -> ");
+    Serial.print(this_v);
+    Serial.print(" -> ");
+    Serial.println(v_end);
+    Serial.print("Gear ration: ");
     Serial.println(gear_ratio);
     unsigned long digital_ratio = FIXED_8_24_MAKE(gear_ratio);
     Serial.println();
