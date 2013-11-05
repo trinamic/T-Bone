@@ -118,6 +118,7 @@ void onRampBows() {
   }
 }
 */
+
 void onMove() {
   char motor = decodeMotorNumber();
   if (motor<0) {
@@ -130,17 +131,18 @@ void onMove() {
   }
   int vMax = messenger.readIntArg();
   if (vMax<=0) {
-    messenger.sendCmd (kError,F("cannot move with negative speed"));
+    Serial.println(vMax);
+    messenger.sendCmd (kError,F("cannot move with no or negative speed"));
     return;
   }
   int aMax = messenger.readIntArg();
   if (aMax<=0) {
-    messenger.sendCmd(kError,F("cannot move with negative speed"));
+    messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
     return;
   }
   int dMax = messenger.readIntArg();
   if (dMax<0) {
-    messenger.sendCmd(kError,F("cannot move with negative speed"));
+    messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
     return;
   }
   const __FlashStringHelper* error =  moveMotor(motor,newPos, vMax, aMax, dMax);

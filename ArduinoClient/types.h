@@ -4,6 +4,8 @@ struct movement {
   unsigned char motor;
   unsigned long parameter_1; //gearing or target
   unsigned long parameter_2; //speed
+  unsigned long parameter_3; //gearing or target
+  unsigned long parameter_4; //speed
 };
 
 struct squirrel {

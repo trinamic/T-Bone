@@ -10,7 +10,7 @@
 
 #define DEBUG
 
-#define COMMAND_QUEUE_LENGTH 100
+#define COMMAND_QUEUE_LENGTH 2
 //standards
 int reset_squirrel = 4;
 
