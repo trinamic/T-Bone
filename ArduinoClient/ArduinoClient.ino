@@ -34,7 +34,7 @@ QueueArray<movement> moveQueue = QueueArray<movement>(COMMAND_QUEUE_LENGTH);
 //somebody must deal with our commands
 CmdMessenger messenger = CmdMessenger(Serial);
 //watchdog Metro
-Metro watchDogMetro = Metro(1000);
+Metro watchDogMetro = Metro(1000); 
 
 void setup() {
 

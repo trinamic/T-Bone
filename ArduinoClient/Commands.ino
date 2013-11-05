@@ -117,8 +117,12 @@ void onRampBows() {
     messenger.sendCmd(kError,error);
   }
 }
-
+*/
 void onMove() {
+  unsigned char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
   long newPos = messenger.readLongArg();
   if (newPos<0) {
     messenger.sendCmd (kError,F("cannot move beyond home"));
@@ -135,7 +139,7 @@ void onMove() {
   if (dMax<0) {
     messenger.sendCmd(kError,F("cannot move with negative speed"));
   }
-  const __FlashStringHelper* error =  moveMotor(newPos, vMax, aMax, dMax);
+  const __FlashStringHelper* error =  moveMotor(motor,newPos, vMax, aMax, dMax);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Moving"));
   } 
@@ -143,7 +147,7 @@ void onMove() {
     messenger.sendCmd(kError,error);
   }
 } 
-*/
+
 void onPosition() {
   unsigned char motor = decodeMotorNumber();
   if (motor<0) {

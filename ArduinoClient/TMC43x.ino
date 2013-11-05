@@ -39,29 +39,31 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_number, uns
 
 /*
 const __FlashStringHelper* setRampBows(unsigned char motor_nr, long startbow, long endbow) {
-  if (endbow==0) {
-    endbow=startbow;
-  }
-  write43x(BOW_1_REGISTER,startbow);
-  write43x(BOW_2_REGISTER,endbow);
-  write43x(BOW_3_REGISTER,endbow);
-  write43x(BOW_4_REGISTER,startbow);
-  current_startbow=startbow;
-  current_endbow=endbow;
-  return NULL;
-}
-
-const __FlashStringHelper* moveMotor(unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
+ if (endbow==0) {
+ endbow=startbow;
+ }
+ write43x(BOW_1_REGISTER,startbow);
+ write43x(BOW_2_REGISTER,endbow);
+ write43x(BOW_3_REGISTER,endbow);
+ write43x(BOW_4_REGISTER,startbow);
+ current_startbow=startbow;
+ current_endbow=endbow;
+ return NULL;
+ }
+ */
+const __FlashStringHelper* moveMotor(unsigned char motor_number, unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
+  unsigned char cs_pin = motors[motor_number].cs_pin;
   if (dMax==0) {
     dMax = aMax;
   }
-  write43x(V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
-  write43x(A_MAX_REGISTER,amax); //set maximum acceleration
-  write43x(D_MAX_REGISTER,dmax); //set maximum deceleration
-  write43x(X_TARGET_REGISTER,pos);
+  write43x(cs_pin,V_MAX_REGISTER,vMax << 8); //set the velocity - TODO recalculate float numbers
+  write43x(cs_pin,A_MAX_REGISTER,aMax); //set maximum acceleration
+  write43x(cs_pin,D_MAX_REGISTER,dMax); //set maximum deceleration
+  write43x(cs_pin,X_TARGET_REGISTER,pos);
   Serial.print("moving to ");
   Serial.println(pos);
   return NULL;
 }
-*/
+
+
 
