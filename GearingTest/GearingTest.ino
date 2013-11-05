@@ -11,10 +11,10 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 100000ul;
-long bow = 1000000;
+long vmax = 1000000ul;
+long bow = vmax;
 long end_bow = bow;
-long amax = vmax/100;
+long amax = vmax/10;
 long dmax = amax;
 
 //register
@@ -31,6 +31,7 @@ long dmax = amax;
 #define START_DELAY_REGISTER 0x13
 #define RAMP_MODE_REGISTER 0x20
 #define X_ACTUAL_REGISTER 0x21
+#define V_ACTUAL_REGISTER 0x22
 #define V_MAX_REGISTER 0x24
 #define V_START_REGISTER 0x25
 #define V_STOP_REGISTER 0x26
@@ -104,7 +105,7 @@ void setup() {
   //initialize SPI
   SPI.begin();
   //configure the TMC26x A
-  write43x(squirrel_a, GENERAL_CONFIG_REGISTER, 0); //we use xtarget
+  write43x(squirrel_a, GENERAL_CONFIG_REGISTER, _BV(0) | _BV(1)); //we use direct values
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER,_BV(10) | _BV(6) | _BV(11)); //start automatically
   write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -134,7 +135,7 @@ void setup() {
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
 
   //configure the TMC26x B
-  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(6)); //we use xtarget
+  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(0) | _BV(1) | _BV(6)); //direct values and no clock
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER,_BV(10) | _BV(11)); //start automatically
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -185,7 +186,7 @@ void loop() {
   if (toMove || !isMoving) {
     prev_target = target;
     target = next_target;
-    next_target= random(100000ul);
+    next_target= random(1000ul)*100ul;
 
     long prev_dir = dir;
 
@@ -274,13 +275,20 @@ void loop() {
   }
   if (checkMetro.check()) {
     unsigned long position;
-    Serial.print("XPOS A: ");
+    Serial.print("X A: ");
     position = read43x(squirrel_a,X_ACTUAL_REGISTER,0);
     Serial.print(position);
     Serial.print(" -> ");
     position  = read43x(squirrel_a,X_TARGET_REGISTER,0);
     Serial.println(position);
 
+    Serial.print("V A: ");
+    position = read43x(squirrel_a,V_ACTUAL_REGISTER,0);
+    Serial.print(position);
+    Serial.print(" -> ");
+    position  = read43x(squirrel_a,V_STOP_REGISTER,0);
+    Serial.println(position);
+    
     Serial.print("XPOS B: ");
     position = read43x(squirrel_b,X_ACTUAL_REGISTER,0);
     Serial.print(position);
