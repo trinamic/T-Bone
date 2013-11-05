@@ -25,7 +25,7 @@ void attachCommandCallbacks() {
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
   //messenger.attach(kRampBows, onRampBows);
-  //messenger.attach(kMove, onMove);
+  messenger.attach(kMove, onMove);
   messenger.attach(kPos, onPosition);
 }
 
@@ -38,7 +38,7 @@ void OnUnknownCommand() {
 
 //Motor Strom einstellen
 void onConfigMotorCurrent() {
-  unsigned char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber();
   if (motor<0) {
     return;
   }
@@ -65,7 +65,7 @@ void onConfigMotorCurrent() {
 
 //set the steps per revolution 
 void onStepsPerRevolution() {
-  unsigned char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber();
   if (motor<0) {
     return;
   }
@@ -119,7 +119,7 @@ void onRampBows() {
 }
 */
 void onMove() {
-  unsigned char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber();
   if (motor<0) {
     return;
   }
@@ -149,7 +149,7 @@ void onMove() {
 } 
 
 void onPosition() {
-  unsigned char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber();
   if (motor<0) {
     return;
   }
@@ -173,28 +173,28 @@ void watchDogStart() {
   watchDogPing();
 }
 
-unsigned char decodeMotorNumber() {
+char decodeMotorNumber() {
   char motor = messenger.readIntArg();
   if (motor<1) {
     messenger.sendCmdStart(kError);
-    messenger.sendCmdArg(motor);
-    messenger.sendCmdArg(1);
-    messenger.sendCmdArg(nr_of_motors);
+    messenger.sendCmdArg(motor,DEC);
+    messenger.sendCmdArg(1,DEC);
+    messenger.sendCmdArg(nr_of_motors,DEC);
     messenger.sendCmdArg(F("motor number too small"));
     messenger.sendCmdEnd();
     return -1;
   } 
   else if (motor>nr_of_motors) {
     messenger.sendCmdStart(kError);
-    messenger.sendCmdArg(motor);
-    messenger.sendCmdArg(1);
-    messenger.sendCmdArg(nr_of_motors);
+    messenger.sendCmdArg(motor,DEC);
+    messenger.sendCmdArg(1,DEC);
+    messenger.sendCmdArg(nr_of_motors,DEC);
     messenger.sendCmdArg(F("motor number too big"));
     messenger.sendCmdEnd();
     return -1;
   } 
   else {
-    return motor -1;
+    return motor - 1;
   }
 }
 
