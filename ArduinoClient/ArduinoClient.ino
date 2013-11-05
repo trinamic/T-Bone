@@ -28,7 +28,7 @@ squirrel motors[2] = {
 
 //config
 
-QueueArray<movement> moveQueue;
+QueueArray<movement> moveQueue = QueueArray<movement>(2);
 
 
 //somebody must deal with our commands

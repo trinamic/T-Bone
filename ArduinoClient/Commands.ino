@@ -194,7 +194,7 @@ unsigned char decodeMotorNumber() {
   }
 }
 
-// see rollerprojects.com/2011/05/23/determining-sram-usage-on-arduino/ 
+// see http://rollerprojects.com/2011/05/23/determining-sram-usage-on-arduino/ 
 int freeRam() {
   extern int __heap_start, *__brkval; 
   int v; 
