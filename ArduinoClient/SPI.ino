@@ -1,17 +1,17 @@
 unsigned char status;
 
 
-void write43x(unsigned char tmc43x_register, unsigned long datagram) {
-  send43x(tmc43x_register | 0x80,datagram);
+void write43x(unsigned char cs_squirrel,unsigned char tmc43x_register, unsigned long datagram) {
+  send43x(cs_squirrel,tmc43x_register | 0x80,datagram);
 }
 
-unsigned long read43x(unsigned char tmc43x_register, unsigned long datagram) {
-  send43x(tmc43x_register, datagram);
-  unsigned long result =  send43x(tmc43x_register, datagram);
+unsigned long read43x(unsigned char cs_squirrel,unsigned char tmc43x_register, unsigned long datagram) {
+  send43x(cs_squirrel,tmc43x_register, datagram);
+  unsigned long result =  send43x(cs_squirrel, tmc43x_register, datagram);
   return result;
 }
 
-long send43x(unsigned char tmc43x_register, unsigned long datagram) {
+long send43x(unsigned char cs_squirrel, unsigned char tmc43x_register, unsigned long datagram) {
   unsigned long i_datagram;
 
   //select the TMC driver

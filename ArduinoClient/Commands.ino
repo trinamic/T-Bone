@@ -24,8 +24,8 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
-  messenger.attach(kRampBows, onRampBows);
-  messenger.attach(kMove, onMove);
+  //messenger.attach(kRampBows, onRampBows);
+  //messenger.attach(kMove, onMove);
   messenger.attach(kPos, onPosition);
 }
 
@@ -38,10 +38,15 @@ void OnUnknownCommand() {
 
 //Motor Strom einstellen
 void onConfigMotorCurrent() {
+  unsigned char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
   int newCurrent = messenger.readIntArg();
   if (newCurrent==0) {
     messenger.sendCmdStart(kMotorCurrent);
-    messenger.sendCmdArg(current_in_ma);
+    messenger.sendCmdArg(motor+1);
+    messenger.sendCmdArg(motors[motor].tmc260.getCurrent());
     messenger.sendCmdEnd();
     return;
   }
@@ -49,7 +54,7 @@ void onConfigMotorCurrent() {
     messenger.sendCmd (kError,F("Current too low")); 
     return;
   }
-  const __FlashStringHelper* error = setCurrent(newCurrent);
+  const __FlashStringHelper* error = setCurrent(motor,newCurrent);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Current set"));
   } 
@@ -60,10 +65,15 @@ void onConfigMotorCurrent() {
 
 //set the steps per revolution 
 void onStepsPerRevolution() {
+  unsigned char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
   int newSteps = messenger.readIntArg();
   if (newSteps==0) {
     messenger.sendCmdStart(kStepsPerRev);
-    messenger.sendCmdArg(steps_per_revolution);
+    messenger.sendCmdArg(motor+1);
+    messenger.sendCmdArg(motors[motor].steps_per_revolution);
     messenger.sendCmdEnd();
     return;
   }
@@ -71,7 +81,8 @@ void onStepsPerRevolution() {
     messenger.sendCmd (kError,F("there cannot be negative steps pre revolution")); 
     return;
   }
-  const __FlashStringHelper* error =  setStepsPerRevolution(newSteps);
+  const __FlashStringHelper* error =  setStepsPerRevolution(motor,newSteps);
+  motors[motor].steps_per_revolution=newSteps;
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Steps set"));
   } 
@@ -79,7 +90,7 @@ void onStepsPerRevolution() {
     messenger.sendCmd(kError,error);
   }
 }
-
+/*
 void onRampBows() {
   long startBow = messenger.readLongArg();
   if (startBow==0) {
@@ -132,9 +143,14 @@ void onMove() {
     messenger.sendCmd(kError,error);
   }
 } 
-
+*/
 void onPosition() {
-  unsigned long position = read43x(X_ACTUAL_REGISTER,0);
+  unsigned char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
+    unsigned char cs_pin = motors[motor-1].cs_pin;
+  unsigned long position = read43x(cs_pin,X_ACTUAL_REGISTER,0);
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
@@ -143,13 +159,38 @@ void onPosition() {
 void watchDogPing() {
   messenger.sendCmdStart(kKeepAlive);
   messenger.sendCmdArg(moveQueue.count());
-  messenger.sendCmdArg("still alive");
+  messenger.sendCmdArg(F("still alive"));
   messenger.sendCmdEnd();
 }
 
 void watchDogStart() {
   messenger.sendCmd(kOK,F("ready"));
   watchDogPing();
+}
+
+unsigned char decodeMotorNumber() {
+  char motor = messenger.readIntArg();
+  if (motor<1) {
+    messenger.sendCmdStart(kError);
+    messenger.sendCmdArg(motor);
+    messenger.sendCmdArg(1);
+    messenger.sendCmdArg(nr_of_motors);
+    messenger.sendCmdArg("motor number too small");
+    messenger.sendCmdEnd();
+    return -1;
+  } 
+  else if (motor>nr_of_motors) {
+    messenger.sendCmdStart(kError);
+    messenger.sendCmdArg(motor);
+    messenger.sendCmdArg(1);
+    messenger.sendCmdArg(nr_of_motors);
+    messenger.sendCmdArg("motor number too big");
+    messenger.sendCmdEnd();
+    return -1;
+  } 
+  else {
+    return motor -1;
+  }
 }
 
 

@@ -11,23 +11,22 @@
 #define DEBUG
 
 #define COMMAND_QUEUE_LENGTH 100
-
 //standards
-int cs_squirrel = 7;
-int reset_squirrel = 2;
+int reset_squirrel = 4;
 
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define CLOCK_FREQUENCY 16000000ul
+#define DEFAULT_CURRENT_IN_MA 1
+#define DEFAULT_STEPS_PER_REVOLUTION
+
+const char nr_of_motors = 2;
+squirrel motors[2] = {
+  {8,3,0, TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),DEFAULT_STEPS_PER_REVOLUTION },
+  {12,2,1, TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), DEFAULT_STEPS_PER_REVOLUTION}
+};
 
 //config
-unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 1;
-long vmax = 5000;
-long amax = vmax/100;
-long dmax = amax;
-long current_startbow = 1000000;
-long current_endbow = current_startbow;
 
 QueueArray<movement> moveQueue;
 

@@ -1,36 +1,44 @@
 
 void initialzeTMC43x() {
-  //initialize CS pin
-  pinMode(cs_squirrel,OUTPUT);
-  digitalWrite(cs_squirrel,HIGH);
+
+
   //reset the quirrel
   pinMode(reset_squirrel,OUTPUT);
   digitalWrite(reset_squirrel, LOW);
+  //will be released after setup is complete   
+  for (char i=0; i<nr_of_motors; i++) {
+    //initialize CS pin
+    digitalWrite(motors[i].cs_pin,HIGH);
+    pinMode(motors[i].cs_pin,OUTPUT);
+    pinMode(motors[i].target_reached_interrupt_pin,INPUT);
+    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
+  }
+  //enable the reset again
   delay(1);
   digitalWrite(reset_squirrel, HIGH);
   delay(10);
   //initialize SPI
   SPI.begin();
   //preconfigure the TMC43x
-  write43x(GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
-  write43x(CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-  write43x(START_CONFIG_REGISTER,_BV(10)); //start automatically
-  write43x(RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
-  setRampBows(current_startbow,current_endbow);
-
-  setStepsPerRevolution(steps_per_revolution);
+  for (char i=0; i<nr_of_motors;i++) {
+    write43x(motors[i].cs_pin,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
+    setStepsPerRevolution(motors[i].cs_pin,motors[i].steps_per_revolution);
+  }
 }
 
-const __FlashStringHelper* setStepsPerRevolution(unsigned int steps) {
+const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_number, unsigned int steps) {
+  //get the motor number
+  unsigned char cs_pin = motors[motor_number].cs_pin;
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
-  motorconfig |= steps_per_revolution<<4;
-  write43x(STEP_CONF_REGISTER,motorconfig);
-  steps_per_revolution = steps;
+  motorconfig |= steps<<4;
+  write43x(cs_pin,STEP_CONF_REGISTER,motorconfig);
+  motors[motor_number].steps_per_revolution = steps;
   return NULL;
 }
 
-const __FlashStringHelper* setRampBows(long startbow, long endbow) {
+/*
+const __FlashStringHelper* setRampBows(unsigned char motor_nr, long startbow, long endbow) {
   if (endbow==0) {
     endbow=startbow;
   }
@@ -55,4 +63,5 @@ const __FlashStringHelper* moveMotor(unsigned long pos, unsigned long vMax, unsi
   Serial.println(pos);
   return NULL;
 }
+*/
 

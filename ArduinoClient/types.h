@@ -8,8 +8,11 @@ struct movement {
 
 struct squirrel {
   char cs_pin;
-  char interrupt_pin;
-  char target_reached_interrupt_a;
-  char start_interrupt_pin;
+  char target_reached_interrupt_pin;
+  char target_reached_interrupt_nr;
+  //we have a TMC260 at the end so we configure a configurer
+  TMC26XGenerator tmc260;
+  int steps_per_revolution;
 };
+
 
