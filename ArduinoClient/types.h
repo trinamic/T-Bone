@@ -5,3 +5,11 @@ struct movement {
   unsigned long parameter_1; //gearing or target
   unsigned long parameter_2; //speed
 };
+
+struct squirrel {
+  char cs_pin;
+  char interrupt_pin;
+  char target_reached_interrupt_a;
+  char start_interrupt_pin;
+};
+
