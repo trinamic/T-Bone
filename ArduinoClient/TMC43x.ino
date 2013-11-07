@@ -37,8 +37,14 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_number, uns
   return NULL;
 }
 
-/*
-const __FlashStringHelper* setRampBows(unsigned char motor_nr, long startbow, long endbow) {
+
+const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, float aMax, float dMax,long startbow, long endbow) {
+  //TODO some validity settings??
+  motors[motor_nr].aMax = aMax;
+  motors[motor_nr].dMax = dMax!=0? dMax:aMax;
+  motors[motor_nr].startBow = startbow;
+  motors[motor_nr].endBow = endbow!=0? endbow:startbow;
+  /*
  if (endbow==0) {
  endbow=startbow;
  }
@@ -48,9 +54,10 @@ const __FlashStringHelper* setRampBows(unsigned char motor_nr, long startbow, lo
  write43x(BOW_4_REGISTER,startbow);
  current_startbow=startbow;
  current_endbow=endbow;
+ */
  return NULL;
  }
- */
+
 const __FlashStringHelper* moveMotor(unsigned char motor_number, unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
   unsigned char cs_pin = motors[motor_number].cs_pin;
   if (dMax==0) {

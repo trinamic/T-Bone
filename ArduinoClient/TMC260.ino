@@ -8,7 +8,6 @@ const __FlashStringHelper* setCurrent(unsigned char motor_number, int newCurrent
   return NULL;
 }
 
-
 void intializeTMC260() {
   for (char i=0; i<nr_of_motors;i++) {
     unsigned char cs_pin = motors[i].cs_pin;

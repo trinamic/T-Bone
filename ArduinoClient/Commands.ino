@@ -94,13 +94,17 @@ void onStepsPerRevolution() {
 }
 
 void onAccelerationSetttings() {
-  aMax = messenger.readFloatArg();
-  if (startBow==0) {
+    char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
+  float aMax = messenger.readFloatArg();
+  if (aMax==0) {
     messenger.sendCmdStart(kAccelerationSetttings);
-    messenger.sendCmdArg(aMax);
-    messenger.sendCmdArg(dMax);
-    messenger.sendCmdArg(startBow);
-    messenger.sendCmdArg(startBow);
+    messenger.sendCmdArg(motors[motor].aMax);
+    messenger.sendCmdArg(motors[motor].dMax);
+    messenger.sendCmdArg(motors[motor].startBow);
+    messenger.sendCmdArg(motors[motor].startBow);
     messenger.sendCmdEnd();
     return;
   }
@@ -108,31 +112,28 @@ void onAccelerationSetttings() {
     messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
     return;
   }
-  dMax = messenger.readFloatArg();
+  float dMax = messenger.readFloatArg();
   if (dMax<0) {
     messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
     return;
   }
-
-  startBow = messenger.readLongArg();
+  long startBow = messenger.readLongArg();
   if (startBow<0) {
     messenger.sendCmd (kError,F("Start bow cannot be negative")); 
     return;
   }
-  endBow = messenger.readLongArg();
+  long endBow = messenger.readLongArg();
   if (endBow<0) {
     messenger.sendCmd (kError,F("Start bow cannot be negative")); 
     return;
   }
-  /*
-  const __FlashStringHelper* error = setRampBows(startBow, endBow);
+  const __FlashStringHelper* error = setAccelerationSetttings(motor, aMax, dMax, startBow, endBow);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Ramp Bows set"));
   } 
   else {
     messenger.sendCmd(kError,error);
   }
-  */
 }
 
 

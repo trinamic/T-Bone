@@ -12,11 +12,14 @@ struct movement {
     struct {
       long target;
       float vmax;
-    } move;
+    } 
+    move;
     struct {
       float gearing;
-    } follow;
-  } data;
+    } 
+    follow;
+  } 
+  data;
 };
 
 struct squirrel {
@@ -26,5 +29,10 @@ struct squirrel {
   //we have a TMC260 at the end so we configure a configurer
   TMC26XGenerator tmc260;
   int steps_per_revolution;
+  float aMax;
+  float dMax;
+  long startBow;
+  long endBow;
 };
+
 

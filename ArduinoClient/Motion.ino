@@ -1,3 +1,4 @@
+volatile boolean currently_running = false;
 
 void startMotion() {
   currently_running = true;
