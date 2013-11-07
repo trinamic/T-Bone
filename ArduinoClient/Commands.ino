@@ -5,7 +5,7 @@ enum {
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
   kStepsPerRev = 2,
-  kRampBows = 3,
+  kAccelerationSetttings = 3,
   //Kommandos die Aktionen auslösen
   kMove = 10,
   //Kommandos zur Information
@@ -25,7 +25,7 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
-  //messenger.attach(kRampBows, onRampBows);
+  messenger.attach(kAccelerationSetttings, onAccelerationSetttings);
   messenger.attach(kMove, onMove);
   messenger.attach(kPos, onPosition);
   messenger.attach(kCommands, onCommands);
@@ -96,7 +96,7 @@ void onStepsPerRevolution() {
 void onAccelerationSetttings() {
   aMax = messenger.readFloatArg();
   if (startBow==0) {
-    messenger.sendCmdStart(kRampBows);
+    messenger.sendCmdStart(kAccelerationSetttings);
     messenger.sendCmdArg(aMax);
     messenger.sendCmdArg(dMax);
     messenger.sendCmdArg(startBow);
