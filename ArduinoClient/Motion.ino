@@ -5,6 +5,10 @@ void startMotion() {
   //TODO initialize drivers??
 }
 
+void stopMotion() {
+  currently_running = false;
+}
+
 void checkMotion() {
   if (currently_running) {
     if (moveQueue.count()>0) {
