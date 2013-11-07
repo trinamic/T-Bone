@@ -92,32 +92,32 @@ void onStepsPerRevolution() {
 }
 /*
 void onRampBows() {
-  long startBow = messenger.readLongArg();
-  if (startBow==0) {
-    messenger.sendCmdStart(kRampBows);
-    messenger.sendCmdArg(current_startbow);
-    messenger.sendCmdArg(current_endbow);
-    messenger.sendCmdEnd();
-    return;
-  }
-  if (startBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
-    return;
-  }
-  long endBow = messenger.readLongArg();
-  if (endBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
-    return;
-  }
-  const __FlashStringHelper* error = setRampBows(startBow, endBow);
-  if (error==NULL) {
-    messenger.sendCmd(kOK,F("Ramp Bows set"));
-  } 
-  else {
-    messenger.sendCmd(kError,error);
-  }
-}
-*/
+ long startBow = messenger.readLongArg();
+ if (startBow==0) {
+ messenger.sendCmdStart(kRampBows);
+ messenger.sendCmdArg(current_startbow);
+ messenger.sendCmdArg(current_endbow);
+ messenger.sendCmdEnd();
+ return;
+ }
+ if (startBow<0) {
+ messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+ return;
+ }
+ long endBow = messenger.readLongArg();
+ if (endBow<0) {
+ messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+ return;
+ }
+ const __FlashStringHelper* error = setRampBows(startBow, endBow);
+ if (error==NULL) {
+ messenger.sendCmd(kOK,F("Ramp Bows set"));
+ } 
+ else {
+ messenger.sendCmd(kError,error);
+ }
+ }
+ */
 
 void onMove() {
   char motor = decodeMotorNumber();
@@ -145,14 +145,23 @@ void onMove() {
     messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
     return;
   }
-  
-  const __FlashStringHelper* error =  moveMotor(motor,newPos, vMax, aMax, dMax);
-  if (error==NULL) {
-    messenger.sendCmd(kOK,F("Moving"));
-  } 
-  else {
-    messenger.sendCmd(kError,error);
+  if (moveQueue.isFull()) {
+    messenger.sendCmd(kError,F("Queue is full"));
+    return;
   }
+  movement move;
+  move.type = movemotor;
+  move.data.move.target=newPos;
+  move.data.move.vmax = vMax;
+  move.data.move.amax=aMax;
+  move.data.move.dmax = (dMax>0)? dMax:aMax;
+  moveQueue.push(move);
+   messenger.sendCmdStart(kOK);
+  messenger.sendCmdArg(moveQueue.count());
+  messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
+  messenger.sendCmdArg(F("command added"));
+  messenger.sendCmdEnd();
+ 
 } 
 
 void onPosition() {
@@ -160,7 +169,7 @@ void onPosition() {
   if (motor<0) {
     return;
   }
-    unsigned char cs_pin = motors[motor-1].cs_pin;
+  unsigned char cs_pin = motors[motor-1].cs_pin;
   unsigned long position = read43x(cs_pin,X_ACTUAL_REGISTER,0);
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
@@ -211,6 +220,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

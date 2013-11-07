@@ -1,17 +1,23 @@
+
+enum movement_type {
+  movemotor,
+  gearmotor,
+};
+
 //general datatypes we use, conveniently in an header file 
 struct movement { 
-  unsigned char type; //movement to pos or gearing chain
+  movement_type type; //movement to pos or gearing chain
   unsigned char motor;
-  union {
-    struct target{
+  union data {
+    struct {
       long target;
       float vmax;
       unsigned long amax;
      unsigned long dmax; 
-    };
-    struct follow {
+    } move;
+    struct {
       float gearing;
-    };
+    } follow;
   } data;
 };
 
