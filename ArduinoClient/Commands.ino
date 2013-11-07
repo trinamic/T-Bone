@@ -92,34 +92,49 @@ void onStepsPerRevolution() {
     messenger.sendCmd(kError,error);
   }
 }
-/*
-void onRampBows() {
- long startBow = messenger.readLongArg();
- if (startBow==0) {
- messenger.sendCmdStart(kRampBows);
- messenger.sendCmdArg(current_startbow);
- messenger.sendCmdArg(current_endbow);
- messenger.sendCmdEnd();
- return;
- }
- if (startBow<0) {
- messenger.sendCmd (kError,F("Start bow cannot be negative")); 
- return;
- }
- long endBow = messenger.readLongArg();
- if (endBow<0) {
- messenger.sendCmd (kError,F("Start bow cannot be negative")); 
- return;
- }
- const __FlashStringHelper* error = setRampBows(startBow, endBow);
- if (error==NULL) {
- messenger.sendCmd(kOK,F("Ramp Bows set"));
- } 
- else {
- messenger.sendCmd(kError,error);
- }
- }
- */
+
+void onAccelerationSetttings() {
+  aMax = messenger.readFloatArg();
+  if (startBow==0) {
+    messenger.sendCmdStart(kRampBows);
+    messenger.sendCmdArg(aMax);
+    messenger.sendCmdArg(dMax);
+    messenger.sendCmdArg(startBow);
+    messenger.sendCmdArg(startBow);
+    messenger.sendCmdEnd();
+    return;
+  }
+  if (aMax<0) {
+    messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
+    return;
+  }
+  dMax = messenger.readFloatArg();
+  if (dMax<0) {
+    messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
+    return;
+  }
+
+  startBow = messenger.readLongArg();
+  if (startBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return;
+  }
+  endBow = messenger.readLongArg();
+  if (endBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return;
+  }
+  /*
+  const __FlashStringHelper* error = setRampBows(startBow, endBow);
+  if (error==NULL) {
+    messenger.sendCmd(kOK,F("Ramp Bows set"));
+  } 
+  else {
+    messenger.sendCmd(kError,error);
+  }
+  */
+}
+
 
 void onMove() {
   char motor = decodeMotorNumber();
@@ -137,16 +152,6 @@ void onMove() {
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
     return;
   }
-  int aMax = messenger.readIntArg();
-  if (aMax<=0) {
-    messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
-    return;
-  }
-  int dMax = messenger.readIntArg();
-  if (dMax<0) {
-    messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
-    return;
-  }
   if (moveQueue.isFull()) {
     messenger.sendCmd(kError,F("Queue is full"));
     return;
@@ -155,15 +160,13 @@ void onMove() {
   move.type = movemotor;
   move.data.move.target=newPos;
   move.data.move.vmax = vMax;
-  move.data.move.amax=aMax;
-  move.data.move.dmax = (dMax>0)? dMax:aMax;
   moveQueue.push(move);
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
   messenger.sendCmdArg(F("command added"));
   messenger.sendCmdEnd();
- 
+
 } 
 
 void onPosition() {
@@ -229,6 +232,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

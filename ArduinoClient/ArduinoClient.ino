@@ -7,12 +7,13 @@
 
 #include "constants.h"
 #include "types.h"
+#include "variables.h"
 
 #define DEBUG
 
 #define COMMAND_QUEUE_LENGTH 2
 //standards
-int reset_squirrel = 4;
+const int reset_squirrel = 4;
 
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150

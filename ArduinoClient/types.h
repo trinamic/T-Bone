@@ -1,4 +1,4 @@
-
+//what kind of information is in the queue
 enum movement_type {
   movemotor,
   gearmotor,
@@ -12,8 +12,6 @@ struct movement {
     struct {
       long target;
       float vmax;
-      unsigned long amax;
-     unsigned long dmax; 
     } move;
     struct {
       float gearing;
@@ -29,5 +27,4 @@ struct squirrel {
   TMC26XGenerator tmc260;
   int steps_per_revolution;
 };
-
 
