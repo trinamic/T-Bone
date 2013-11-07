@@ -10,6 +10,7 @@ enum {
   kMove = 10,
   //Kommandos zur Information
   kPos = 30,
+  kCommands = 31,
   //Sonstiges
   kOK = 0,
   kError =  -9,
@@ -27,6 +28,7 @@ void attachCommandCallbacks() {
   //messenger.attach(kRampBows, onRampBows);
   messenger.attach(kMove, onMove);
   messenger.attach(kPos, onPosition);
+  messenger.attach(kCommands, onCommands);
 }
 
 // ------------------  C A L L B A C K S -----------------------
@@ -156,7 +158,7 @@ void onMove() {
   move.data.move.amax=aMax;
   move.data.move.dmax = (dMax>0)? dMax:aMax;
   moveQueue.push(move);
-   messenger.sendCmdStart(kOK);
+  messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
   messenger.sendCmdArg(F("command added"));
@@ -174,7 +176,14 @@ void onPosition() {
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
-}  
+}
+
+void onCommands() {
+  messenger.sendCmdStart(kCommands);
+  messenger.sendCmdArg(moveQueue.count());
+  messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
+  messenger.sendCmdEnd();
+}
 
 void watchDogPing() {
   messenger.sendCmdStart(kKeepAlive);
