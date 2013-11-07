@@ -129,7 +129,7 @@ void onMove() {
     messenger.sendCmd (kError,F("cannot move beyond home"));
     return;
   }
-  int vMax = messenger.readIntArg();
+  int vMax = messenger.readFloatArg();
   if (vMax<=0) {
     Serial.println(vMax);
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
@@ -145,6 +145,7 @@ void onMove() {
     messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
     return;
   }
+  
   const __FlashStringHelper* error =  moveMotor(motor,newPos, vMax, aMax, dMax);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Moving"));

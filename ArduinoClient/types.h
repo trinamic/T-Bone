@@ -2,10 +2,17 @@
 struct movement { 
   unsigned char type; //movement to pos or gearing chain
   unsigned char motor;
-  unsigned long parameter_1; //gearing or target
-  unsigned long parameter_2; //speed
-  unsigned long parameter_3; //gearing or target
-  unsigned long parameter_4; //speed
+  union {
+    struct target{
+      long target;
+      float vmax;
+      unsigned long amax;
+     unsigned long dmax; 
+    };
+    struct follow {
+      float gearing;
+    };
+  } data;
 };
 
 struct squirrel {
