@@ -2,6 +2,7 @@
 
 This serves as a long usage message.
 """
+import logging
 import sys
 import getopt
 from LowLevelInterface.Machine import Machine
@@ -13,6 +14,10 @@ class Usage(Exception):
 
 
 def main(argv=None):
+    #configure the overall logging
+    logging.basicConfig(filename='print.log', level=logging.INFO)
+    logging.info('Started')
+
     if argv is None:
         argv = sys.argv
     try:
@@ -27,7 +32,7 @@ def main(argv=None):
         print >> sys.stderr, "for help use --help"
         return 2
 
-    ##ok here we got
+    ##ok here we go
     machine = Machine()
 
 
