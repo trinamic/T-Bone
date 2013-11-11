@@ -2,7 +2,6 @@
 
 This serves as a long usage message.
 """
-import logging
 import sys
 import getopt
 
@@ -13,9 +12,6 @@ class Usage(Exception):
 
 
 def main(argv=None):
-    #so first of all read in the log config to ensure that loggin is avail from start on
-    logging.config.fileConfig("logging.conf")
-
     if argv is None:
         argv = sys.argv
     try:
