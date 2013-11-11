@@ -1,4 +1,4 @@
-*
+/*
  * Copyright (C) 2013 CircuitCo
  *
  * Virtual cape for UART1 on connector pins P9.24 P9.26
@@ -11,38 +11,38 @@
 /plugin/;
 
 / {
-   	compatible = "ti,beaglebone", "ti,beaglebone-black";
+	compatible = "ti,beaglebone", "ti,beaglebone-black";
 
-        /* identification */
-        part-number = "BB-UART1";
-        version = "00A0";
+	/* identification */
+	part-number = "BB-UART1";
+	version = "00A0";
 
-        /* state the resources this cape uses */
-        exclusive-use =
-                /* the pin header uses */
-                "P9.24",        /* uart1_txd */
-                "P9.26",        /* uart1_rxd */
-                /* the hardware ip uses */
-                "uart1";
+	/* state the resources this cape uses */
+	exclusive-use =
+		/* the pin header uses */
+		"P9.24",	/* uart1_txd */
+		"P9.26",	/* uart1_rxd */
+		/* the hardware ip uses */
+		"uart1";
 
-        fragment@0 {
-                target = <&am33xx_pinmux>;
-                __overlay__ {
-                        bb_uart1_pins: pinmux_bb_uart1_pins {
-                                pinctrl-single,pins = <
-                                        0x184 0x20 /* P9.24 uart1_txd.uart1_txd MODE0 OUTPUT (TX) */
-                                        0x180 0x20 /* P9.26 uart1_rxd.uart1_rxd MODE0 INPUT (RX) */
-                                >;
-                        };
-                };
-        };
+	fragment@0 {
+		target = <&am33xx_pinmux>;
+		__overlay__ {
+			bb_uart1_pins: pinmux_bb_uart1_pins {
+				pinctrl-single,pins = <
+					0x184 0x20 /* P9.24 uart1_txd.uart1_txd  OUTPUT  */
+					0x180 0x20 /* P9.26 uart1_rxd.uart1_rxd  INPUT  */
+				>;
+			};
+		};
+	};
 
 	fragment@1 {
-                target = <&uart2>;	/* really uart1 */
-                __overlay__ {
-                        status = "okay";
-                        pinctrl-names = "default";
-                        pinctrl-0 = <&bb_uart1_pins>;
-                };
-        };
+		target = <&uart2>;	/* really uart1 */
+		__overlay__ {
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <&bb_uart1_pins>;
+		};
+	};
 };
