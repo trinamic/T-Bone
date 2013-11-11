@@ -1,18 +1,39 @@
 import sys
 import logging
+import re
 import serial
+import time
 
 __author__ = 'marcus'
 
-__default_serial_port__ = "/dev/ttyO1"
+_default_serial_port = "/dev/ttyO1"
+_default_timeout = 60
+
+
+def matcher(buff):
+    pass
+
+class MachineError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
 
 
 class Machine():
-    def __init__(self, serialport = None):
+    _commandEndMatcher = re.compile(";")    #gives you the ability to search for anything
+
+    def __init__(self, serialport=None):
         if serialport is None:
-            serialport = __default_serial_port__
-        ser = serial.Serial(serialport, 115200, timeout=1)
-        while ser.isOpen():
-            print >> sys.stderr, "go"
-            line = ser.readline()   # read a '\n' terminated line
-            logging.info(line);
+            serialport = _default_serial_port
+        self.machineSerial = serial.Serial(serialport, 115200, timeout=_default_timeout)
+        line = self.doRead()   # read a ';' terminated line
+        logging.info(line)
+
+    def doRead(self):
+        buff = ""
+        tic = time.clock()
+        buff += self.machineSerial.read(128)
+        # you can use if not ('\n' in buff) too if you don't like re
+        while ((time.clock - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
+            buff += self.machineSerial.read(128)
+
+        return buff
