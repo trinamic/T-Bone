@@ -1,3 +1,4 @@
+import sys
 import logging
 import serial
 
@@ -12,5 +13,6 @@ class Machine():
             serialport = __default_serial_port__
         ser = serial.Serial(serialport, 115200, timeout=1)
         while ser.isOpen():
+            print >> sys.stderr, "go"
             line = ser.readline()   # read a '\n' terminated line
             logging.info(line);
