@@ -1,3 +1,4 @@
+import logging
 import serial
 
 __author__ = 'marcus'
@@ -10,4 +11,6 @@ class Machine():
         if serialport is None:
             serialport = __default_serial_port__
         ser = serial.Serial(serialport, 115200, timeout=1)
-        line = ser.readline()   # read a '\n' terminated line
+        while ser.isOpen():
+            line = ser.readline()   # read a '\n' terminated line
+            logging.info(line);
