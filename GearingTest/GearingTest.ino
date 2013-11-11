@@ -216,7 +216,7 @@ void loop() {
       v_end = 1;
     }
 
-    unsigned long digital_ratio = 0;//FIXED_8_24_MAKE(gear_ratio);
+    unsigned long digital_ratio = FIXED_8_24_MAKE(gear_ratio);
     unsigned long v_max_fpm = FIXED_24_8_MAKE(this_v);
     unsigned long v_start_fpm = FIXED_24_8_MAKE(v_start);
     unsigned long v_stop_fpm = FIXED_24_8_MAKE(v_end); 
