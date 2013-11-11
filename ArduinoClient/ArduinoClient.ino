@@ -35,14 +35,15 @@ QueueArray<movement> moveQueue = QueueArray<movement>(COMMAND_QUEUE_LENGTH);
 
 
 //somebody must deal with our commands
-CmdMessenger messenger = CmdMessenger(Serial);
+CmdMessenger messenger = CmdMessenger(Serial1);
 //watchdog Metro
 Metro watchDogMetro = Metro(1000); 
 
 void setup() {
 
   //initialize the serial port for commands
-  Serial.begin(115200); //TODO we will use serial 1
+  Serial1.begin(115200);
+  Serial.begin(115200); 
   // Adds newline to every command
   messenger.printLfCr();   
 
