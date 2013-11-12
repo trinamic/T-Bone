@@ -23,7 +23,6 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "p:h", ["port=", "help"])
-            print >> sys.stdout, opts
         except getopt.error, msg:
             raise Usage(msg)
             # more code, unchanged

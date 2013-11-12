@@ -31,6 +31,7 @@ class Machine():
     def doRead(self):
         buff = ""
         tic = time.clock()
+        print >> sys.stdout, tic
         buff += self.machineSerial.read(128)
         # you can use if not ('\n' in buff) too if you don't like re
         while ((time.clock() - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
