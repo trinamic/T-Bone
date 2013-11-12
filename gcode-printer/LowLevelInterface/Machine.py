@@ -56,6 +56,20 @@ class _MachineConnection:
         self.run_on = True
         self.listening_thread = Thread(target=self)
 
+    def send_command(self, command):
+        #empty the queue?? shouldn't it be empty??
+        self.response_queue.empty()
+        self.machine_serial.send(command.return_code)
+        if command.arguments:
+            self.machine_serial.send(",")
+            for param in command.arguments[:-1]:
+                self.machine_serial.send(param)
+                self.machine_serial.send(",")
+            self.machine_serial.send(command.arguments[-1])
+            self.machine_serial.send(";")
+        response = self.response_queue.get(block=True, timeout=_default_timeout)
+        return response
+
     def last_heart_beat(self):
         if self.last_heartbeat:
             return time.clock() - self.last_heartbeat
@@ -72,7 +86,6 @@ class _MachineConnection:
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
-
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line
