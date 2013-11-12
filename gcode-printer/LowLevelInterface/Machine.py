@@ -27,15 +27,20 @@ class Machine():
             serialport = _default_serial_port
         self.serialport = serialport
 
+
     def connect(self):
         self.machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
-        line = self.doRead()   # read a ';' terminated line
+        command = self._read_next_command()
+        if not command.return_code is -128:
+            raise MachineError("Machine does not seem to be ready")
+
+    def _read_next_command(self):
+        line = self._doRead()   # read a ';' terminated line
         logging.info(line)
         command = MachineCommand(line)
-        if not command.return_code is -128:
-            raise MachineError("Machine does not seem ready")
+        return command
 
-    def doRead(self):
+    def _doRead(self):
         buff = ""
         tic = time.time()
         buff += self.machineSerial.read(128)

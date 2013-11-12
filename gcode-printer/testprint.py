@@ -33,6 +33,7 @@ def main(argv=None):
 
     ##ok here we go
     machine = Machine()
+    machine.connect()
 
 
 if __name__ == "__main__":
