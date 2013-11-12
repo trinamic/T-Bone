@@ -130,9 +130,14 @@ class _MachineConnection:
 
 class MachineCommand():
     def __init__(self, input_line=None):
+        self.command_number = None
+        self.arguments = None
         if input_line:
             parts = input_line.strip().split(",")
-            if (len(parts>1)):
-                self.command_number = int(parts[0])
-            if (len(parts>2)):
-                self.arguments = parts[1:]
+            if (len(parts)>1):
+                try:
+                    self.command_number = int(parts[0])
+                    if (len(parts)>2):
+                        self.arguments = parts[1:]
+                except ValueError:
+                    logging.warn("unable to decode command:"+input_line)
