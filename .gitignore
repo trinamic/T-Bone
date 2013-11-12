@@ -1,5 +1,8 @@
-#python artefacts
+#python artifacts
 *.pyo
+
+#we do not want to version log files
+*.log
 
 #idea stuff
 .idea/
