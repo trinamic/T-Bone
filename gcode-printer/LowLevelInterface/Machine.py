@@ -51,10 +51,16 @@ class _MachineConnection:
         command = self._read_next_command()
         if not command or command.return_code != -128:
             raise MachineError("Machine does not seem to be ready")
-        #ok and if everything is nice we can start a nwe heartbeat thread
+            #ok and if everything is nice we can start a nwe heartbeat thread
         self.last_heartbeat = time.clock()
         self.run_on = True
         self.listening_thread = Thread(target=self)
+
+    def last_heart_beat(self):
+        if self.last_heartbeat:
+            return time.clock() - self.last_heartbeat
+        else:
+            return None
 
     def __call__(self, *args, **kwargs):
         while self.run_on:
