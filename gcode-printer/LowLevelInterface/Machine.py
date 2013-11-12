@@ -31,11 +31,13 @@ class Machine():
     def connect(self):
         self.machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
         command = self._read_next_command()
-        if not command.return_code is -128:
+        if not command or not command.return_code is -128:
             raise MachineError("Machine does not seem to be ready")
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line
+        if not line or not line.strip():
+            return None
         logging.info(line)
         command = MachineCommand(line)
         return command
@@ -55,10 +57,6 @@ class Machine():
 
 class MachineCommand():
     def __init__(self, input_line):
-        if not input_line or not input_line.strip():
-            self.return_code = -1
-            self.arguments = []
-        else:
-            parts = input_line.strip().split(",")
-            self.return_code = int(parts[0])
-            self.arguments = parts[1:]
+        parts = input_line.strip().split(",")
+        self.return_code = int(parts[0])
+        self.arguments = parts[1:]
