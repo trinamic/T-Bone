@@ -55,6 +55,10 @@ class Machine():
 
 class MachineCommand():
     def __init__(self, input_line):
-        parts = input_line.strip().split(",")
-        self.return_code = int(parts[0])
-        self.arguments = parts[1:]
+        if not input_line:
+            self.return_code = -1
+            self.arguments=[]
+        else:
+            parts = input_line.strip().split(",")
+            self.return_code = int(parts[0])
+            self.arguments = parts[1:]
