@@ -33,7 +33,7 @@ class Machine():
         tic = time.clock()
         buff += self.machineSerial.read(128)
         # you can use if not ('\n' in buff) too if you don't like re
-        while ((time.clock - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
+        while ((time.clock() - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
             buff += self.machineSerial.read(128)
 
         return buff
