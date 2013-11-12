@@ -33,7 +33,7 @@ class Machine():
         self.machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
         self.remaining_buffer = ""
         command = self._read_next_command()
-        if not command or not command.return_code is -128:
+        if not command or not (command.return_code is -128):
             raise MachineError("Machine does not seem to be ready")
 
     def _read_next_command(self):
@@ -64,6 +64,5 @@ class Machine():
 class MachineCommand():
     def __init__(self, input_line):
         parts = input_line.strip().split(",")
-        logging.info(parts)
         self.return_code = int(parts[0])
         self.arguments = parts[1:]
