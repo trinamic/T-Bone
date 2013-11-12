@@ -1,6 +1,7 @@
 import sys
 import logging
 import re
+from threading import Thread
 import serial
 import time
 
@@ -27,14 +28,39 @@ class Machine():
             serialport = _default_serial_port
         self.serialport = serialport
         self.remaining_buffer = ""
+        self.machine_connection = None
 
 
     def connect(self):
-        self.machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
+        if not self.machine_connection:
+            machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
+            self.machine_connection = _MachineConnection(machineSerial)
+
+    def disconnect(self):
+        if self.machine_connection:
+            self.machine_connection.run_on = False
+
+
+class _MachineConnection:
+    def __init__(self, machine_serial):
+        self.machine_serial = machine_serial
         self.remaining_buffer = ""
+        #after we have started let's see if the connection is alive
         command = self._read_next_command()
         if not command or command.return_code != -128:
             raise MachineError("Machine does not seem to be ready")
+        #ok and if everything is nice we can start a nwe heartbeat thread
+        self.last_heartbeat = time.clock()
+        self.run_on = True
+        self.listening_thread = Thread(target=self)
+
+
+    def __call__(self, *args, **kwargs):
+        while self.run_on:
+            command = self._read_next_command()
+            if command and command.return_code == -128:
+                self.last_heartbeat = time.clock()
+
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line
