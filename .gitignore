@@ -1,2 +1,5 @@
-#ide stuff
+#python artefacts
+*.pyo
+
+#idea stuff
 .idea/
