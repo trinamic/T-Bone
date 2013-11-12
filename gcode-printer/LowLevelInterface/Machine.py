@@ -53,11 +53,12 @@ class _MachineConnection:
         self.machine_serial = machine_serial
         self.remaining_buffer = ""
         self.response_queue = Queue()
+        #let's suck empty the serial connection by reading everything with an extremely short timeout
+        dummy_read= "dummy"
+        while machine_serial.inWaiting():
+            machine_serial.read()
         #after we have started let's see if the connection is alive
-        start_time = time.clock()
-        command = None
-        while not command or command.command_number != -128:
-            command = self._read_next_command()
+        command = self._read_next_command()
         if not command or command.command_number != -128:
             raise MachineError("Machine does not seem to be ready")
             #ok and if everything is nice we can start a nwe heartbeat thread
