@@ -33,7 +33,7 @@ class Machine():
         self.machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
         self.remaining_buffer = ""
         command = self._read_next_command()
-        if not command or not (command.return_code is -128):
+        if not command or command.return_code != -128:
             raise MachineError("Machine does not seem to be ready")
 
     def _read_next_command(self):
