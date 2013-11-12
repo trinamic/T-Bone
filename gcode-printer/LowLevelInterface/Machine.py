@@ -1,4 +1,4 @@
-from Queue import Queue
+from Queue import Queue, Empty
 import sys
 import logging
 import re
@@ -67,8 +67,15 @@ class _MachineConnection:
                 self.machine_serial.send(",")
             self.machine_serial.send(command.arguments[-1])
             self.machine_serial.send(";")
-        response = self.response_queue.get(block=True, timeout=_default_timeout)
-        return response
+        try:
+            response = self.response_queue.get(block=True, timeout=_default_timeout)
+           #TODO logging
+            return response
+        except Empty:
+            #disconnect in panic
+            self.run_on = False
+            raise MachineError("Machine does not listen!")
+
 
     def last_heart_beat(self):
         if self.last_heartbeat:
