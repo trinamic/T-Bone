@@ -40,7 +40,7 @@ class Machine():
         line = self._doRead()   # read a ';' terminated line
         if not line or not line.strip():
             return None
-        logging.info(line)
+        logging.info("machine said:\'" +  line + "\'")
         command = MachineCommand(line)
         return command
 
@@ -64,5 +64,6 @@ class Machine():
 class MachineCommand():
     def __init__(self, input_line):
         parts = input_line.strip().split(",")
+        logging.info(parts)
         self.return_code = int(parts[0])
         self.arguments = parts[1:]
