@@ -10,6 +10,7 @@ __author__ = 'marcus'
 
 _default_serial_port = "/dev/ttyO1"
 _default_timeout = 5
+_commandEndMatcher = re.compile(";")    #needed to search for command ends
 
 
 def matcher(buff):
@@ -22,7 +23,6 @@ class MachineError(Exception):
 
 
 class Machine():
-    _commandEndMatcher = re.compile(";")    #needed to search for command ends
 
     def __init__(self, serialport=None):
         if serialport is None:
@@ -49,29 +49,33 @@ class Machine():
 
 class _MachineConnection:
     def __init__(self, machine_serial):
+        self.listening_thread = Thread(target=self)
         self.machine_serial = machine_serial
         self.remaining_buffer = ""
         self.response_queue = Queue()
         #after we have started let's see if the connection is alive
-        command = self._read_next_command()
+        start_time = time.clock()
+        command = None
+        while not command or command.command_number != -128:
+            command = self._read_next_command()
         if not command or command.command_number != -128:
             raise MachineError("Machine does not seem to be ready")
             #ok and if everything is nice we can start a nwe heartbeat thread
         self.last_heartbeat = time.clock()
         self.run_on = True
-        self.listening_thread = Thread(target=self)
+        self.listening_thread.start()
 
     def send_command(self, command):
         #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
-        self.machine_serial.send(command.return_code)
+        self.machine_serial.write(str(command.command_number))
         if command.arguments:
             self.machine_serial.send(",")
             for param in command.arguments[:-1]:
-                self.machine_serial.send(param)
-                self.machine_serial.send(",")
-            self.machine_serial.send(command.arguments[-1])
-            self.machine_serial.send(";")
+                self.machine_serial.write(param)
+                self.machine_serial.write(",")
+            self.machine_serial.write(command.arguments[-1])
+            self.machine_serial.write(";")
         try:
             response = self.response_queue.get(block=True, timeout=_default_timeout)
             #TODO logging
@@ -110,13 +114,13 @@ class _MachineConnection:
     def _doRead(self):
         buff = self.remaining_buffer
         tic = time.time()
-        buff += self.machineSerial.read()
+        buff += self.machine_serial.read()
 
         # you can use if not ('\n' in buff) too if you don't like re
-        while ((time.time() - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
-            buff += self.machineSerial.read()
+        while ((time.time() - tic) < _default_timeout) and (not _commandEndMatcher.search(buff)):
+            buff += self.machine_serial.read()
 
-        if self._commandEndMatcher.search(buff):
+        if _commandEndMatcher.search(buff):
             split_result = buff.split(';', 1)
             self.remaining_buffer = split_result[1]
             return split_result[0]
@@ -128,5 +132,7 @@ class MachineCommand():
     def __init__(self, input_line=None):
         if input_line:
             parts = input_line.strip().split(",")
-            self.command_number = int(parts[0])
-            self.arguments = parts[1:]
+            if (len(parts>1)):
+                self.command_number = int(parts[0])
+            if (len(parts>2)):
+                self.arguments = parts[1:]
