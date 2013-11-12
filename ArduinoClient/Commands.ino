@@ -6,6 +6,8 @@ enum {
   kMotorCurrent = 1,
   kStepsPerRev = 2,
   kAccelerationSetttings = 3,
+  //intitalize all drivers with default values - TODO or preconfigured??
+  kInit=9,
   //Kommandos die Aktionen auslösen
   kMove = 10,
   //Kommandos zur Information
@@ -23,6 +25,7 @@ enum {
 void attachCommandCallbacks() {
   // Attach callback methods
   messenger.attach(OnUnknownCommand);
+  messenger.attach(kInit, onInit);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
   messenger.attach(kAccelerationSetttings, onAccelerationSetttings);
@@ -36,6 +39,15 @@ void attachCommandCallbacks() {
 // Fehlerfunktion wenn ein Kommand nicht bekannt ist
 void OnUnknownCommand() {
   messenger.sendCmd(kError,F("Unknonwn command"));
+}
+
+void onInit() {
+  //initialize the 43x
+  initialzeTMC43x();
+  //start the tmc260 driver
+  intializeTMC260();
+  //and we are done here
+  messenger.sendCmd(kOK,F("All systems initialized"));
 }
 
 //Motor Strom einstellen

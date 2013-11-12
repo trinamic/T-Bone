@@ -40,6 +40,9 @@ CmdMessenger messenger = CmdMessenger(Serial1);
 Metro watchDogMetro = Metro(1000); 
 
 void setup() {
+  //at least we should try deactivate the squirrels
+  pinMode(reset_squirrel,OUTPUT);
+  digitalWrite(reset_squirrel, LOW);
 
   //initialize the serial port for commands
   Serial1.begin(115200);
@@ -49,11 +52,6 @@ void setup() {
 
   // Attach my application's user-defined callback methods
   attachCommandCallbacks();
-
-  //initialize the 43x
-  initialzeTMC43x();
-  //start the tmc260 driver
-  intializeTMC260();
 
 
   //finally signal that we are ready

@@ -1,9 +1,6 @@
 
 void initialzeTMC43x() {
-
-
   //reset the quirrel
-  pinMode(reset_squirrel,OUTPUT);
   digitalWrite(reset_squirrel, LOW);
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {
