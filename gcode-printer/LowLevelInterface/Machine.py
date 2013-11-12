@@ -30,11 +30,11 @@ class Machine():
 
     def doRead(self):
         buff = ""
-        tic = time.clock()
-	print >> sys.stdout, "read it"
+        tic = time.time()
         buff += self.machineSerial.read(128)
+
         # you can use if not ('\n' in buff) too if you don't like re
-        while ((time.clock() - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
+        while ((time.time() - tic) < _default_timeout) and (not self._commandEndMatcher.search(buff)):
             print >> sys.stdout, (time.clock() - tic)*60
             buff += self.machineSerial.read(128)
 
