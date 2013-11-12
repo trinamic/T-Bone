@@ -36,6 +36,11 @@ class Machine():
         if not self.machine_connection:
             machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
             self.machine_connection = _MachineConnection(machineSerial)
+        init_command = MachineCommand()
+        init_command.command_number = 9
+        reply = self.machine_connection.send_command(init_command)
+        if reply.command_number == 0:
+            raise MachineCommand("Unable to start")
 
     def disconnect(self):
         if self.machine_connection:
@@ -49,7 +54,7 @@ class _MachineConnection:
         self.response_queue = Queue()
         #after we have started let's see if the connection is alive
         command = self._read_next_command()
-        if not command or command.return_code != -128:
+        if not command or command.command_number != -128:
             raise MachineError("Machine does not seem to be ready")
             #ok and if everything is nice we can start a nwe heartbeat thread
         self.last_heartbeat = time.clock()
@@ -69,7 +74,7 @@ class _MachineConnection:
             self.machine_serial.send(";")
         try:
             response = self.response_queue.get(block=True, timeout=_default_timeout)
-           #TODO logging
+            #TODO logging
             return response
         except Empty:
             #disconnect in panic
@@ -88,7 +93,7 @@ class _MachineConnection:
             command = self._read_next_command()
             if command:
                 # if it is just the heart beat we write down the time
-                if command.return_code == -128:
+                if command.command_number == -128:
                     self.last_heartbeat = time.clock()
                 else:
                     #we add it to the response queue
@@ -120,7 +125,8 @@ class _MachineConnection:
 
 
 class MachineCommand():
-    def __init__(self, input_line):
-        parts = input_line.strip().split(",")
-        self.return_code = int(parts[0])
-        self.arguments = parts[1:]
+    def __init__(self, input_line=None):
+        if input_line:
+            parts = input_line.strip().split(",")
+            self.command_number = int(parts[0])
+            self.arguments = parts[1:]
