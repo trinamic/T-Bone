@@ -1,3 +1,4 @@
+from Queue import Queue
 import sys
 import logging
 import re
@@ -45,6 +46,7 @@ class _MachineConnection:
     def __init__(self, machine_serial):
         self.machine_serial = machine_serial
         self.remaining_buffer = ""
+        self.response_queue = Queue()
         #after we have started let's see if the connection is alive
         command = self._read_next_command()
         if not command or command.return_code != -128:
@@ -54,12 +56,16 @@ class _MachineConnection:
         self.run_on = True
         self.listening_thread = Thread(target=self)
 
-
     def __call__(self, *args, **kwargs):
         while self.run_on:
             command = self._read_next_command()
-            if command and command.return_code == -128:
-                self.last_heartbeat = time.clock()
+            if command:
+                # if it is just the heart beat we write down the time
+                if command.return_code == -128:
+                    self.last_heartbeat = time.clock()
+                else:
+                    #we add it to the response queue
+                    self.response_queue.put(command)
 
 
     def _read_next_command(self):
