@@ -7,7 +7,7 @@ import time
 __author__ = 'marcus'
 
 _default_serial_port = "/dev/ttyO1"
-_default_timeout = 60
+_default_timeout = 5
 
 
 def matcher(buff):
