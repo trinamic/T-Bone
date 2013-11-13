@@ -208,6 +208,7 @@ void watchDogPing() {
   int ram = freeRam();
   messenger.sendCmdStart(kKeepAlive);
   messenger.sendCmdArg(moveQueue.count());
+  messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
   messenger.sendCmdArg(ram);
   messenger.sendCmdArg(F("still alive"));
   messenger.sendCmdEnd();

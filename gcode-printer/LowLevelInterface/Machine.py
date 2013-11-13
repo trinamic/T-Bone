@@ -64,6 +64,9 @@ class _MachineConnection:
         self.last_heartbeat = time.clock()
         self.run_on = True
         self.listening_thread.start()
+        self.internal_queue_length = 0
+        self.internal_queue_max_length = 1
+        self.internal_free_ram = 0
 
     def send_command(self, command):
         logging.info("sending command " + str(command))
@@ -101,6 +104,10 @@ class _MachineConnection:
                 # if it is just the heart beat we write down the time
                 if command.command_number == -128:
                     self.last_heartbeat = time.clock()
+                    if command.arguments:
+                        self.internal_queue_length = command.arguments[0]
+                        self.internal_queue_max_length = command.arguments[1]
+                        self.internal_free_ram = command.arguments[2]
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
