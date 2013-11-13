@@ -18,8 +18,9 @@ def matcher(buff):
 
 
 class MachineError(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg, additional_info):
         self.msg = msg
+        self.additional_info = additional_info
 
 
 class Machine():
@@ -44,6 +45,17 @@ class Machine():
     def disconnect(self):
         if self.machine_connection:
             self.machine_connection.run_on = False
+
+    def set_current(self, motor=None, current=None):
+        command = MachineCommand()
+        command.command_number = 1
+        command.arguments = (
+            int(motor),
+            int(current * 1000)
+        )
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+            raise MachineError("Unable to set motor current", reply)
 
 
 class _MachineConnection:
@@ -74,11 +86,11 @@ class _MachineConnection:
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
         if command.arguments:
-            self.machine_serial.send(",")
+            self.machine_serial.write(",")
             for param in command.arguments[:-1]:
-                self.machine_serial.write(param)
+                self.machine_serial.write(str(param))
                 self.machine_serial.write(",")
-            self.machine_serial.write(command.arguments[-1])
+            self.machine_serial.write(str(command.arguments[-1]))
         self.machine_serial.write(";\n")
         self.machine_serial.flush()
         try:
@@ -148,15 +160,27 @@ class MachineCommand():
             if len(parts) > 1:
                 try:
                     self.command_number = int(parts[0])
-                    if len(parts) > 2:
+                    if len(parts) > 1:
                         self.arguments = parts[1:]
                 except ValueError:
                     logging.warn("unable to decode command:" + input_line)
 
     def __repr__(self):
-        result = "Command "
+        if self.command_number == 0:
+            result = "Acknowledgement "
+        if self.command_number < 0:
+            if self.command_number > -5:
+                result = "Info "
+            elif self.command_number > -9:
+                result = "Warning "
+            elif self.command_number == -9:
+                result = "Error "
+            elif self.command_number == -128:
+                result = "Keep Alive Ping "
+        else:
+            result = "Command "
         if self.command_number is not None:
-            result += str(self.command_number)
+            result += "("+str(self.command_number)+")"
         if self.arguments:
             result += ": "
             result += str(self.arguments)
