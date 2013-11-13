@@ -39,15 +39,18 @@ void attachCommandCallbacks() {
 // Fehlerfunktion wenn ein Kommand nicht bekannt ist
 void OnUnknownCommand() {
   messenger.sendCmd(kError,F("Unknonwn command"));
+  Serial.println(F("communication error"));
 }
 
 void onInit() {
+  Serial.println(F("Initializing"));
   //initialize the 43x
   initialzeTMC43x();
   //start the tmc260 driver
   intializeTMC260();
   //and we are done here
   messenger.sendCmd(kOK,F("All systems initialized"));
+  Serial.println(F("Initialized"));
 }
 
 //Motor Strom einstellen
@@ -202,11 +205,19 @@ void onCommands() {
 }
 
 void watchDogPing() {
+  int ram = freeRam();
   messenger.sendCmdStart(kKeepAlive);
   messenger.sendCmdArg(moveQueue.count());
-  messenger.sendCmdArg(freeRam());
+  messenger.sendCmdArg(ram);
   messenger.sendCmdArg(F("still alive"));
   messenger.sendCmdEnd();
+  Serial.print(F("Queue: "));
+  Serial.print(moveQueue.count());
+  Serial.print(F(" of "));
+  Serial.print(COMMAND_QUEUE_LENGTH);
+  Serial.print(F("\tRAM:  "));
+  Serial.println(ram);
+
 }
 
 void watchDogStart() {

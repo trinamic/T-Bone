@@ -15,7 +15,7 @@ class Usage(Exception):
 
 def main(argv=None):
     #configure the overall logging
-    logging.basicConfig(filename='print.log', level=logging.INFO)
+    logging.basicConfig(filename='print.log', level=logging.DEBUG)
     logging.info('Started')
 
     if argv is None:

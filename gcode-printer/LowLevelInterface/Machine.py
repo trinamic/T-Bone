@@ -23,7 +23,6 @@ class MachineError(Exception):
 
 
 class Machine():
-
     def __init__(self, serialport=None):
         if serialport is None:
             serialport = _default_serial_port
@@ -39,7 +38,7 @@ class Machine():
         init_command = MachineCommand()
         init_command.command_number = 9
         reply = self.machine_connection.send_command(init_command)
-        if reply.command_number == 0:
+        if reply.command_number != 0:
             raise MachineCommand("Unable to start")
 
     def disconnect(self):
@@ -54,10 +53,10 @@ class _MachineConnection:
         self.remaining_buffer = ""
         self.response_queue = Queue()
         #let's suck empty the serial connection by reading everything with an extremely short timeout
-        dummy_read= "dummy"
+        dummy_read = "dummy"
         while machine_serial.inWaiting():
             machine_serial.read()
-        #after we have started let's see if the connection is alive
+            #after we have started let's see if the connection is alive
         command = self._read_next_command()
         if not command or command.command_number != -128:
             raise MachineError("Machine does not seem to be ready")
@@ -67,6 +66,7 @@ class _MachineConnection:
         self.listening_thread.start()
 
     def send_command(self, command):
+        logging.info("sending command " + str(command))
         #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
@@ -76,9 +76,10 @@ class _MachineConnection:
                 self.machine_serial.write(param)
                 self.machine_serial.write(",")
             self.machine_serial.write(command.arguments[-1])
-            self.machine_serial.write(";")
+        self.machine_serial.write(";\n")
+        self.machine_serial.flush()
         try:
-            response = self.response_queue.get(block=True, timeout=_default_timeout)
+            response = self.response_queue.get(timeout=_default_timeout)
             #TODO logging
             return response
         except Empty:
@@ -103,12 +104,14 @@ class _MachineConnection:
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
+                    logging.info("received command " + str(command))
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line
         if not line or not line.strip():
             return None
-        logging.info("machine said:\'" + line + "\'")
+        line = line.strip()
+        logging.debug("machine said:\'" + line + "\'")
         command = MachineCommand(line)
         return command
 
@@ -135,10 +138,19 @@ class MachineCommand():
         self.arguments = None
         if input_line:
             parts = input_line.strip().split(",")
-            if (len(parts)>1):
+            if len(parts) > 1:
                 try:
                     self.command_number = int(parts[0])
-                    if (len(parts)>2):
+                    if len(parts) > 2:
                         self.arguments = parts[1:]
                 except ValueError:
-                    logging.warn("unable to decode command:"+input_line)
+                    logging.warn("unable to decode command:" + input_line)
+
+    def __repr__(self):
+        result = "Command "
+        if self.command_number is not None:
+            result += str(self.command_number)
+        if self.arguments:
+            result += ": "
+            result += str(self.arguments)
+        return result
