@@ -180,7 +180,7 @@ class MachineCommand():
         else:
             result = "Command "
         if self.command_number is not None:
-            result += "("+str(self.command_number)+")"
+            result += str(self.command_number)
         if self.arguments:
             result += ": "
             result += str(self.arguments)
