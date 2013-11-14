@@ -46,3 +46,4 @@ class GCodeTest(unittest.TestCase):
         line="M107\n"
         result = decode_gcode_line(line)
         assert_that(result.code,equal_to("M107"))
+        assert_that(result.options,none())
