@@ -10,7 +10,7 @@ import getopt
 from trinamic_3d_printer.Machine import Machine
 from trinamic_3d_printer.Printer import Printer
 
-_config_file = "config.json"
+_config_file = "testprint-config.json"
 
 class Usage(Exception):
     def __init__(self, msg):
