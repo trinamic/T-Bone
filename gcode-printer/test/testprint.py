@@ -12,6 +12,7 @@ from trinamic_3d_printer.Printer import Printer
 
 _config_file = "testprint-config.json"
 
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -19,7 +20,8 @@ class Usage(Exception):
 
 def main(argv=None):
     #configure the overall logging
-    logging.basicConfig(filename='print.log', level=logging.INFO)
+    logging.basicConfig(filename='print.log', level=logging.INFO,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.info('Started')
 
     if argv is None:
@@ -40,8 +42,9 @@ def main(argv=None):
     config = read_config()
     printer.configure(config)
 
+
 def read_config():
-    json_config_file=open(_config_file)
+    json_config_file = open(_config_file)
     data = json.load(json_config_file)
     pprint(data)
     json_config_file.close()
