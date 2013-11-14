@@ -2,6 +2,7 @@ import logging
 from trinamic_3d_printer.Machine import Machine
 
 __author__ = 'marcus'
+_logger = logging.getLogger(__name__)
 
 
 class Printer():
@@ -59,19 +60,19 @@ class Printer():
         #now we can decide which axis to move
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
-            logging.debug("Moving X axis to "+str(x_step))
+            _logger.debug("Moving X axis to "+str(x_step))
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
-            logging.debug("Moving Y axis to "+str(y_step))
+            _logger.debug("Moving Y axis to "+str(y_step))
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if (delta_x > delta_y):
                 y_gearing = delta_y/delta_x
-                logging.debug("Moving X axis to "+str(x_step)+" gearing y by "+str(y_gearing))
+                _logger.debug("Moving X axis to "+str(x_step)+" gearing y by "+str(y_gearing))
                 #move
             else:
                 x_gearing = delta_x/delta_y
-                logging.debug("Moving Y axis to "+str(y_step)+" gearing y by "+str(x_gearing))
+                _logger.debug("Moving Y axis to "+str(y_step)+" gearing y by "+str(x_gearing))
                 #move
 
     def set_current(self, axis_config):

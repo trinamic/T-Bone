@@ -12,6 +12,7 @@ _default_serial_port = "/dev/ttyO1"
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
 
+_logger = logging.getLogger(__name__)
 
 def matcher(buff):
     pass
@@ -81,7 +82,7 @@ class _MachineConnection:
         self.internal_free_ram = 0
 
     def send_command(self, command):
-        logging.info("sending command " + str(command))
+        _logger.info("sending command " + str(command))
         #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
@@ -123,14 +124,14 @@ class _MachineConnection:
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
-                    logging.info("received command " + str(command))
+                    _logger.info("received command " + str(command))
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line
         if not line or not line.strip():
             return None
         line = line.strip()
-        logging.debug("machine said:\'" + line + "\'")
+        _logger.debug("machine said:\'" + line + "\'")
         command = MachineCommand(line)
         return command
 
@@ -163,7 +164,7 @@ class MachineCommand():
                     if len(parts) > 1:
                         self.arguments = parts[1:]
                 except ValueError:
-                    logging.warn("unable to decode command:" + input_line)
+                    _logger.warn("unable to decode command:" + input_line)
 
     def __repr__(self):
         if self.command_number == 0:

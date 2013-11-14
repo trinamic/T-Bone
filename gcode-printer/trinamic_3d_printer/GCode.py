@@ -4,6 +4,7 @@ import re
 __author__ = 'marcus'
 
 _text_and_number_pattern = re.compile('([a-zA-Z]+)(\d+(.\d+)?)')
+_logger = logging.getLogger(__name__)
 
 
 def read_gcode_to_print(input, printer):
@@ -21,10 +22,10 @@ def read_gcode_to_print(input, printer):
                 if position:
                     positions[position[0].lower()] = position[1]
                 else:
-                    logging.warn("Unable to interpret position " + argument + " in " + line)
+                    _logger.warn("Unable to interpret position " + argument + " in " + line)
             printer.move_to(positions)
         else:
-            logging.warn("Unknown GCODE " + gcode + " ignored")
+            _logger.warn("Unknown GCODE " + gcode + " ignored")
 
 
 class GCode:
