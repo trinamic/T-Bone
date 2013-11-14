@@ -1,4 +1,4 @@
-from trinamic_3d_printer.gcode import GCode, decode_gcode_line
+from trinamic_3d_printer.gcode import GCode, decode_gcode_line, decode_text_and_number
 from hamcrest import *
 
 __author__ = 'marcus'
@@ -47,3 +47,18 @@ class GCodeTest(unittest.TestCase):
         result = decode_gcode_line(line)
         assert_that(result.code,equal_to("M107"))
         assert_that(result.options,none())
+
+    def testNumberExtraction(self):
+        line = "G21"
+        result = decode_text_and_number(line)
+        assert_that(result, not_none())
+        assert_that(result, has_length(2))
+        assert_that(result[0], equal_to("G"))
+        assert_that(result[0], 21)
+
+        line = "Y84.157"
+        result = decode_text_and_number(line)
+        assert_that(result, not_none())
+        assert_that(result, has_length(2))
+        assert_that(result[0], equal_to("Y"))
+        assert_that(result[0], 4.157)
