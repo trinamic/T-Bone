@@ -59,6 +59,24 @@ class Machine():
         if not reply or reply.command_number != 0:
             raise MachineError("Unable to set motor current", reply)
 
+    def move_to(self, moved_motor, target, speed, geared_motors):
+        command = MachineCommand()
+        command.command_number = 10
+        command.arguments = {
+            int(motor),
+            int(target),
+            float(speed)
+        }
+        if geared_motors:
+            for geared_motor in geared_motors:
+                command.arguments.append(int(geared_motor['motor']))
+                command.arguments.append(float(geared_motors['gearing']))
+        #todo this cannot work - we should blcok until the queue length is big enough
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+            raise MachineError("Unable to set motor current", reply)
+
+
 
 class _MachineConnection:
     def __init__(self, machine_serial):
