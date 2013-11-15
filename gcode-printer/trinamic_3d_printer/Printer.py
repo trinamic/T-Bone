@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 from trinamic_3d_printer.Machine import Machine
 
@@ -43,18 +44,24 @@ class Printer():
     # tuple with x/y/e coordinates - if left out no change is intenden
     def move_to(self, position):
         #extract and convert values
-        x_move = position['x']
-        x_step = _convert_mm_to_steps(x_move, self.x_axis_scale)
-        y_move = position['y']
-        y_step = _convert_mm_to_steps(y_move, self.y_axis_scale)
+        if 'x' in position:
+            x_move = position['x']
+        else:
+            x_move = None
+        if 'y' in position:
+            y_move = position['y']
+        else:
+            y_move = None
         #next store new current positions
         #todo or is there any advantage in storing real world values??
         delta_x = None
-        if x_step:
+        if x_move:
+            x_step = _convert_mm_to_steps(x_move, self.x_axis_scale)
             delta_x = x_step - self.x_pos
             self.x_pos = x_step
         delta_y = None
-        if y_step:
+        if y_move:
+            y_step = _convert_mm_to_steps(y_move, self.y_axis_scale)
             delta_y = y_step - self.y_pos
             self.y_pos = y_step
         #now we can decide which axis to move
@@ -67,11 +74,11 @@ class Printer():
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if (delta_x > delta_y):
-                y_gearing = delta_y/delta_x
+                y_gearing = float(delta_y)/float(delta_x)
                 _logger.debug("Moving X axis to "+str(x_step)+" gearing y by "+str(y_gearing))
                 #move
             else:
-                x_gearing = delta_x/delta_y
+                x_gearing = float(delta_x)/float(delta_y)
                 _logger.debug("Moving Y axis to "+str(y_step)+" gearing y by "+str(x_gearing))
                 #move
 
