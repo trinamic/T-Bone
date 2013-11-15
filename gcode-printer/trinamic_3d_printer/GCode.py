@@ -7,14 +7,14 @@ _text_and_number_pattern = re.compile('([a-zA-Z]+)(\d+(.\d+)?)')
 _logger = logging.getLogger(__name__)
 
 
-def read_gcode_to_print(input, printer):
+def read_gcode_to_printer(input, printer):
     for line in input:
         gcode = decode_gcode_line(line)
         #handling the negative case first is silly but gives us more flexibility in the elif struct
         if not gcode:
             #nothing to do fine!
             pass
-        elif "G0" is gcode.code or "G1" is gcode.code: #TODO G1 & G0 is different
+        elif "G0" == gcode.code or "G1" == gcode.code: #TODO G1 & G0 is different
             #we simply interpret the arguments as positions
             positions = {}
             for argument in gcode.options:
@@ -25,13 +25,20 @@ def read_gcode_to_print(input, printer):
                     _logger.warn("Unable to interpret position " + argument + " in " + line)
             printer.move_to(positions)
         else:
-            _logger.warn("Unknown GCODE " + gcode + " ignored")
+            _logger.warn("Unknown GCODE " + str(gcode) + " ignored")
 
 
 class GCode:
     def __init__(self, code, options=None):
         self.code = code
         self.options = options
+
+    def __repr__(self):
+        result = self.code
+        if self.options:
+            for option in self.options:
+                result += " " + str(option)
+        return result
 
 
 # decode a line of text to gcode.
