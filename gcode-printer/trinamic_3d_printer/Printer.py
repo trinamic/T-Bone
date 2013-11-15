@@ -16,7 +16,7 @@ class Printer():
         self.y_axis_scale = None
         self.x_pos = None
         self.y_pos = None
-        self.current_speed = None
+        self.current_speed = 0
 
         #finally create and conect the machine
         self.machine = Machine()
@@ -39,8 +39,8 @@ class Printer():
         self.config = config
 
         #todo in thery we should have homed here
-        self.x_pos=0
-        self.y_pos=0
+        self.x_pos = 0
+        self.y_pos = 0
 
     # tuple with x/y/e coordinates - if left out no change is intenden
     def move_to(self, position):
@@ -55,10 +55,12 @@ class Printer():
             y_move = None
         if 'f' in position:
             target_speed = position['f']
+            move_speed = target_speed
             #todo convert to steps??
         else:
             target_speed = None
-        #next store new current positions
+            move_speed = self.current_speed
+            #next store new current positions
         #todo or is there any advantage in storing real world values??
         delta_x = None
         if x_move:
@@ -70,22 +72,32 @@ class Printer():
             y_step = _convert_mm_to_steps(y_move, self.y_axis_scale)
             delta_y = y_step - self.y_pos
             self.y_pos = y_step
-        #now we can decide which axis to move
+            #now we can decide which axis to move
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
-            _logger.debug("Moving X axis to "+str(x_step))
+            _logger.debug("Moving X axis to " + str(x_step))
+            self.machine.move_to(self.x_axis_motor, x_step, move_speed)
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
-            _logger.debug("Moving Y axis to "+str(y_step))
+            _logger.debug("Moving Y axis to " + str(y_step))
+            self.machine.move_to(self.y_axis_motor, y_step, move_speed)
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if (delta_x > delta_y):
-                y_gearing = float(delta_y)/float(delta_x)
-                _logger.debug("Moving X axis to "+str(x_step)+" gearing y by "+str(y_gearing))
+                y_gearing = float(delta_y) / float(delta_x)
+                _logger.debug("Moving X axis to " + str(x_step) + " gearing y by " + str(y_gearing))
+                self.machine.move_to(self.x_axis_motor, x_step, move_speed, {
+                    'motor': self.y_axis_motor,
+                    'gearing': y_gearing
+                })
                 #move
             else:
-                x_gearing = float(delta_x)/float(delta_y)
-                _logger.debug("Moving Y axis to "+str(y_step)+" gearing y by "+str(x_gearing))
+                x_gearing = float(delta_x) / float(delta_y)
+                _logger.debug("Moving Y axis to " + str(y_step) + " gearing y by " + str(x_gearing))
+                self.machine.move_to(self.x_axis_motor, x_step, move_speed, {
+                    'motor': self.x_axis_motor,
+                    'gearing': x_gearing
+                })
                 #move
         if not target_speed == None:
             self.current_speed = target_speed
@@ -99,7 +111,7 @@ class Printer():
 def _convert_mm_to_steps(millimeters, conversion_factor):
     if millimeters is None:
         return None
-    return int(millimeters*conversion_factor)
+    return int(millimeters * conversion_factor)
 
 
 class PrinterError(Exception):
