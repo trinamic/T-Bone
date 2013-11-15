@@ -7,10 +7,13 @@
 
 #include "constants.h"
 #include "types.h"
-#
+
 #define DEBUG
 
 #define COMMAND_QUEUE_LENGTH 2
+//how many otors can be theoretically geared together
+#define MAX_GEARED_MOTORS 3
+
 //standards
 const int reset_squirrel = 4;
 

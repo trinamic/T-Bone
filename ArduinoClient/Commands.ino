@@ -109,7 +109,7 @@ void onStepsPerRevolution() {
 }
 
 void onAccelerationSetttings() {
-    char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber();
   if (motor<0) {
     return;
   }
@@ -162,20 +162,33 @@ void onMove() {
     messenger.sendCmd (kError,F("cannot move beyond home"));
     return;
   }
-  int vMax = messenger.readFloatArg();
+  float vMax = messenger.readFloatArg();
   if (vMax<=0) {
     Serial.println(vMax);
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
     return;
   }
-  if (moveQueue.isFull()) {
-    messenger.sendCmd(kError,F("Queue is full"));
-    return;
-  }
   movement move;
+  movement gearing[MAX_GEARED_MOTORS];
   move.type = movemotor;
   move.data.move.target=newPos;
   move.data.move.vmax = vMax;
+  int gearings=0;
+  do {
+    motor = decodeMotorNumber();
+    float gearingFactor =  messenger.readFloatArg();
+    if (motor!=0 && gearing!=0) {
+      gearing[gearings].type=gearmotor;
+      gearing[gearings].motor=motor;
+      gearing[gearings].data.follow.gearing=gearingFactor;
+      gearings++;
+    }  
+  } 
+  while (motor!=0);
+  if (moveQueue.count()+gearings+1>COMMAND_QUEUE_LENGTH) {
+    messenger.sendCmd(kError,F("Queue is full"));
+    return;
+  }
   moveQueue.push(move);
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
@@ -257,6 +270,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
