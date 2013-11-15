@@ -16,6 +16,7 @@ class Printer():
         self.y_axis_scale = None
         self.x_pos = None
         self.y_pos = None
+        self.current_speed = None
 
         #finally create and conect the machine
         self.machine = Machine()
@@ -52,6 +53,11 @@ class Printer():
             y_move = position['y']
         else:
             y_move = None
+        if 'f' in position:
+            target_speed = position['f']
+            #todo convert to steps??
+        else:
+            target_speed = None
         #next store new current positions
         #todo or is there any advantage in storing real world values??
         delta_x = None
@@ -81,6 +87,8 @@ class Printer():
                 x_gearing = float(delta_x)/float(delta_y)
                 _logger.debug("Moving Y axis to "+str(y_step)+" gearing y by "+str(x_gearing))
                 #move
+        if not target_speed == None:
+            self.current_speed = target_speed
 
     def set_current(self, axis_config):
         motor = axis_config["motor"]
