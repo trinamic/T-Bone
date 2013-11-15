@@ -9,8 +9,10 @@ import sys
 import getopt
 from trinamic_3d_printer.Machine import Machine
 from trinamic_3d_printer.Printer import Printer
+from trinamic_3d_printer.gcode import read_gcode_to_printer
 
 _config_file = "testprint-config.json"
+_print_file = "../reference designs/test-model.gcode"
 
 
 class Usage(Exception):
@@ -40,13 +42,16 @@ def main(argv=None):
     ##ok here we go
     printer = Printer()
     config = read_config()
+    #configure the printer
     printer.configure(config)
+    test_file = open(_print_file)
+    read_gcode_to_printer(test_file, printer)
+
 
 
 def read_config():
     json_config_file = open(_config_file)
     data = json.load(json_config_file)
-    pprint(data)
     json_config_file.close()
     return data
 
