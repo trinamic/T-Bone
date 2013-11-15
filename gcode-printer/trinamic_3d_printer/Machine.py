@@ -14,6 +14,7 @@ _commandEndMatcher = re.compile(";")    #needed to search for command ends
 
 _logger = logging.getLogger(__name__)
 
+
 def matcher(buff):
     pass
 
@@ -66,11 +67,17 @@ class _MachineConnection:
         self.remaining_buffer = ""
         self.response_queue = Queue()
         #let's suck empty the serial connection by reading everything with an extremely short timeout
-        dummy_read = "dummy"
         while machine_serial.inWaiting():
             machine_serial.read()
+            #and wait for the next ';'
+        init_start = time.clock()
+        last = ''
+        while not last is ';' and time.clock() - init_start < _default_timeout:
+            last = machine_serial.read()
             #after we have started let's see if the connection is alive
-        command = self._read_next_command()
+        command = None
+        while (not command or command.command_number != -128) and time.clock() - init_start < _default_timeout:
+            command = self._read_next_command()
         if not command or command.command_number != -128:
             raise MachineError("Machine does not seem to be ready")
             #ok and if everything is nice we can start a nwe heartbeat thread
