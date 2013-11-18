@@ -13,6 +13,7 @@ _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
 _min_command_buffer = 10 # how much arduino buffer needs to be filled before we start
 _max_command_buffer = 5 # how much arduino buffer to preserve
+#todo come up with better names!
 
 _logger = logging.getLogger(__name__)
 
@@ -69,10 +70,31 @@ class Machine():
         if not reply or reply.command_number != 0:
             raise MachineError("Unable to set move motor", reply)
         if self.batch_mode:
-            pass
+            command_buffer_length = int(reply.arguments[0])
+            command_max_buffer_length = int(reply.arguments[1])
+            command_buffer_free = command_max_buffer_length - command_buffer_length
+            command_queue_running = reply.arguments[2] > 1
+            if not command_queue_running and command_buffer_length > _min_command_buffer:
+                start_command = MachineCommand()
+                start_command.command_number = 11
+                start_command.arguments = [1]
+                reply = self.machine_connection.send_command(command)
+                #TODO and did that work??
+            if command_queue_running and  command_buffer_free<= _max_command_buffer:
+                buffer_free=False
+                while not buffer_free:
+                    #sleep a bit
+                    time.sleep(0.1)
+                    info_command = MachineCommand()
+                    info_command.command_number = 31
+                    reply = self.machine_connection.send_command(command)
+                    command_buffer_length = int(reply.arguments[0])
+                    command_max_buffer_length = int(reply.arguments[1])
+                    command_buffer_free = command_max_buffer_length - command_buffer_length
+                    buffer_free = (command_buffer_free < _min_command_buffer)
         else:
-            while self.machine_connection.internal_queue_length > 0:
-                pass # just wait TODO timeout??
+        #while self.machine_connection.internal_queue_length > 0:
+            pass # just wait TODO timeout??
 
 
 class _MachineConnection:
