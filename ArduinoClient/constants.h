@@ -42,3 +42,8 @@
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
 
+//some nice calculation s
+//simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
+#define FIXED_8_24_MAKE(a)     (int32_t)((a*(1ul << 24ul)))
+#define FIXED_24_8_MAKE(a)     (int32_t)((a*(1ul << 8ul)))
+
