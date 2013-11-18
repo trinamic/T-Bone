@@ -195,6 +195,12 @@ void onMove() {
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
+  if (in_motion) {
+    messenger.sendCmdArg(1);
+  } 
+  else {
+    messenger.sendCmdArg(-1);
+  }
   messenger.sendCmdArg(F("command added"));
   messenger.sendCmdEnd();
 } 
@@ -304,6 +310,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

@@ -86,18 +86,18 @@ class Printer():
             if (delta_x > delta_y):
                 y_gearing = float(delta_y) / float(delta_x)
                 _logger.debug("Moving X axis to " + str(x_step) + " gearing y by " + str(y_gearing))
-                self.machine.move_to(self.x_axis_motor, x_step, move_speed, {
+                self.machine.move_to(self.x_axis_motor, x_step, move_speed, [{
                     'motor': self.y_axis_motor,
                     'gearing': y_gearing
-                })
+                }])
                 #move
             else:
                 x_gearing = float(delta_x) / float(delta_y)
                 _logger.debug("Moving Y axis to " + str(y_step) + " gearing y by " + str(x_gearing))
-                self.machine.move_to(self.x_axis_motor, x_step, move_speed, {
+                self.machine.move_to(self.x_axis_motor, x_step, move_speed, [{
                     'motor': self.x_axis_motor,
                     'gearing': x_gearing
-                })
+                }])
                 #move
         if not target_speed == None:
             self.current_speed = target_speed
