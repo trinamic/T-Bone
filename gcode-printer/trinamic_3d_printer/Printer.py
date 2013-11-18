@@ -42,6 +42,12 @@ class Printer():
         self.x_pos = 0
         self.y_pos = 0
 
+    def start_print(self):
+        self.machine.batch_mode=True
+
+    def stop_print(self):
+        pass
+
     # tuple with x/y/e coordinates - if left out no change is intenden
     def move_to(self, position):
         #extract and convert values

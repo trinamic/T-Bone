@@ -45,9 +45,9 @@ def main(argv=None):
     #configure the printer
     printer.configure(config)
     test_file = open(_print_file)
+    printer.start_print()
     read_gcode_to_printer(test_file, printer)
-
-
+    printer.stop_print()
 
 def read_config():
     json_config_file = open(_config_file)
