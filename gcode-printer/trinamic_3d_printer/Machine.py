@@ -80,8 +80,8 @@ class Machine():
                 start_command.arguments = [1]
                 reply = self.machine_connection.send_command(start_command)
                 #TODO and did that work??
-            if command_queue_running and  command_buffer_free<= _max_command_buffer:
-                buffer_free=False
+            if command_queue_running and command_buffer_free <= _max_command_buffer:
+                buffer_free = False
                 while not buffer_free:
                     #sleep a bit
                     time.sleep(0.1)
@@ -96,6 +96,26 @@ class Machine():
         else:
         #while self.machine_connection.internal_queue_length > 0:
             pass # just wait TODO timeout??
+
+    def set_acceleration_settings(self, motor, max_acceleration, max_deceleration=None, start_bow=None, end_bow=None):
+        #reconstruct all values
+        if not max_deceleration:
+            max_deceleration = max_acceleration
+        if not start_bow:
+            start_bow = max_acceleration / 3 #todo test
+        if not end_bow:
+            end_bow = start_bow
+        command = MachineCommand()
+        command.command_number = 3
+        command.arguments = {
+            int(max_acceleration),
+            int(max_deceleration),
+            int(start_bow),
+            int(end_bow)
+        }
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number!=0:
+            raise MachineError("Unable to set acceleration settings")
 
 
 class _MachineConnection:

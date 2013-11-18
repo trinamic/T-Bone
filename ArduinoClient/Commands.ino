@@ -127,7 +127,7 @@ void onAccelerationSetttings() {
     messenger.sendCmdArg(motors[motor].aMax);
     messenger.sendCmdArg(motors[motor].dMax);
     messenger.sendCmdArg(motors[motor].startBow);
-    messenger.sendCmdArg(motors[motor].startBow);
+    messenger.sendCmdArg(motors[motor].endBow);
     messenger.sendCmdEnd();
     return;
   }
@@ -152,13 +152,22 @@ void onAccelerationSetttings() {
   }
   const __FlashStringHelper* error = setAccelerationSetttings(motor, aMax, dMax, startBow, endBow);
   if (error==NULL) {
+    Serial.print(F("Motor "));
+    Serial.print(motor);
+    Serial.print(F(": aMax="));
+    Serial.print(aMax);
+    Serial.print(F(", dMax="));
+    Serial.print(dMax);
+    Serial.print(F(": startBow="));
+    Serial.print(aMax);
+    Serial.print(F(", endBow="));
+    Serial.print(aMax);
     messenger.sendCmd(kOK,F("Ramp Bows set"));
   } 
   else {
     messenger.sendCmd(kError,error);
   }
 }
-
 
 void onMove() {
   char motor = decodeMotorNumber();

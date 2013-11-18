@@ -17,9 +17,9 @@ class Printer():
         self.x_pos = None
         self.y_pos = None
         self.x_axis_max_speed = None
-        self.x_axis_max_aceleration = None
+        self.x_axis_max_acceleration = None
         self.y_axis_max_speed = None
-        self.y_axis_max_aceleration = None
+        self.y_axis_max_acceleration = None
         self.current_speed = 0
 
         #finally create and conect the machine
@@ -32,17 +32,17 @@ class Printer():
 
         x_axis_config = config["x-axis"]
         self.x_axis_motor = x_axis_config["motor"]
-        self.set_current(x_axis_config)
+        self.configure_axis_motor(x_axis_config)
         self.x_axis_scale = x_axis_config["steps-per-mm"]
         self.x_axis_max_speed = x_axis_config["max-speed"]
-        self.x_axis_max_aceleration = x_axis_config["max-acceleration"]
+        self.x_axis_max_acceleration = x_axis_config["max-acceleration"]
 
         y_axis_config = config["y-axis"]
         self.y_axis_motor = y_axis_config["motor"]
-        self.set_current(y_axis_config)
+        self.configure_axis_motor(y_axis_config)
         self.y_axis_scale = y_axis_config["steps-per-mm"]
         self.y_axis_max_speed = y_axis_config["max-speed"]
-        self.y_axis_max_aceleration = y_axis_config["max-acceleration"]
+        self.y_axis_max_acceleration = y_axis_config["max-acceleration"]
 
         self.config = config
 
@@ -116,11 +116,15 @@ class Printer():
         if not target_speed == None:
             self.current_speed = target_speed
 
-    def set_current(self, axis_config):
+    def configure_axis_motor(self, axis_config):
         motor = axis_config["motor"]
         current = axis_config["current"]
         self.machine.set_current(motor, current)
 
+        max_acceleration = axis_config["max-acceleration"]
+        axis_scale = axis_config["steps-per-mm"]
+
+        self.machine.set_acceleration_settings(motor, max_acceleration*axis_scale)
 
 def _convert_mm_to_steps(millimeters, conversion_factor):
     if millimeters is None:
