@@ -10,7 +10,7 @@
 
 #define DEBUG
 
-#define COMMAND_QUEUE_LENGTH 2
+#define COMMAND_QUEUE_LENGTH 20
 //how many otors can be theoretically geared together
 #define MAX_GEARED_MOTORS 3
 
