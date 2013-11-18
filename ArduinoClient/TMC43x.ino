@@ -2,6 +2,10 @@
 void initialzeTMC43x() {
   //reset the quirrel
   digitalWrite(reset_squirrel, LOW);
+  
+  pinMode(start_signal_pin,INPUT);
+  digitalWrite(start_signal_pin,LOW);
+
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {
     //initialize CS pin
@@ -18,6 +22,8 @@ void initialzeTMC43x() {
   SPI.begin();
   //preconfigure the TMC43x
   for (char i=0; i<nr_of_motors;i++) {
+    write43x(motors[i].cs_pin, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+    write43x(motors[i].cs_pin, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
     setStepsPerRevolution(motors[i].cs_pin,motors[i].steps_per_revolution);
   }
@@ -43,17 +49,17 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, floa
   motors[motor_nr].endBow = endbow!=0? endbow:startbow;
   /*
  if (endbow==0) {
- endbow=startbow;
- }
- write43x(BOW_1_REGISTER,startbow);
- write43x(BOW_2_REGISTER,endbow);
- write43x(BOW_3_REGISTER,endbow);
- write43x(BOW_4_REGISTER,startbow);
- current_startbow=startbow;
- current_endbow=endbow;
- */
- return NULL;
- }
+   endbow=startbow;
+   }
+   write43x(BOW_1_REGISTER,startbow);
+   write43x(BOW_2_REGISTER,endbow);
+   write43x(BOW_3_REGISTER,endbow);
+   write43x(BOW_4_REGISTER,startbow);
+   current_startbow=startbow;
+   current_endbow=endbow;
+   */
+  return NULL;
+}
 
 const __FlashStringHelper* moveMotor(unsigned char motor_number, unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
   unsigned char cs_pin = motors[motor_number].cs_pin;
@@ -68,6 +74,7 @@ const __FlashStringHelper* moveMotor(unsigned char motor_number, unsigned long p
   Serial.println(pos);
   return NULL;
 }
+
 
 
 

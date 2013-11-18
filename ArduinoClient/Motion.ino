@@ -24,7 +24,7 @@ void checkMotion() {
         }
         gearingscount++;
       } 
-      while (gearings[gearingscount].type);
+      while (gearings[gearingscount].type == gearmotor);
       //TODO execute the movement
       is_running = true;
     } 
