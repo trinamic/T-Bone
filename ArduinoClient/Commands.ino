@@ -50,6 +50,10 @@ void onInit() {
   initialzeTMC43x();
   //start the tmc260 driver
   intializeTMC260();
+  //finally clear the command queue if there migth be some entries left
+  while(!moveQueue.isEmpty()) {
+    moveQueue.pop();
+  }
   //and we are done here
   messenger.sendCmd(kOK,F("All systems initialized"));
   Serial.println(F("Initialized"));
