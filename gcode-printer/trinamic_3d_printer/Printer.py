@@ -16,6 +16,10 @@ class Printer():
         self.y_axis_scale = None
         self.x_pos = None
         self.y_pos = None
+        self.x_axis_max_speed = None
+        self.x_axis_max_aceleration = None
+        self.y_axis_max_speed = None
+        self.y_axis_max_aceleration = None
         self.current_speed = 0
 
         #finally create and conect the machine
@@ -30,11 +34,15 @@ class Printer():
         self.x_axis_motor = x_axis_config["motor"]
         self.set_current(x_axis_config)
         self.x_axis_scale = x_axis_config["steps-per-mm"]
+        self.x_axis_max_speed = x_axis_config["max-speed"]
+        self.x_axis_max_aceleration = x_axis_config["max-acceleration"]
 
         y_axis_config = config["y-axis"]
         self.y_axis_motor = y_axis_config["motor"]
         self.set_current(y_axis_config)
         self.y_axis_scale = y_axis_config["steps-per-mm"]
+        self.y_axis_max_speed = y_axis_config["max-speed"]
+        self.y_axis_max_aceleration = y_axis_config["max-acceleration"]
 
         self.config = config
 

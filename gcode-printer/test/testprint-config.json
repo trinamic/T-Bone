@@ -2,11 +2,15 @@
     "x-axis":{
         "motor":1,
         "current":0.5,
-        "steps-per-mm":177.6123
+        "steps-per-mm":177.6123,
+        "max-speed":60,
+        "max-acceleration":30
     },
     "y-axis":{
         "motor":2 ,
         "current":0.5,
-        "steps-per-mm":177.6123
+        "steps-per-mm":177.6123,
+        "max-speed":60,
+        "max-acceleration":30
     }
 }
