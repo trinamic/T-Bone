@@ -50,6 +50,8 @@ void onInit() {
   initialzeTMC43x();
   //start the tmc260 driver
   intializeTMC260();
+  //we stop the motion anyway
+  stopMotion();
   //finally clear the command queue if there migth be some entries left
   while(!moveQueue.isEmpty()) {
     moveQueue.pop();
@@ -222,6 +224,7 @@ void onMovement() {
       messenger.sendCmdArg(-1);
       messenger.sendCmdArg(F("stopped"));
     }
+    messenger.sendCmdEnd();
   } 
   else if (movement<0) {
     //below zero means nostop the motion
@@ -229,6 +232,7 @@ void onMovement() {
       messenger.sendCmd(kError,F("there is currently no motion to stop"));
     } 
     else {
+      Serial.println(F("motion started");
       stopMotion();
     }
   } 
@@ -238,7 +242,8 @@ void onMovement() {
       messenger.sendCmd(kError,F("There is already a motion running"));
     } 
     else {
-      stopMotion();
+      Serial.println(F("motion stopped");
+      startMotion();
     }
   }
 }
@@ -275,7 +280,9 @@ void watchDogPing() {
   Serial.print(F(" of "));
   Serial.print(COMMAND_QUEUE_LENGTH);
   Serial.print(F("\tRAM:  "));
-  Serial.println(ram);
+  Serial.print(ram);
+  Serial.print(in_motion? F("\tmotion"): F("\tstopped"));
+  Serial.println();
 }
 
 void watchDogStart() {
@@ -314,6 +321,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

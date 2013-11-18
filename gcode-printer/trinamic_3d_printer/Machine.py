@@ -73,12 +73,12 @@ class Machine():
             command_buffer_length = int(reply.arguments[0])
             command_max_buffer_length = int(reply.arguments[1])
             command_buffer_free = command_max_buffer_length - command_buffer_length
-            command_queue_running = reply.arguments[2] > 1
-            if not command_queue_running and command_buffer_length > _min_command_buffer:
+            command_queue_running = int(reply.arguments[2]) > 1
+            if (not command_queue_running) and command_buffer_length > _min_command_buffer:
                 start_command = MachineCommand()
                 start_command.command_number = 11
                 start_command.arguments = [1]
-                reply = self.machine_connection.send_command(command)
+                reply = self.machine_connection.send_command(start_command)
                 #TODO and did that work??
             if command_queue_running and  command_buffer_free<= _max_command_buffer:
                 buffer_free=False
@@ -87,11 +87,12 @@ class Machine():
                     time.sleep(0.1)
                     info_command = MachineCommand()
                     info_command.command_number = 31
-                    reply = self.machine_connection.send_command(command)
+                    reply = self.machine_connection.send_command(info_command)
                     command_buffer_length = int(reply.arguments[0])
                     command_max_buffer_length = int(reply.arguments[1])
                     command_buffer_free = command_max_buffer_length - command_buffer_length
-                    buffer_free = (command_buffer_free < _min_command_buffer)
+                    buffer_free = (command_buffer_free > _max_command_buffer)
+                    _logger.debug("waiting for free buffer")
         else:
         #while self.machine_connection.internal_queue_length > 0:
             pass # just wait TODO timeout??
