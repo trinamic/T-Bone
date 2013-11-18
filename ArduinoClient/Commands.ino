@@ -177,11 +177,11 @@ void onMove() {
   move.data.move.vmax = vMax;
   int gearings=0;
   do {
-    motor = decodeMotorNumber();
+    motor = messenger.readIntArg();
     float gearingFactor =  messenger.readFloatArg();
     if (motor!=0 && gearing!=0) {
       gearing[gearings].type=gearmotor;
-      gearing[gearings].motor=motor;
+      gearing[gearings].motor=motor - 1;
       gearing[gearings].data.follow.gearing=gearingFactor;
       gearings++;
     }  
