@@ -15,16 +15,6 @@ _commandEndMatcher = re.compile(";")    #needed to search for command ends
 _logger = logging.getLogger(__name__)
 
 
-def matcher(buff):
-    pass
-
-
-class MachineError(Exception):
-    def __init__(self, msg, additional_info):
-        self.msg = msg
-        self.additional_info = additional_info
-
-
 class Machine():
     def __init__(self, serialport=None):
         if serialport is None:
@@ -32,7 +22,8 @@ class Machine():
         self.serialport = serialport
         self.remaining_buffer = ""
         self.machine_connection = None
-
+        self.command_queue = Queue()
+        self.batch_mode = False
 
     def connect(self):
         if not self.machine_connection:
@@ -71,11 +62,15 @@ class Machine():
             for geared_motor in geared_motors:
                 command.arguments.append(int(geared_motor['motor']))
                 command.arguments.append(float(geared_motors['gearing']))
-        #todo this cannot work - we should block until the queue length is big enough
+                #todo this cannot work - we should block until the queue length is big enough
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
             raise MachineError("Unable to set motor current", reply)
-
+        if self.batch_mode:
+            pass
+        else:
+            while self.machine_connection.internal_queue_length > 0:
+                pass # just wait TODO timeout??
 
 
 class _MachineConnection:
@@ -211,3 +206,9 @@ class MachineCommand():
             result += ": "
             result += str(self.arguments)
         return result
+
+
+class MachineError(Exception):
+    def __init__(self, msg, additional_info):
+        self.msg = msg
+        self.additional_info = additional_info
