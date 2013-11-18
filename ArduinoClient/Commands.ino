@@ -232,7 +232,7 @@ void onMovement() {
       messenger.sendCmd(kError,F("there is currently no motion to stop"));
     } 
     else {
-      Serial.println(F("motion started");
+      Serial.println(F("motion stoped"));
       stopMotion();
     }
   } 
@@ -242,7 +242,7 @@ void onMovement() {
       messenger.sendCmd(kError,F("There is already a motion running"));
     } 
     else {
-      Serial.println(F("motion stopped");
+      Serial.println(F("motion started"));
       startMotion();
     }
   }
@@ -281,7 +281,7 @@ void watchDogPing() {
   Serial.print(COMMAND_QUEUE_LENGTH);
   Serial.print(F("\tRAM:  "));
   Serial.print(ram);
-  Serial.print(in_motion? F("\tmotion"): F("\tstopped"));
+  Serial.print(in_motion? F("\tin motion"): F("\tstopped"));
   Serial.println();
 }
 
