@@ -32,7 +32,7 @@ squirrel motors[2] = {
   {12,2,1, TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), DEFAULT_STEPS_PER_REVOLUTION, DEFAULT_ACCELERATION, DEFAULT_ACCELERATION, DEFAULT_BOW, DEFAULT_BOW}
 };
 
-volatile boolean currently_running = false;
+boolean in_motion = false;
 
 //config
 

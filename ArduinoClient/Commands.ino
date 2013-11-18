@@ -204,7 +204,7 @@ void onMovement() {
   if (movement==0) {
     messenger.sendCmdStart(kCommands);
     //just give out the current state of movement
-    if (currently_running) {
+    if (in_motion) {
       messenger.sendCmdArg(1);
       messenger.sendCmdArg(F("running"));
     } 
@@ -215,7 +215,7 @@ void onMovement() {
   } 
   else if (movement<0) {
     //below zero means nostop the motion
-    if (!currently_running) {
+    if (!in_motion) {
       messenger.sendCmd(kError,F("there is currently no motion to stop"));
     } 
     else {
@@ -224,7 +224,7 @@ void onMovement() {
   } 
   else {
     //a new movement is started
-    if (currently_running) {
+    if (in_motion) {
       messenger.sendCmd(kError,F("There is already a motion running"));
     } 
     else {
