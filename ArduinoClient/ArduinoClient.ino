@@ -32,6 +32,8 @@ squirrel motors[2] = {
   {12,2,1, TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), DEFAULT_STEPS_PER_REVOLUTION, DEFAULT_ACCELERATION, DEFAULT_ACCELERATION, DEFAULT_BOW, DEFAULT_BOW}
 };
 
+volatile boolean currently_running = false;
+
 //config
 
 QueueArray<movement> moveQueue = QueueArray<movement>(COMMAND_QUEUE_LENGTH);
@@ -65,6 +67,8 @@ unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
 void loop() {
+  //move if neccessary
+  checkMotion();
   // Process incoming serial data, and perform callbacks
   messenger.feedinSerialData();
   if (watchDogMetro.check()) {

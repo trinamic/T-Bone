@@ -10,6 +10,7 @@ enum {
   kInit=9,
   //Kommandos die Aktionen auslösen
   kMove = 10,
+  kMovement = 11, //controls if a new movement is started or a running one ist stopped
   //Kommandos zur Information
   kPos = 30,
   kCommands = 31,
@@ -30,6 +31,7 @@ void attachCommandCallbacks() {
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
   messenger.attach(kAccelerationSetttings, onAccelerationSetttings);
   messenger.attach(kMove, onMove);
+  messenger.attach(kMovement, onMovement);
   messenger.attach(kPos, onPosition);
   messenger.attach(kCommands, onCommands);
 }
@@ -195,8 +197,41 @@ void onMove() {
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
   messenger.sendCmdArg(F("command added"));
   messenger.sendCmdEnd();
-
 } 
+
+void onMovement() {
+  char movement = messenger.readIntArg();
+  if (movement==0) {
+    messenger.sendCmdStart(kCommands);
+    //just give out the current state of movement
+    if (currently_running) {
+      messenger.sendCmdArg(1);
+      messenger.sendCmdArg(F("running"));
+    } 
+    else {
+      messenger.sendCmdArg(-1);
+      messenger.sendCmdArg(F("stopped"));
+    }
+  } 
+  else if (movement<0) {
+    //below zero means nostop the motion
+    if (!currently_running) {
+      messenger.sendCmd(kError,F("there is currently no motion to stop"));
+    } 
+    else {
+      stopMotion();
+    }
+  } 
+  else {
+    //a new movement is started
+    if (currently_running) {
+      messenger.sendCmd(kError,F("There is already a motion running"));
+    } 
+    else {
+      stopMotion();
+    }
+  }
+}
 
 void onPosition() {
   char motor = decodeMotorNumber();
@@ -231,7 +266,6 @@ void watchDogPing() {
   Serial.print(COMMAND_QUEUE_LENGTH);
   Serial.print(F("\tRAM:  "));
   Serial.println(ram);
-
 }
 
 void watchDogStart() {
@@ -270,6 +304,10 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
+
+
 
 
 
