@@ -67,7 +67,7 @@ class Machine():
                 #todo this cannot work - we should block until the queue length is big enough
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-            raise MachineError("Unable to set motor current", reply)
+            raise MachineError("Unable to set move motor", reply)
         if self.batch_mode:
             pass
         else:
