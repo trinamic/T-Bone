@@ -121,7 +121,7 @@ void onAccelerationSetttings() {
   if (motor<0) {
     return;
   }
-  float aMax = messenger.readFloatArg();
+  double aMax = messenger.readFloatArg();
   if (aMax==0) {
     messenger.sendCmdStart(kAccelerationSetttings);
     messenger.sendCmdArg(motors[motor].aMax);
@@ -135,7 +135,7 @@ void onAccelerationSetttings() {
     messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
     return;
   }
-  float dMax = messenger.readFloatArg();
+  double dMax = messenger.readFloatArg();
   if (dMax<0) {
     messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
     return;
@@ -180,7 +180,7 @@ void onMove() {
     messenger.sendCmd (kError,F("cannot move beyond home"));
     return;
   }
-  float vMax = messenger.readFloatArg();
+  double vMax = messenger.readFloatArg();
   if (vMax<=0) {
     Serial.println(vMax);
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
@@ -189,20 +189,30 @@ void onMove() {
   movement move;
   movement gearing[MAX_GEARED_MOTORS];
   move.type = movemotor;
+  move.motor=motor;
   move.data.move.target=newPos;
   move.data.move.vmax = vMax;
   int gearings=0;
+  Serial.print(F("Adding movement for motor "));
+  Serial.print(motor,DEC);
+  Serial.print(F(" to "));
+  Serial.print(newPos);
   do {
     motor = messenger.readIntArg();
-    float gearingFactor =  messenger.readFloatArg();
+    double gearingFactor =  messenger.readFloatArg();
     if (motor!=0 && gearing!=0) {
       gearing[gearings].type=gearmotor;
       gearing[gearings].motor=motor - 1;
       gearing[gearings].data.follow.gearing=gearingFactor;
       gearings++;
+      Serial.print(F(", gearing motor "));
+      Serial.print(gearmotor,DEC);
+      Serial.print(F(" by "));
+      Serial.print(gearingFactor);
     }  
   } 
   while (motor!=0);
+  Serial.println();
   if (moveQueue.count()+gearings+1>COMMAND_QUEUE_LENGTH) {
     messenger.sendCmd(kError,F("Queue is full"));
     return;
@@ -333,6 +343,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

@@ -15,10 +15,6 @@
 #define MAX_GEARED_MOTORS 3
 
 //standards
-const char reset_squirrel = 4;
-const char start_signal_pin = 7;
-
-
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define CLOCK_FREQUENCY 16000000ul
@@ -33,6 +29,8 @@ squirrel motors[2] = {
   {8,3,0, TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),DEFAULT_STEPS_PER_REVOLUTION, DEFAULT_ACCELERATION, DEFAULT_ACCELERATION, DEFAULT_BOW, DEFAULT_BOW },
   {12,2,1, TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), DEFAULT_STEPS_PER_REVOLUTION, DEFAULT_ACCELERATION, DEFAULT_ACCELERATION, DEFAULT_BOW, DEFAULT_BOW}
 };
+const char reset_squirrel = 4;
+const char start_signal_pin = 7;
 
 boolean in_motion = false;
 

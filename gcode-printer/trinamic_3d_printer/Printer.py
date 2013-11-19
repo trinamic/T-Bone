@@ -108,7 +108,7 @@ class Printer():
             else:
                 x_gearing = float(delta_x) / float(delta_y)
                 _logger.debug("Moving Y axis to " + str(y_step) + " gearing y by " + str(x_gearing))
-                self.machine.move_to(self.x_axis_motor, x_step, move_speed, [{
+                self.machine.move_to(self.y_axis_motor, y_step, move_speed, [{
                     'motor': self.x_axis_motor,
                     'gearing': x_gearing
                 }])

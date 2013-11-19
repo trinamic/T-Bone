@@ -155,9 +155,9 @@ class _MachineConnection:
         if command.arguments:
             self.machine_serial.write(",")
             for param in command.arguments[:-1]:
-                self.machine_serial.write(str(param))
+                self.machine_serial.write(repr(param))
                 self.machine_serial.write(",")
-            self.machine_serial.write(str(command.arguments[-1]))
+            self.machine_serial.write(repr(command.arguments[-1]))
         self.machine_serial.write(";\n")
         self.machine_serial.flush()
         try:
