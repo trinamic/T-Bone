@@ -119,7 +119,7 @@ void onAccelerationSetttings() {
   if (motor<0) {
     return;
   }
-  long aMax = messenger.readIntArg();
+  long aMax = messenger.readLongArg();
   if (aMax==0) {
     messenger.sendCmdStart(kAccelerationSetttings);
     messenger.sendCmdArg(motors[motor].aMax);
@@ -133,7 +133,7 @@ void onAccelerationSetttings() {
     messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
     return;
   }
-  long dMax = messenger.readIntArg();
+  long dMax = messenger.readLongArg();
   if (dMax<0) {
     messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
     return;

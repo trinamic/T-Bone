@@ -4,13 +4,13 @@
         "current":0.5,
         "steps-per-mm":177.6123,
         "max-speed":60,
-        "max-acceleration":30
+        "max-acceleration":300
     },
     "y-axis":{
         "motor":2 ,
         "current":0.5,
         "steps-per-mm":177.6123,
         "max-speed":60,
-        "max-acceleration":30
+        "max-acceleration":300
     }
 }
