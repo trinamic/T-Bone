@@ -153,7 +153,7 @@ void onAccelerationSetttings() {
   const __FlashStringHelper* error = setAccelerationSetttings(motor, aMax, dMax, startBow, endBow);
   if (error==NULL) {
     Serial.print(F("Motor "));
-    Serial.print(motor);
+    Serial.print(motor,DEC);
     Serial.print(F(": aMax="));
     Serial.print(aMax);
     Serial.print(F(", dMax="));
@@ -162,6 +162,7 @@ void onAccelerationSetttings() {
     Serial.print(aMax);
     Serial.print(F(", endBow="));
     Serial.print(aMax);
+    Serial.println();
     messenger.sendCmd(kOK,F("Ramp Bows set"));
   } 
   else {
@@ -242,6 +243,7 @@ void onMovement() {
     } 
     else {
       Serial.println(F("motion stoped"));
+      messenger.sendCmd(kOK,F("motion stoped"));
       stopMotion();
     }
   } 
@@ -252,6 +254,7 @@ void onMovement() {
     } 
     else {
       Serial.println(F("motion started"));
+      messenger.sendCmd(kOK,F("motion started"));
       startMotion();
     }
   }
@@ -330,6 +333,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

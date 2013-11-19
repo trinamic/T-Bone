@@ -73,8 +73,8 @@ class Machine():
             command_buffer_length = int(reply.arguments[0])
             command_max_buffer_length = int(reply.arguments[1])
             command_buffer_free = command_max_buffer_length - command_buffer_length
-            command_queue_running = int(reply.arguments[2]) > 1
-            if (not command_queue_running) and command_buffer_length > _min_command_buffer:
+            command_queue_running = int(reply.arguments[2]) > 0
+            if not command_queue_running and command_buffer_length > _min_command_buffer:
                 start_command = MachineCommand()
                 start_command.command_number = 11
                 start_command.arguments = [1]
@@ -107,12 +107,13 @@ class Machine():
             end_bow = start_bow
         command = MachineCommand()
         command.command_number = 3
-        command.arguments = {
+        command.arguments = [
+            int(motor),
             int(max_acceleration),
             int(max_deceleration),
             int(start_bow),
             int(end_bow)
-        }
+        ]
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number!=0:
             raise MachineError("Unable to set acceleration settings")
@@ -243,6 +244,8 @@ class MachineCommand():
                 result = "Error "
             elif self.command_number == -128:
                 result = "Keep Alive Ping "
+            else:
+                result = "Unkown "
         else:
             result = "Command "
         if self.command_number is not None:
