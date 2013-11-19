@@ -98,9 +98,9 @@ class Printer():
             self.machine.move_to(self.y_axis_motor, y_step, y_speed)
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
-            if (delta_x > delta_y):
+            if abs(delta_x) > abs(delta_y):
                 y_gearing = float(delta_y) / float(delta_x)
-                _logger.debug("Moving X axis to " + str(x_step) + " gearing y by " + str(y_gearing))
+                _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_gearing))
                 self.machine.move_to(self.x_axis_motor, x_step, x_speed, [{
                     'motor': self.y_axis_motor,
                     'gearing': y_gearing
@@ -108,7 +108,7 @@ class Printer():
                 #move
             else:
                 x_gearing = float(delta_x) / float(delta_y)
-                _logger.debug("Moving Y axis to " + str(y_step) + " gearing y by " + str(x_gearing))
+                _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_gearing))
                 self.machine.move_to(self.y_axis_motor, y_step, y_speed, [{
                     'motor': self.x_axis_motor,
                     'gearing': x_gearing
