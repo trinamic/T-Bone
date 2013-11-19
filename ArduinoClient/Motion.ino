@@ -31,8 +31,8 @@ void checkMotion() {
 
       byte geared_motors=0;
       for (char i=0;i<gearingscount;i++) {
-      Serial.print(F("gearing motor "));
-      Serial.println(gearings[i].motor,DEC);
+        Serial.print(F("gearing motor "));
+        Serial.println(gearings[i].motor,DEC);
         char geared_motor = gearings[i].motor;
         //all motors mentioned here are configured
         float gear_ratio = gearings[i].data.follow.gearing;
@@ -46,7 +46,7 @@ void checkMotion() {
         );  //and due to a bug we NEED an internal start signal 
         if (geared_motors && _BV(i) == 0) {
           //unconfigure non geared motors
-        write43x(motors[i].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0));
+          write43x(motors[i].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0));
         }
       }
       //finally configure the running motor
@@ -70,6 +70,7 @@ void checkMotion() {
 void target_reached_handler() {
   is_running=false;
 }
+
 
 
 
