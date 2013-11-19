@@ -115,7 +115,7 @@ class Machine():
             int(end_bow)
         ]
         reply = self.machine_connection.send_command(command)
-        if not reply or reply.command_number!=0:
+        if not reply or reply.command_number != 0:
             raise MachineError("Unable to set acceleration settings")
 
 
@@ -257,6 +257,6 @@ class MachineCommand():
 
 
 class MachineError(Exception):
-    def __init__(self, msg, additional_info):
+    def __init__(self, msg, additional_info=None):
         self.msg = msg
         self.additional_info = additional_info

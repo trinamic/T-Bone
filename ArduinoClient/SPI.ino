@@ -17,7 +17,7 @@ long send43x(unsigned char cs_squirrel, unsigned char tmc43x_register, unsigned 
   //select the TMC driver
   digitalWrite(cs_squirrel,LOW);
 
-#ifdef DEBUG
+#ifdef DEBUG_SPI
   Serial.print("Sending ");
   Serial.println(datagram,HEX);
 #endif
@@ -33,7 +33,7 @@ long send43x(unsigned char cs_squirrel, unsigned char tmc43x_register, unsigned 
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram) & 0xff);
 
-#ifdef DEBUG
+#ifdef DEBUG_SPI
   Serial.print("Status :");
   Serial.println(status,BIN);
   Serial.print("Received ");

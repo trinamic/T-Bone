@@ -2,7 +2,7 @@
 void initialzeTMC43x() {
   //reset the quirrel
   digitalWrite(reset_squirrel, LOW);
-  
+
   pinMode(start_signal_pin,INPUT);
   digitalWrite(start_signal_pin,LOW);
 
@@ -29,40 +29,43 @@ void initialzeTMC43x() {
   }
 }
 
-const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_number, unsigned int steps) {
+const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigned int steps) {
   //get the motor number
-  unsigned char cs_pin = motors[motor_number].cs_pin;
+  unsigned char cs_pin = motors[motor_nr].cs_pin;
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps<<4;
   write43x(cs_pin,STEP_CONF_REGISTER,motorconfig);
-  motors[motor_number].steps_per_revolution = steps;
+  motors[motor_nr].steps_per_revolution = steps;
   return NULL;
 }
 
 
-const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, float aMax, float dMax,long startbow, long endbow) {
+const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long aMax, long dMax,long startbow, long endbow) {
+  //get the motor number
+  unsigned char cs_pin = motors[motor_nr].cs_pin;
   //TODO some validity settings??
   motors[motor_nr].aMax = aMax;
   motors[motor_nr].dMax = dMax!=0? dMax:aMax;
   motors[motor_nr].startBow = startbow;
-  motors[motor_nr].endBow = endbow!=0? endbow:startbow;
-  /*
- if (endbow==0) {
-   endbow=startbow;
-   }
-   write43x(BOW_1_REGISTER,startbow);
-   write43x(BOW_2_REGISTER,endbow);
-   write43x(BOW_3_REGISTER,endbow);
-   write43x(BOW_4_REGISTER,startbow);
-   current_startbow=startbow;
-   current_endbow=endbow;
-   */
+  motors[motor_nr].endBow = (endbow!=0)? endbow:startbow;
+
+  if (endbow==0) {
+    endbow=startbow;
+  }
+
+  write43x(cs_pin, A_MAX_REGISTER,motors[motor_nr].aMax); //set maximum acceleration
+  write43x(cs_pin, D_MAX_REGISTER,motors[motor_nr].dMax); //set maximum deceleration
+  write43x(cs_pin,BOW_1_REGISTER,motors[motor_nr].startBow);
+  write43x(cs_pin,BOW_2_REGISTER,motors[motor_nr].endBow);
+  write43x(cs_pin,BOW_3_REGISTER,motors[motor_nr].endBow);
+  write43x(cs_pin,BOW_4_REGISTER,motors[motor_nr].startBow);
+
   return NULL;
 }
 
-const __FlashStringHelper* moveMotor(unsigned char motor_number, unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
-  unsigned char cs_pin = motors[motor_number].cs_pin;
+const __FlashStringHelper* moveMotor(unsigned char motor_nr, unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
+  unsigned char cs_pin = motors[motor_nr].cs_pin;
   if (dMax==0) {
     dMax = aMax;
   }
@@ -74,6 +77,7 @@ const __FlashStringHelper* moveMotor(unsigned char motor_number, unsigned long p
   Serial.println(pos);
   return NULL;
 }
+
 
 
 
