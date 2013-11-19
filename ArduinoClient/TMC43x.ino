@@ -55,11 +55,17 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
   }
 
   write43x(cs_pin, A_MAX_REGISTER,motors[motor_nr].aMax); //set maximum acceleration
+  write43x(cs_pin, SH_A_MAX_REGISTER,motors[motor_nr].aMax); //set maximum acceleration
   write43x(cs_pin, D_MAX_REGISTER,motors[motor_nr].dMax); //set maximum deceleration
+  write43x(cs_pin, SH_D_MAX_REGISTER,motors[motor_nr].dMax); //set maximum deceleration
   write43x(cs_pin,BOW_1_REGISTER,motors[motor_nr].startBow);
+  write43x(cs_pin,SH_BOW_1_REGISTER,motors[motor_nr].startBow);
   write43x(cs_pin,BOW_2_REGISTER,motors[motor_nr].endBow);
+  write43x(cs_pin,SH_BOW_2_REGISTER,motors[motor_nr].endBow);
   write43x(cs_pin,BOW_3_REGISTER,motors[motor_nr].endBow);
+  write43x(cs_pin,SH_BOW_3_REGISTER,motors[motor_nr].endBow);
   write43x(cs_pin,BOW_4_REGISTER,motors[motor_nr].startBow);
+  write43x(cs_pin,SH_BOW_4_REGISTER,motors[motor_nr].startBow);
 
   return NULL;
 }

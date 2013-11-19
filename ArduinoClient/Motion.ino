@@ -1,8 +1,10 @@
-volatile boolean is_running = false;
+volatile boolean next_move_prepared = false;
+volatile boolean prepare_shaddow_registers = false;
 
 void startMotion() {
   in_motion = true;
-  is_running=false; //TODO in theory this is not needed  
+  next_move_prepared=false; //TODO in theory this is not needed  
+  prepare_shaddow_registers = false;
   //TODO initialize drivers??
 }
 
@@ -11,7 +13,7 @@ void stopMotion() {
 }
 
 void checkMotion() {
-  if (in_motion && !is_running) {
+  if (in_motion && !next_move_prepared) {
     if (moveQueue.count()>0) {
 
       //analysze the movement (nad take a look at the next
@@ -61,13 +63,22 @@ void checkMotion() {
       for (char i; i<nr_of_motors;i++) {
         if (i!=moved_motor) {
           write43x(motors[i].cs_pin, GENERAL_CONFIG_REGISTER, _BV(6)); //direct values and no clock
-          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+          if (!prepare_shaddow_registers) {
+            write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+              | _BV(0) //xtarget requires start
             | _BV(3) //gear ration cahnge requries start
-          | _BV(0) //xtarget requires start
-          | _BV(1) //vmax requires start
-          | _BV(5) //external start is an start
-          | _BV(10)//immediate start
-          );  //and due to a bug we NEED an internal start signal 
+            | _BV(5) //external start is an start
+            | _BV(10)//immediate start
+            );  //and due to a bug we NEED an internal start signal
+          } 
+          else {
+            write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+              | _BV(0)//due to a bug we NEED an internal start signal
+            | _BV(3) //gear ration requires start
+            | _BV(5) //external start is an event
+            | _BV(10) //we start w/o timer 
+            );   
+          } 
           if (geared_motors && _BV(i) == 0) {
             //unconfigure non geared motors
             write43x(motors[i].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0));
@@ -84,26 +95,50 @@ void checkMotion() {
       Serial.println();
 #endif
 
+      boolean send_start=false;
       write43x(motors[moved_motor].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
-      write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
-      write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER, 0
-        | _BV(0) //xtarget requires start
-      | _BV(1) //vmax requires start
-      | _BV(5) //external start is an start
-      | _BV(10)//immediate start
-      );   
+      if (!prepare_shaddow_registers) {
+        write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
+        write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER, 0
+          | _BV(0) //xtarget requires start
+        | _BV(1) //vmax requires start
+        | _BV(5) //external start is an start
+        | _BV(10)//immediate start
+        );   
+        //if the next move is in the same direction prepare the shadow registers
+        prepare_shaddow_registers = nextMotorWillBeSame;  
+        next_move_prepared = !nextMotorWillBeSame;
+        //we need to generate a start event
+        send_start=true;
+      } 
+      else {
+        write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
+        write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER, 0
+          | _BV(0) //from now on listen to your own start signal
+        | _BV(4)  //use shaddow motion profiles
+        | _BV(5)  //target reached triggers start event
+        | _BV(6)  //target reached triggers start event
+        | _BV(10) //immediate start
+        | _BV(11)  // the shaddow registers cycle
+        );   
+        //if the next move is in the same direction prepare the shadow registers
+        prepare_shaddow_registers = nextMotorWillBeSame;  
+        next_move_prepared = true;
+      }
+      //and write the target 
+      write43x(motors[moved_motor].cs_pin, X_TARGET_REGISTER,move.data.move.target);
 
       //register the interrupt handler for this motor
       attachInterrupt(motors[moved_motor].target_reached_interrupt_nr , target_reached_handler, RISING);
-      //ok we know that we are running
-      is_running = true;
-      //and finyll write the target to initiate the movement
-      write43x(motors[moved_motor].cs_pin, X_TARGET_REGISTER,move.data.move.target);
-      //and carefully trigger the start pin 
-      digitalWrite(start_signal_pin,HIGH);
-      pinMode(start_signal_pin,OUTPUT);
-      digitalWrite(start_signal_pin,LOW);
-      pinMode(start_signal_pin,INPUT);
+
+      if (send_start) {
+        Serial.println("Start");
+        //and carefully trigger the start pin 
+        digitalWrite(start_signal_pin,HIGH);
+        pinMode(start_signal_pin,OUTPUT);
+        digitalWrite(start_signal_pin,LOW);
+        pinMode(start_signal_pin,INPUT);
+      }
     } 
     else {
       //we are finished here
@@ -113,8 +148,25 @@ void checkMotion() {
 
 
 void target_reached_handler() {
-  is_running=false;
+  Serial.println("Next");
+  next_move_prepared=false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

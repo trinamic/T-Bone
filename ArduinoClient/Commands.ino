@@ -215,7 +215,9 @@ void onMove() {
     }  
   } 
   while (motor!=0);
+#ifdef DEBUG_MOTOR_QUEUE
   Serial.println();
+#endif
   if (moveQueue.count()+gearings+1>COMMAND_QUEUE_LENGTH) {
     messenger.sendCmd(kError,F("Queue is full"));
     return;
