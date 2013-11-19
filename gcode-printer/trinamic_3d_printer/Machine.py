@@ -12,7 +12,7 @@ _default_serial_port = "/dev/ttyO1"
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
 _min_command_buffer = 10 # how much arduino buffer needs to be filled before we start
-_max_command_buffer = 5 # how much arduino buffer to preserve
+_max_command_buffer = 3 # how much arduino buffer to preserve
 #todo come up with better names!
 
 _logger = logging.getLogger(__name__)

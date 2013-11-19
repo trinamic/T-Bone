@@ -38,8 +38,8 @@ void checkMotion() {
       byte geared_motors=0;
       for (char i=0;i<gearingscount;i++) {
 #ifdef DEBUG_MOTION
-         Serial.print(F("gearing motor "));
-        Serial.println(gearings[i].motor,DEC);
+        Serial.print(F(", gearing motor "));
+        Serial.print(gearings[i].motor,DEC);
         Serial.print(F(" by "));
         Serial.print(gearings[i].data.follow.gearing,DEC);
 #endif
@@ -60,12 +60,24 @@ void checkMotion() {
         }
       }
 
-      Serial.println();
       //finally configure the running motor
       char moved_motor = move.motor;
       write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER,
       _BV(10) //immediate start
       ); //from now on listen to your own start signal
+
+      boolean nextMotorWillBeSame = false;
+      if (!moveQueue.isEmpty()) {
+        movement nextMove = moveQueue.peek();
+        char nextMotor = nextMove.motor;
+        nextMotorWillBeSame = (nextMotor==moved_motor);
+      }
+#ifdef DEBUG_MOTION
+      if (nextMotorWillBeSame) {
+        Serial.println(F(" - next will be same motor"));
+      }
+      Serial.println();
+#endif
 
       write43x(motors[moved_motor].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
       write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
@@ -87,6 +99,7 @@ void checkMotion() {
 void target_reached_handler() {
   is_running=false;
 }
+
 
 
 
