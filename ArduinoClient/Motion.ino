@@ -90,7 +90,7 @@ void checkMotion() {
 
 #ifdef DEBUG_MOTION
       if (nextMotorWillBeSame) {
-        Serial.println(F(" - next will be same motor"));
+        Serial.print(F(" - next will be same motor"));
       }
       Serial.println();
 #endif
