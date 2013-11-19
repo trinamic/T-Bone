@@ -17,12 +17,14 @@ void checkMotion() {
       //TODO don'T we habve to wait until the queue contains a complete move command??
       movement move = moveQueue.pop();
       movement gearings[MAX_GEARED_MOTORS];
+#ifdef DEBUG_MOTION
       Serial.print(F("Moving motor "));
       Serial.print(move.motor,DEC);
       Serial.print(F(" to "));
       Serial.print(move.data.move.target);
       Serial.print(F(" at "));
       Serial.print(move.data.move.vmax);
+#endif
       int gearingscount = 0;
       do {
         gearings[gearingscount] = moveQueue.peek();
@@ -35,10 +37,12 @@ void checkMotion() {
 
       byte geared_motors=0;
       for (char i=0;i<gearingscount;i++) {
-        Serial.print(F("gearing motor "));
+#ifdef DEBUG_MOTION
+         Serial.print(F("gearing motor "));
         Serial.println(gearings[i].motor,DEC);
         Serial.print(F(" by "));
         Serial.print(gearings[i].data.follow.gearing,DEC);
+#endif
         char geared_motor = gearings[i].motor;
         //all motors mentioned here are configured
         float gear_ratio = gearings[i].data.follow.gearing;

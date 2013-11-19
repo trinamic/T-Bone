@@ -45,7 +45,6 @@ void OnUnknownCommand() {
 }
 
 void onInit() {
-  Serial.println(F("Initializing"));
   //initialize the 43x
   initialzeTMC43x();
   //start the tmc260 driver
@@ -58,7 +57,6 @@ void onInit() {
   }
   //and we are done here
   messenger.sendCmd(kOK,F("All systems initialized"));
-  Serial.println(F("Initialized"));
 }
 
 //Motor Strom einstellen
@@ -152,7 +150,7 @@ void onAccelerationSetttings() {
   }
   const __FlashStringHelper* error = setAccelerationSetttings(motor, aMax, dMax, startBow, endBow);
   if (error==NULL) {
-    Serial.print(F("Motor "));
+#ifdef DEBUG_MOTOR_CONTFIG    Serial.print(F("Motor "));
     Serial.print(motor,DEC);
     Serial.print(F(": aMax="));
     Serial.print(aMax);
@@ -163,6 +161,7 @@ void onAccelerationSetttings() {
     Serial.print(F(", endBow="));
     Serial.print(aMax);
     Serial.println();
+#endif    
     messenger.sendCmd(kOK,F("Ramp Bows set"));
   } 
   else {
@@ -193,10 +192,12 @@ void onMove() {
   move.data.move.target=newPos;
   move.data.move.vmax = vMax;
   int gearings=0;
+#ifdef DEBUG_MOTOR_QUEUE
   Serial.print(F("Adding movement for motor "));
   Serial.print(motor,DEC);
   Serial.print(F(" to "));
   Serial.print(newPos);
+#endif
   do {
     motor = messenger.readIntArg();
     double gearingFactor =  messenger.readFloatArg();
@@ -205,10 +206,12 @@ void onMove() {
       gearing[gearings].motor=motor - 1;
       gearing[gearings].data.follow.gearing=gearingFactor;
       gearings++;
+#ifdef DEBUG_MOTOR_QUEUE
       Serial.print(F(", gearing motor "));
       Serial.print(gearmotor,DEC);
       Serial.print(F(" by "));
       Serial.print(gearingFactor);
+#endif
     }  
   } 
   while (motor!=0);
@@ -300,6 +303,7 @@ void watchDogPing() {
   messenger.sendCmdArg(ram);
   messenger.sendCmdArg(F("still alive"));
   messenger.sendCmdEnd();
+#ifdef DEBUG_STATUS
   Serial.print(F("Queue: "));
   Serial.print(moveQueue.count());
   Serial.print(F(" of "));
@@ -308,6 +312,7 @@ void watchDogPing() {
   Serial.print(ram);
   Serial.print(in_motion? F("\tin motion"): F("\tstopped"));
   Serial.println();
+#endif
 }
 
 void watchDogStart() {
