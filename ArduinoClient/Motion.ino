@@ -13,8 +13,8 @@ void stopMotion() {
 void checkMotion() {
   if (in_motion && !is_running) {
     if (moveQueue.count()>0) {
-      //initiate movement
-      //TODO don'T we habve to wait until the queue contains a complete move command??
+
+      //analysze the movement (nad take a look at the next
       movement move = moveQueue.pop();
       movement gearings[MAX_GEARED_MOTORS];
 #ifdef DEBUG_MOTION
@@ -25,6 +25,8 @@ void checkMotion() {
       Serial.print(F(" at "));
       Serial.print(move.data.move.vmax);
 #endif
+      char moved_motor = move.motor;
+      //check out which momtors are geared with this
       int gearingscount = 0;
       do {
         gearings[gearingscount] = moveQueue.peek();
@@ -34,6 +36,13 @@ void checkMotion() {
         }
       } 
       while (gearings[gearingscount].type == gearmotor);
+      //ppek a look if the next movbement will use the same gearing configuration
+      boolean nextMotorWillBeSame = false;
+      if (!moveQueue.isEmpty()) {
+        movement nextMove = moveQueue.peek();
+        char nextMotor = nextMove.motor;
+        nextMotorWillBeSame = (nextMotor==moved_motor);
+      }
 
       byte geared_motors=0;
       for (char i=0;i<gearingscount;i++) {
@@ -50,28 +59,24 @@ void checkMotion() {
         geared_motor |= _BV(i);
       }
       for (char i; i<nr_of_motors;i++) {
-        write43x(motors[i].cs_pin, GENERAL_CONFIG_REGISTER, _BV(0) | _BV(1) | _BV(6)); //direct values and no clock
-        write43x(motors[i].cs_pin, START_CONFIG_REGISTER,
-        _BV(10)//immediate start
-        );  //and due to a bug we NEED an internal start signal 
-        if (geared_motors && _BV(i) == 0) {
-          //unconfigure non geared motors
-          write43x(motors[i].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0));
+        if (i!=moved_motor) {
+          write43x(motors[i].cs_pin, GENERAL_CONFIG_REGISTER, _BV(6)); //direct values and no clock
+          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+            | _BV(3) //gear ration cahnge requries start
+          | _BV(0) //xtarget requires start
+          | _BV(1) //vmax requires start
+          | _BV(5) //external start is an start
+          | _BV(10)//immediate start
+          );  //and due to a bug we NEED an internal start signal 
+          if (geared_motors && _BV(i) == 0) {
+            //unconfigure non geared motors
+            write43x(motors[i].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0));
+          }
         }
       }
 
       //finally configure the running motor
-      char moved_motor = move.motor;
-      write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER,
-      _BV(10) //immediate start
-      ); //from now on listen to your own start signal
 
-      boolean nextMotorWillBeSame = false;
-      if (!moveQueue.isEmpty()) {
-        movement nextMove = moveQueue.peek();
-        char nextMotor = nextMove.motor;
-        nextMotorWillBeSame = (nextMotor==moved_motor);
-      }
 #ifdef DEBUG_MOTION
       if (nextMotorWillBeSame) {
         Serial.println(F(" - next will be same motor"));
@@ -81,6 +86,12 @@ void checkMotion() {
 
       write43x(motors[moved_motor].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
       write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
+      write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER, 0
+        | _BV(0) //xtarget requires start
+      | _BV(1) //vmax requires start
+      | _BV(5) //external start is an start
+      | _BV(10)//immediate start
+      );   
 
       //register the interrupt handler for this motor
       attachInterrupt(motors[moved_motor].target_reached_interrupt_nr , target_reached_handler, RISING);
@@ -88,6 +99,11 @@ void checkMotion() {
       is_running = true;
       //and finyll write the target to initiate the movement
       write43x(motors[moved_motor].cs_pin, X_TARGET_REGISTER,move.data.move.target);
+      //and carefully trigger the start pin 
+      digitalWrite(start_signal_pin,HIGH);
+      pinMode(start_signal_pin,OUTPUT);
+      digitalWrite(start_signal_pin,LOW);
+      pinMode(start_signal_pin,INPUT);
     } 
     else {
       //we are finished here
@@ -99,6 +115,14 @@ void checkMotion() {
 void target_reached_handler() {
   is_running=false;
 }
+
+
+
+
+
+
+
+
 
 
 
