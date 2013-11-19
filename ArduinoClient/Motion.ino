@@ -132,7 +132,6 @@ void checkMotion() {
       attachInterrupt(motors[moved_motor].target_reached_interrupt_nr , target_reached_handler, RISING);
 
       if (send_start) {
-        Serial.println("Start");
         //and carefully trigger the start pin 
         digitalWrite(start_signal_pin,HIGH);
         pinMode(start_signal_pin,OUTPUT);
@@ -148,7 +147,6 @@ void checkMotion() {
 
 
 void target_reached_handler() {
-  Serial.println("Next");
   next_move_prepared=false;
 }
 

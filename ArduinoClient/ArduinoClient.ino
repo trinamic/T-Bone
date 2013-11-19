@@ -8,7 +8,8 @@
 #include "constants.h"
 #include "types.h"
 
-#define DEBUG_STATUS
+//#define DEBUG_MOTOR_CONTFIG
+//#define DEBUG_STATUS
 #define DEBUG_MOTION
 
 #define COMMAND_QUEUE_LENGTH 20

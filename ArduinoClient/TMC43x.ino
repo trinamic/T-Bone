@@ -46,7 +46,7 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
   unsigned char cs_pin = motors[motor_nr].cs_pin;
   //TODO some validity settings??
   motors[motor_nr].aMax = aMax;
-  motors[motor_nr].dMax = dMax!=0? dMax:aMax;
+  motors[motor_nr].dMax = (dMax)!=0? dMax:aMax;
   motors[motor_nr].startBow = startbow;
   motors[motor_nr].endBow = (endbow!=0)? endbow:startbow;
 
