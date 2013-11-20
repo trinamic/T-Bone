@@ -65,13 +65,20 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
   long startBow = motors[motor_nr].startBow;
   long endBow = motors[motor_nr].endBow;
 
-  if (factor!=1.0) {
+  if (factor==0) {
+    vMax = 0;
+    aMax = 0;
+    dMax = 0;
+    startBow = 0;
+    endBow = 0;
+  } else if (factor!=1.0) {
     vMax = factor*vMax;
     aMax = aMax * factor;
     dMax = (dMax!=0)? dMax * factor: aMax;
     startBow = startBow * factor;
     endBow = (endBow!=0)? endBow * factor: startBow;
   }
+  
 
   if (!configure_shadow) {
     write43x(cs_pin,V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
