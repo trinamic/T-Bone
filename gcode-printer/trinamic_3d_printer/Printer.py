@@ -1,3 +1,4 @@
+# coding=utf-8
 from collections import defaultdict
 import logging
 from math import sqrt
@@ -62,12 +63,18 @@ class Printer():
         #extract and convert values
         if 'x' in position:
             x_move = position['x']
+            x_step = _convert_mm_to_steps(x_move, self.x_axis_scale)
+            delta_x = x_move - self.x_pos
         else:
-            x_move = None
+            x_step = None
+            delta_x = 0
         if 'y' in position:
             y_move = position['y']
+            y_step = _convert_mm_to_steps(y_move, self.y_axis_scale)
+            delta_y = y_move - self.y_pos
         else:
-            y_move = None
+            y_step = None
+            delta_y = 0
         if 'f' in position:
             target_speed = position['f']
             move_speed = target_speed
@@ -75,42 +82,53 @@ class Printer():
             target_speed = None
             move_speed = self.current_speed
             #next store new current positions
-        #todo or is there any advantage in storing real world values??
-        delta_x = None
-        if x_move:
-            x_step = _convert_mm_to_steps(x_move, self.x_axis_scale)
-            x_speed = _convert_mm_to_steps(move_speed, self.x_axis_scale)
-            delta_x = x_step - self.x_pos
-            self.x_pos = x_step
-        delta_y = None
-        if y_move:
-            y_step = _convert_mm_to_steps(y_move, self.y_axis_scale) #TODO and what about the max speed of the axis
-            delta_y = y_step - self.y_pos
-            y_speed = _convert_mm_to_steps(move_speed, self.y_axis_scale)
-            self.y_pos = y_step
-            #now we can decide which axis to move
+
+        move_vector = calculate_relative_vector(delta_x, delta_y)
+        #derrive the various speed vectors from the movement … for desired head and maximum axis speed
+        move_speed_vector = {
+            'x': move_speed*move_vector['x'],
+            'y': move_speed*move_vector['y']
+        }
+        max_x_vector = {
+            'x': self.x_axis_max_acceleration,
+            'y': self.x_axis_max_acceleration / move_speed*move_vector['x']
+        }
+        max_y_vector = {
+            'x': self.y_axis_max_acceleration / move_speed*move_vector['y'],
+            'y': self.y_axis_max_acceleration
+        }
+        speed_vector = find_shortest_vector([
+            move_speed_vector,
+            max_x_vector,
+            max_y_vector
+        ])
+        step_seed_vector = {
+            'x': _convert_mm_to_steps(speed_vector['x'], self.x_axis_scale),
+            'y': _convert_mm_to_steps(speed_vector['y'], self.y_axis_scale)
+        }
+
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to " + str(x_step))
-            self.machine.move_to(self.x_axis_motor, x_step, x_speed)
+            self.machine.move_to(self.x_axis_motor, x_step, step_seed_vector['x'])
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to " + str(y_step))
-            self.machine.move_to(self.y_axis_motor, y_step, y_speed)
+            self.machine.move_to(self.y_axis_motor, y_step, step_seed_vector['y'])
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if abs(delta_x) > abs(delta_y):
-                y_gearing = float(delta_y) / float(delta_x)
+                y_gearing = move_vector['y'] / move_vector['x']
                 _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_gearing))
-                self.machine.move_to(self.x_axis_motor, x_step, x_speed, [{
+                self.machine.move_to(self.x_axis_motor, x_step, step_seed_vector['x'], [{
                                                                               'motor': self.y_axis_motor,
                                                                               'gearing': y_gearing
                                                                           }])
                 #move
             else:
-                x_gearing = float(delta_x) / float(delta_y)
+                x_gearing = move_vector['x'] / move_vector['y']
                 _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_gearing))
-                self.machine.move_to(self.y_axis_motor, y_step, y_speed, [{
+                self.machine.move_to(self.y_axis_motor, y_step, step_seed_vector['y'], [{
                                                                               'motor': self.x_axis_motor,
                                                                               'gearing': x_gearing
                                                                           }])
@@ -144,8 +162,8 @@ def calculate_relative_vector(delta_x, delta_y):
             'l': 0.0
         }
     return {
-        'x': delta_x/length,
-        'y': delta_y/length,
+        'x': float(delta_x)/length,
+        'y': float(delta_y)/length,
         'l': 1.0
     }
 
