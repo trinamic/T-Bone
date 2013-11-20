@@ -63,12 +63,12 @@ const __FlashStringHelper* moveMotor(unsigned char motor_nr, long pos, double vM
   long aMax = motors[motor_nr].aMax;
   long dMax = motors[motor_nr].dMax;
   long startBow = motors[motor_nr].startBow;
-  long endBow = motors[motor_nr].endtBow;
+  long endBow = motors[motor_nr].endBow;
 
   if (factor!=1.0) {
     vMax = factor*vMax;
     aMax = aMax * factor;
-    dMax = (dMax!=0)? dMax * factor? aMax;
+    dMax = (dMax!=0)? dMax * factor: aMax;
     startBow = startBow * factor;
     endBow = (endBow!=0)? endBow * factor: startBow;
   }

@@ -38,7 +38,7 @@ void checkMotion() {
         }
       } 
       while (followers[following_motors_count].type == followmotor);
-      
+
       byte following_motors=0;
       for (char i=0;i<following_motors_count;i++) {
 #ifdef DEBUG_MOTION
@@ -51,22 +51,14 @@ void checkMotion() {
         //all motors mentioned here are configured
         float follow_factor = followers[i].data.follow.factor;
         //TODO compute and write all the values for amax/dmax/bow1-4
-        geared_motor |= _BV(i);
+        following_motors |= _BV(i);
       }
       for (char i; i<nr_of_motors;i++) {
-          if (geared_motors && _BV(i) == 0) {
-            //TODO configure other to stop
-          }
+        if (following_motors && _BV(i) == 0) {
+          //TODO configure other to stop
         }
       }
       //finally configure the running motor
-
-#ifdef DEBUG_MOTION
-      if (nextMotorWillBeSame) {
-        Serial.print(F(" - next will be same motor"));
-      }
-      Serial.println();
-#endif
 
       boolean send_start=false;
       write43x(motors[moved_motor].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
@@ -79,8 +71,7 @@ void checkMotion() {
         | _BV(10)//immediate start
         );   
         //if the next move is in the same direction prepare the shadow registers
-        prepare_shaddow_registers = nextMotorWillBeSame;  
-        next_move_prepared = !nextMotorWillBeSame;
+        prepare_shaddow_registers = true; //TODO this is only trtue if ... there is something left in the queue??  
         //we need to generate a start event
         send_start=true;
       } 
@@ -95,7 +86,7 @@ void checkMotion() {
         | _BV(11)  // the shaddow registers cycle
         );   
         //if the next move is in the same direction prepare the shadow registers
-        prepare_shaddow_registers = nextMotorWillBeSame;  
+        prepare_shaddow_registers = true;  
         next_move_prepared = true;
       }
       //and write the target 
@@ -122,6 +113,7 @@ void checkMotion() {
 void target_reached_handler() {
   next_move_prepared=false;
 }
+
 
 
 
