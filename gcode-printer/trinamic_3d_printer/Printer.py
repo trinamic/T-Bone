@@ -85,23 +85,28 @@ class Printer():
 
         move_vector = calculate_relative_vector(delta_x, delta_y)
         #derrive the various speed vectors from the movement … for desired head and maximum axis speed
-        move_speed_vector = {
-            'x': move_speed*move_vector['x'],
-            'y': move_speed*move_vector['y']
-        }
-        max_x_vector = {
-            'x': self.x_axis_max_acceleration,
-            'y': self.x_axis_max_acceleration / move_speed*move_vector['x']
-        }
-        max_y_vector = {
-            'x': self.y_axis_max_acceleration / move_speed*move_vector['y'],
-            'y': self.y_axis_max_acceleration
-        }
-        speed_vector = find_shortest_vector([
-            move_speed_vector,
-            max_x_vector,
-            max_y_vector
-        ])
+        speed_vectors = [
+            {
+                # add the desired speed vector as initial value
+                'x': move_speed * move_vector['x'],
+                'y': move_speed * move_vector['y']
+            }
+        ]
+        if move_vector['x'] != 0:
+            speed_vectors.append({
+                #what would the speed vector for max x speed look like
+                'x': self.x_axis_max_speed,
+                'y': self.x_axis_max_speed * move_vector['y'] / move_vector['x']
+            })
+        if move_vector['y'] != 0:
+            speed_vectors.append({
+                #what would the maximum speed vector for y movement look like
+                'x': self.y_axis_max_speed * move_vector['x'] / move_vector['y'],
+                'y': self.y_axis_max_speed
+            })
+
+        speed_vector = find_shortest_vector(speed_vectors)
+        #and finally find the shortest speed vector …
         step_seed_vector = {
             'x': _convert_mm_to_steps(speed_vector['x'], self.x_axis_scale),
             'y': _convert_mm_to_steps(speed_vector['y'], self.y_axis_scale)
@@ -121,17 +126,17 @@ class Printer():
                 y_gearing = move_vector['y'] / move_vector['x']
                 _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_gearing))
                 self.machine.move_to(self.x_axis_motor, x_step, step_seed_vector['x'], [{
-                                                                              'motor': self.y_axis_motor,
-                                                                              'gearing': y_gearing
-                                                                          }])
+                                                                                            'motor': self.y_axis_motor,
+                                                                                            'gearing': y_gearing
+                                                                                        }])
                 #move
             else:
                 x_gearing = move_vector['x'] / move_vector['y']
                 _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_gearing))
                 self.machine.move_to(self.y_axis_motor, y_step, step_seed_vector['y'], [{
-                                                                              'motor': self.x_axis_motor,
-                                                                              'gearing': x_gearing
-                                                                          }])
+                                                                                            'motor': self.x_axis_motor,
+                                                                                            'gearing': x_gearing
+                                                                                        }])
                 #move
         if not target_speed == None:
             self.current_speed = target_speed
@@ -155,15 +160,15 @@ def _convert_mm_to_steps(millimeters, conversion_factor):
 
 def calculate_relative_vector(delta_x, delta_y):
     length = sqrt(delta_x ** 2 + delta_y ** 2)
-    if length==0:
+    if length == 0:
         return {
             'x': 0.0,
             'y': 0.0,
             'l': 0.0
         }
     return {
-        'x': float(delta_x)/length,
-        'y': float(delta_y)/length,
+        'x': float(delta_x) / length,
+        'y': float(delta_y) / length,
         'l': 1.0
     }
 
@@ -173,8 +178,8 @@ def find_shortest_vector(vector_list):
     #ensure it is a list
     shortest_vector = 0
     #and wildly guess the shortest vector
-    for number,vector in enumerate(find_list):
-        if vector['x']<find_list[shortest_vector]['x']:
+    for number, vector in enumerate(find_list):
+        if vector['x'] < find_list[shortest_vector]['x']:
             shortest_vector = number
     return find_list[shortest_vector]
 
