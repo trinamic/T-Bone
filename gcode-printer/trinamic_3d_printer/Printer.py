@@ -1,5 +1,6 @@
 from collections import defaultdict
 import logging
+from math import sqrt
 from trinamic_3d_printer.Machine import Machine
 
 __author__ = 'marcus'
@@ -51,7 +52,7 @@ class Printer():
         self.y_pos = 0
 
     def start_print(self):
-        self.machine.batch_mode=True
+        self.machine.batch_mode = True
 
     def stop_print(self):
         pass
@@ -102,17 +103,17 @@ class Printer():
                 y_gearing = float(delta_y) / float(delta_x)
                 _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_gearing))
                 self.machine.move_to(self.x_axis_motor, x_step, x_speed, [{
-                    'motor': self.y_axis_motor,
-                    'gearing': y_gearing
-                }])
+                                                                              'motor': self.y_axis_motor,
+                                                                              'gearing': y_gearing
+                                                                          }])
                 #move
             else:
                 x_gearing = float(delta_x) / float(delta_y)
                 _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_gearing))
                 self.machine.move_to(self.y_axis_motor, y_step, y_speed, [{
-                    'motor': self.x_axis_motor,
-                    'gearing': x_gearing
-                }])
+                                                                              'motor': self.x_axis_motor,
+                                                                              'gearing': x_gearing
+                                                                          }])
                 #move
         if not target_speed == None:
             self.current_speed = target_speed
@@ -125,12 +126,39 @@ class Printer():
         max_acceleration = axis_config["max-acceleration"]
         axis_scale = axis_config["steps-per-mm"]
 
-        self.machine.set_acceleration_settings(motor, max_acceleration*axis_scale)
+        self.machine.set_acceleration_settings(motor, max_acceleration * axis_scale)
+
 
 def _convert_mm_to_steps(millimeters, conversion_factor):
     if millimeters is None:
         return None
     return int(millimeters * conversion_factor)
+
+
+def calculate_relative_vector(delta_x, delta_y):
+    length = sqrt(delta_x ** 2 + delta_y ** 2)
+    if length==0:
+        return {
+            'x': 0.0,
+            'y': 0.0,
+            'l': 0.0
+        }
+    return {
+        'x': delta_x/length,
+        'y': delta_y/length,
+        'l': 1.0
+    }
+
+
+def find_shortest_vector(vector_list):
+    find_list = list(vector_list)
+    #ensure it is a list
+    shortest_vector = 0
+    #and wildly guess the shortest vector
+    for number,vector in enumerate(find_list):
+        if vector['x']<find_list[shortest_vector]['x']:
+            shortest_vector = number
+    return find_list[shortest_vector]
 
 
 class PrinterError(Exception):
