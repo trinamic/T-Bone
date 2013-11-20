@@ -15,10 +15,9 @@ void stopMotion() {
 void checkMotion() {
   if (in_motion && !next_move_prepared) {
     if (moveQueue.count()>0) {
-
       //analysze the movement (nad take a look at the next
       movement move = moveQueue.pop();
-      movement gearings[MAX_GEARED_MOTORS];
+      movement followers[MAX_FOLLOWING_MOTORS];
 #ifdef DEBUG_MOTION
       Serial.print(F("Moving motor "));
       Serial.print(move.motor,DEC);
@@ -28,64 +27,38 @@ void checkMotion() {
       Serial.print(move.data.move.vmax);
 #endif
       char moved_motor = move.motor;
+      //TODO configure the motor so that it - uhm - moves
       //check out which momtors are geared with this
-      int gearingscount = 0;
+      int following_motors_count = 0;
       do {
-        gearings[gearingscount] = moveQueue.peek();
-        if (gearings[gearingscount].type==gearmotor) {  
+        followers[following_motors_count] = moveQueue.peek();
+        if (followers[following_motors_count].type==followmotor) {  
           moveQueue.pop();
-          gearingscount++;
+          following_motors_count++;
         }
       } 
-      while (gearings[gearingscount].type == gearmotor);
-      //ppek a look if the next movbement will use the same gearing configuration
-      boolean nextMotorWillBeSame = false;
-      if (!moveQueue.isEmpty()) {
-        movement nextMove = moveQueue.peek();
-        char nextMotor = nextMove.motor;
-        nextMotorWillBeSame = (nextMotor==moved_motor);
-      }
-
-      byte geared_motors=0;
-      for (char i=0;i<gearingscount;i++) {
+      while (followers[following_motors_count].type == followmotor);
+      
+      byte following_motors=0;
+      for (char i=0;i<following_motors_count;i++) {
 #ifdef DEBUG_MOTION
-        Serial.print(F(", gearing motor "));
-        Serial.print(gearings[i].motor,DEC);
+        Serial.print(F(", following motor "));
+        Serial.print(followers[i].motor,DEC);
         Serial.print(F(" by "));
-        Serial.print(gearings[i].data.follow.gearing,DEC);
+        Serial.print(followers[i].data.follow.factor,DEC);
 #endif
-        char geared_motor = gearings[i].motor;
+        char following_motor = followers[i].motor;
         //all motors mentioned here are configured
-        float gear_ratio = gearings[i].data.follow.gearing;
-        write43x(motors[geared_motor].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(gear_ratio));
+        float follow_factor = followers[i].data.follow.factor;
+        //TODO compute and write all the values for amax/dmax/bow1-4
         geared_motor |= _BV(i);
       }
       for (char i; i<nr_of_motors;i++) {
-        if (i!=moved_motor) {
-          write43x(motors[i].cs_pin, GENERAL_CONFIG_REGISTER, _BV(6)); //direct values and no clock
-          if (!prepare_shaddow_registers) {
-            write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-              | _BV(0) //xtarget requires start
-            | _BV(3) //gear ration cahnge requries start
-            | _BV(5) //external start is an start
-            | _BV(10)//immediate start
-            );  //and due to a bug we NEED an internal start signal
-          } 
-          else {
-            write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-              | _BV(0)//due to a bug we NEED an internal start signal
-            | _BV(3) //gear ration requires start
-            | _BV(5) //external start is an event
-            | _BV(10) //we start w/o timer 
-            );   
-          } 
           if (geared_motors && _BV(i) == 0) {
-            //unconfigure non geared motors
-            write43x(motors[i].cs_pin, GEAR_RATIO_REGISTER,FIXED_8_24_MAKE(0));
+            //TODO configure other to stop
           }
         }
       }
-
       //finally configure the running motor
 
 #ifdef DEBUG_MOTION

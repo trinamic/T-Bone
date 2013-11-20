@@ -186,12 +186,12 @@ void onMove() {
     return;
   }
   movement move;
-  movement gearing[MAX_GEARED_MOTORS];
+  movement followers[MAX_FOLLOWING_MOTORS];
   move.type = movemotor;
   move.motor=motor;
   move.data.move.target=newPos;
   move.data.move.vmax = vMax;
-  int gearings=0;
+  int following_motors=0;
 #ifdef DEBUG_MOTOR_QUEUE
   Serial.print(F("Adding movement for motor "));
   Serial.print(motor,DEC);
@@ -200,12 +200,12 @@ void onMove() {
 #endif
   do {
     motor = messenger.readIntArg();
-    double gearingFactor =  messenger.readFloatArg();
-    if (motor!=0 && gearing!=0) {
-      gearing[gearings].type=gearmotor;
-      gearing[gearings].motor=motor - 1;
-      gearing[gearings].data.follow.gearing=gearingFactor;
-      gearings++;
+    double motionFactor =  messenger.readFloatArg();
+    if (motor!=0 && motionFactor!=0) {
+      followers[following_motors].type=followmotor;
+      followers[following_motors].motor=motor - 1;
+      followers[following_motors].data.follow.factor=motionFactor;
+      following_motors++;
 #ifdef DEBUG_MOTOR_QUEUE
       Serial.print(F(", gearing motor "));
       Serial.print(gearmotor,DEC);
@@ -218,13 +218,13 @@ void onMove() {
 #ifdef DEBUG_MOTOR_QUEUE
   Serial.println();
 #endif
-  if (moveQueue.count()+gearings+1>COMMAND_QUEUE_LENGTH) {
+  if (moveQueue.count()+following_motors+1>COMMAND_QUEUE_LENGTH) {
     messenger.sendCmd(kError,F("Queue is full"));
     return;
   }
   moveQueue.push(move);
-  for (char i=0; i<gearings; i++) {
-    moveQueue.push(gearing[i]);
+  for (char i=0; i<following_motors; i++) {
+    moveQueue.push(followers[i]);
   }
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());

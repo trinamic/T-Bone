@@ -1,7 +1,7 @@
 //what kind of information is in the queue
 enum movement_type {
   movemotor,
-  gearmotor,
+  followmotor,
 };
 
 //general datatypes we use, conveniently in an header file 
@@ -11,11 +11,11 @@ struct movement {
   union data {
     struct {
       long target;
-      float vmax;
+      double vmax;
     } 
     move;
     struct {
-      float gearing;
+      double factor;
     } 
     follow;
   } 

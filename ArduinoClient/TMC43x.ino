@@ -46,43 +46,57 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
   unsigned char cs_pin = motors[motor_nr].cs_pin;
   //TODO some validity settings??
   motors[motor_nr].aMax = aMax;
-  motors[motor_nr].dMax = (dMax)!=0? dMax:aMax;
+  motors[motor_nr].dMax = dMax;
   motors[motor_nr].startBow = startbow;
-  motors[motor_nr].endBow = (endbow!=0)? endbow:startbow;
+  motors[motor_nr].endBow = endbow!=0;
 
   if (endbow==0) {
     endbow=startbow;
   }
 
-  write43x(cs_pin, A_MAX_REGISTER,motors[motor_nr].aMax); //set maximum acceleration
-  write43x(cs_pin, SH_A_MAX_REGISTER,motors[motor_nr].aMax); //set maximum acceleration
-  write43x(cs_pin, D_MAX_REGISTER,motors[motor_nr].dMax); //set maximum deceleration
-  write43x(cs_pin, SH_D_MAX_REGISTER,motors[motor_nr].dMax); //set maximum deceleration
-  write43x(cs_pin,BOW_1_REGISTER,motors[motor_nr].startBow);
-  write43x(cs_pin,SH_BOW_1_REGISTER,motors[motor_nr].startBow);
-  write43x(cs_pin,BOW_2_REGISTER,motors[motor_nr].endBow);
-  write43x(cs_pin,SH_BOW_2_REGISTER,motors[motor_nr].endBow);
-  write43x(cs_pin,BOW_3_REGISTER,motors[motor_nr].endBow);
-  write43x(cs_pin,SH_BOW_3_REGISTER,motors[motor_nr].endBow);
-  write43x(cs_pin,BOW_4_REGISTER,motors[motor_nr].startBow);
-  write43x(cs_pin,SH_BOW_4_REGISTER,motors[motor_nr].startBow);
-
   return NULL;
 }
 
-const __FlashStringHelper* moveMotor(unsigned char motor_nr, unsigned long pos, unsigned long vMax, unsigned long aMax, unsigned long dMax) {
+const __FlashStringHelper* moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boolean configure_shadow) {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
-  if (dMax==0) {
-    dMax = aMax;
+
+  long aMax = motors[motor_nr].aMax;
+  long dMax = motors[motor_nr].dMax;
+  long startBow = motors[motor_nr].startBow;
+  long endBow = motors[motor_nr].endtBow;
+
+  if (factor!=1.0) {
+    vMax = factor*vMax;
+    aMax = aMax * factor;
+    dMax = (dMax!=0)? dMax * factor? aMax;
+    startBow = startBow * factor;
+    endBow = (endBow!=0)? endBow * factor: startBow;
   }
-  write43x(cs_pin,V_MAX_REGISTER,vMax << 8); //set the velocity - TODO recalculate float numbers
-  write43x(cs_pin,A_MAX_REGISTER,aMax); //set maximum acceleration
-  write43x(cs_pin,D_MAX_REGISTER,dMax); //set maximum deceleration
+
+  if (!configure_shadow) {
+    write43x(cs_pin,V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
+    write43x(cs_pin, A_MAX_REGISTER,aMax); //set maximum acceleration
+    write43x(cs_pin, D_MAX_REGISTER,dMax); //set maximum deceleration
+    write43x(cs_pin,BOW_1_REGISTER,startBow);
+    write43x(cs_pin,BOW_2_REGISTER,endBow);
+    write43x(cs_pin,BOW_3_REGISTER,endBow);
+    write43x(cs_pin,BOW_4_REGISTER,startBow);
+  } 
+  else {
+    write43x(cs_pin,SH_V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
+    write43x(cs_pin, SH_A_MAX_REGISTER,aMax); //set maximum acceleration
+    write43x(cs_pin, SH_D_MAX_REGISTER,dMax); //set maximum deceleration
+    write43x(cs_pin,SH_BOW_1_REGISTER,startBow);
+    write43x(cs_pin,SH_BOW_2_REGISTER,endBow);
+    write43x(cs_pin,SH_BOW_3_REGISTER,endBow);
+    write43x(cs_pin,SH_BOW_4_REGISTER,startBow);
+  }
   write43x(cs_pin,X_TARGET_REGISTER,pos);
-  Serial.print("moving to ");
-  Serial.println(pos);
+
   return NULL;
 }
+
+
 
 
 
