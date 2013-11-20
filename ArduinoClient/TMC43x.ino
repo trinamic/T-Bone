@@ -57,7 +57,7 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
   return NULL;
 }
 
-const __FlashStringHelper* moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boolean configure_shadow) {
+void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boolean configure_shadow) {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
 
   long aMax = motors[motor_nr].aMax;
@@ -92,8 +92,6 @@ const __FlashStringHelper* moveMotor(unsigned char motor_nr, long pos, double vM
     write43x(cs_pin,SH_BOW_4_REGISTER,startBow);
   }
   write43x(cs_pin,X_TARGET_REGISTER,pos);
-
-  return NULL;
 }
 
 
