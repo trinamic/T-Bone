@@ -201,9 +201,15 @@ void onMove() {
   do {
     motor = messenger.readIntArg();
     double motionFactor =  messenger.readFloatArg();
+    long newPos = messenger.readLongArg();
+    if (newPos<0) {
+      messenger.sendCmd (kError,F("cannot move beyond home"));
+      return;
+    }
     if (motor!=0 && motionFactor!=0) {
       followers[following_motors].type=followmotor;
       followers[following_motors].motor=motor - 1;
+      followers[following_motors].data.follow.target=newPos;
       followers[following_motors].data.follow.factor=motionFactor;
       following_motors++;
 #ifdef DEBUG_MOTOR_QUEUE
@@ -211,6 +217,8 @@ void onMove() {
       Serial.print(gearmotor,DEC);
       Serial.print(F(" by "));
       Serial.print(gearingFactor);
+      Serial.print(F(" to "));
+      Serial.print(newPos);
 #endif
     }  
   } 
@@ -353,6 +361,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 

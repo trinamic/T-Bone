@@ -22,6 +22,7 @@ void initialzeTMC43x() {
   SPI.begin();
   //preconfigure the TMC43x
   for (char i=0; i<nr_of_motors;i++) {
+    write43x(motors[i].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
     write43x(motors[i].cs_pin, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
@@ -65,20 +66,46 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
   long startBow = motors[motor_nr].startBow;
   long endBow = motors[motor_nr].endBow;
 
+  //TODO can't start commands be part of this movement ??
+
   if (factor==0) {
     vMax = 0;
     aMax = 0;
     dMax = 0;
     startBow = 0;
     endBow = 0;
-  } else if (factor!=1.0) {
+  } 
+  else if (factor!=1.0) {
     vMax = factor*vMax;
     aMax = aMax * factor;
     dMax = (dMax!=0)? dMax * factor: aMax;
     startBow = startBow * factor;
     endBow = (endBow!=0)? endBow * factor: startBow;
   }
-  
+
+  if (factor!=0) {
+    if (!configure_shadow) {
+      write43x(motors[motor_nr].cs_pin, START_CONFIG_REGISTER, 0
+        | _BV(0) //xtarget requires start
+      | _BV(1) //vmax requires start
+      | _BV(5) //external start is an start
+      | _BV(10)//immediate start
+      );   
+      //if the next move is in the same direction prepare the shadow registers
+      prepare_shaddow_registers = true; //TODO this is only trtue if ... there is something left in the queue??  
+      //we need to generate a start event
+    } 
+    else {
+      write43x(motors[motor_nr].cs_pin, START_CONFIG_REGISTER, 0
+        | _BV(0) //from now on listen to your own start signal
+      | _BV(4)  //use shaddow motion profiles
+      | _BV(5)  //target reached triggers start event
+      | _BV(6)  //target reached triggers start event
+      | _BV(10) //immediate start
+      | _BV(11)  // the shaddow registers cycle
+      );   
+    }
+  }
 
   if (!configure_shadow) {
     write43x(cs_pin,V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
@@ -100,6 +127,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
   }
   write43x(cs_pin,X_TARGET_REGISTER,pos);
 }
+
 
 
 

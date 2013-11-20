@@ -26,7 +26,7 @@ void checkMotion() {
       Serial.print(F(" at "));
       Serial.print(move.data.move.vmax);
 #endif
-      char moved_motor = move.motor;
+      moveMotor(move.motor, move.data.move.target,move.data.move.vmax, 1, prepare_shaddow_registers);
       //TODO configure the motor so that it - uhm - moves
       //check out which momtors are geared with this
       int following_motors_count = 0;
@@ -36,6 +36,7 @@ void checkMotion() {
           moveQueue.pop();
           following_motors_count++;
         }
+        moveMotor(followers[following_motors_count].motor, followers[following_motors_count].data.follow.target,move.data.move.vmax, followers[following_motors_count].data.follow.factor, prepare_shaddow_registers);
       } 
       while (followers[following_motors_count].type == followmotor);
 
@@ -61,39 +62,11 @@ void checkMotion() {
       //finally configure the running motor
 
       boolean send_start=false;
-      write43x(motors[moved_motor].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
-      if (!prepare_shaddow_registers) {
-        write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
-        write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER, 0
-          | _BV(0) //xtarget requires start
-        | _BV(1) //vmax requires start
-        | _BV(5) //external start is an start
-        | _BV(10)//immediate start
-        );   
-        //if the next move is in the same direction prepare the shadow registers
-        prepare_shaddow_registers = true; //TODO this is only trtue if ... there is something left in the queue??  
-        //we need to generate a start event
-        send_start=true;
-      } 
-      else {
-        write43x(motors[moved_motor].cs_pin, V_MAX_REGISTER,FIXED_24_8_MAKE(move.data.move.vmax)); //set the velocity - TODO recalculate float numbers
-        write43x(motors[moved_motor].cs_pin, START_CONFIG_REGISTER, 0
-          | _BV(0) //from now on listen to your own start signal
-        | _BV(4)  //use shaddow motion profiles
-        | _BV(5)  //target reached triggers start event
-        | _BV(6)  //target reached triggers start event
-        | _BV(10) //immediate start
-        | _BV(11)  // the shaddow registers cycle
-        );   
-        //if the next move is in the same direction prepare the shadow registers
-        prepare_shaddow_registers = true;  
-        next_move_prepared = true;
-      }
-      //and write the target 
-      write43x(motors[moved_motor].cs_pin, X_TARGET_REGISTER,move.data.move.target);
+      prepare_shaddow_registers = true;  
+      next_move_prepared = true;
 
       //register the interrupt handler for this motor
-      attachInterrupt(motors[moved_motor].target_reached_interrupt_nr , target_reached_handler, RISING);
+      // attachInterrupt(motors[moved_motor].target_reached_interrupt_nr , target_reached_handler, RISING);
 
       if (send_start) {
         //and carefully trigger the start pin 
@@ -113,6 +86,7 @@ void checkMotion() {
 void target_reached_handler() {
   next_move_prepared=false;
 }
+
 
 
 

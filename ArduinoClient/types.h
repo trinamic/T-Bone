@@ -15,6 +15,7 @@ struct movement {
     } 
     move;
     struct {
+      long target;
       double factor;
     } 
     follow;
