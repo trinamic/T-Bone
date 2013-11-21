@@ -6,6 +6,9 @@ void startMotion() {
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
   //TODO initialize drivers??
+  for (char i; i<nr_of_motors;i++) {
+        write43x(motors[i].cs_pin, START_OUT_ADD_REGISTER, 16000000ul);
+    }
 }
 
 void stopMotion() {
@@ -101,14 +104,16 @@ void checkMotion() {
             | _BV(0) //xtarget requires start
           | _BV(1) //vmax requires start
           | _BV(5) //external start is an start
+          | _BV(6)  //target reached triggers start event
           | _BV(10)//immediate start
           );   
         } 
         else {
           write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
             | _BV(0) //from now on listen to your own start signal
+            | _BV(3)
           | _BV(4)  //use shaddow motion profiles
-          | _BV(5)  //target reached triggers start event
+          | _BV(5) //external start is an start
           | _BV(6)  //target reached triggers start event
           | _BV(10) //immediate start
           | _BV(11)  // the shaddow registers cycle
@@ -135,6 +140,9 @@ void checkMotion() {
         //ok normally we can relax until the enxt start event occured
         next_move_prepared = true;
       }
+#ifdef DEBUG_MOTION
+      Serial.println();
+#endif
     } 
     else {
       //we are finished here
@@ -145,8 +153,11 @@ void checkMotion() {
 
 
 void target_reached_handler() {
+  Serial.println("start");
   next_move_prepared=false;
 }
+
+
 
 
 
