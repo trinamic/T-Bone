@@ -232,7 +232,7 @@ void loop() {
       digitalWrite(start_signal_pin,LOW);
       pinMode(start_signal_pin,INPUT);
 
-      attachInterrupt(4,start_handler,RISING);
+      attachInterrupt(4,start_handler,FALLING);
 
       write43x(squirrel_a, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
@@ -306,7 +306,7 @@ void interrupt_a_handler() {
 }
 
 void start_handler() {
-  //Serial.println("start");
+  Serial.println("start");
 }
 
 
