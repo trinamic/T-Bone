@@ -18,6 +18,8 @@ void checkMotion() {
       //analysze the movement (nad take a look at the next
       movement move = moveQueue.pop();
       movement followers[MAX_FOLLOWING_MOTORS];
+      //check out which momtors are geared with this
+
 #ifdef DEBUG_MOTION
       Serial.print(F("Moving motor "));
       Serial.print(move.motor,DEC);
@@ -27,57 +29,52 @@ void checkMotion() {
       Serial.print(move.data.move.vmax);
 #endif
       moveMotor(move.motor, move.data.move.target,move.data.move.vmax, 1, prepare_shaddow_registers);
-      //TODO configure the motor so that it - uhm - moves
-      //check out which momtors are geared with this
-      int following_motors_count = 0;
-      do {
-        followers[following_motors_count] = moveQueue.peek();
-        if (followers[following_motors_count].type==followmotor) {  
-          moveQueue.pop();
-          following_motors_count++;
-        }
-        moveMotor(followers[following_motors_count].motor, followers[following_motors_count].data.follow.target,move.data.move.vmax, followers[following_motors_count].data.follow.factor, prepare_shaddow_registers);
-      } 
-      while (followers[following_motors_count].type == followmotor);
 
       byte following_motors=0;
-      for (char i=0;i<following_motors_count;i++) {
+      movement follower;
+      do {
+        follower = moveQueue.peek();
+        if (follower.type==followmotor) {  
+          moveQueue.pop();
 #ifdef DEBUG_MOTION
-        Serial.print(F(", following motor "));
-        Serial.print(followers[i].motor,DEC);
-        Serial.print(F(" by "));
-        Serial.print(followers[i].data.follow.factor,DEC);
+          Serial.print(F(", following motor "));
+          Serial.print(follower.motor,DEC);
+          Serial.print(F(" by "));
+          Serial.print(follower.data.follow.factor,DEC);
 #endif
-        char following_motor = followers[i].motor;
-        //all motors mentioned here are configured
-        float follow_factor = followers[i].data.follow.factor;
-        //TODO compute and write all the values for amax/dmax/bow1-4
-        following_motors |= _BV(i);
-      }
+          moveMotor(follower.motor, follower.data.follow.target,move.data.move.vmax, follower.data.follow.factor, prepare_shaddow_registers);
+          following_motors |= _BV(follower.motor);
+        }
+      } 
+      while (follower.type == followmotor);
+
       for (char i; i<nr_of_motors;i++) {
         if (following_motors && _BV(i) == 0) {
-          //TODO configure other to stop
+          moveMotor(i, 0,0, 0, prepare_shaddow_registers);
         }
       }
-      //finally configure the running motor
 
-      boolean send_start=false;
-      prepare_shaddow_registers = true;  
-      next_move_prepared = true;
-
-      //register the interrupt handler for this motor
-      // attachInterrupt(motors[moved_motor].target_reached_interrupt_nr , target_reached_handler, RISING);
-
-      if (send_start) {
+      //for the first move we need to configure everything a bit 
+      if (!prepare_shaddow_registers) {
         //and carefully trigger the start pin 
         digitalWrite(start_signal_pin,HIGH);
         pinMode(start_signal_pin,OUTPUT);
         digitalWrite(start_signal_pin,LOW);
         pinMode(start_signal_pin,INPUT);
+        //From now on the motor drivers move themeself - or somethinglike this
+        attachInterrupt(start_signal_pin , target_reached_handler, RISING);
+        //and we need to prepare the next move for the shadow registers
+        prepare_shaddow_registers = true;
+        next_move_prepared = false;
+      } 
+      else {
+        //ok normally we can relax until the enxt start event occured
+        next_move_prepared = true;
       }
     } 
     else {
       //we are finished here
+      stopMotion();
     }
   }
 }
@@ -86,6 +83,9 @@ void checkMotion() {
 void target_reached_handler() {
   next_move_prepared=false;
 }
+
+
+
 
 
 
