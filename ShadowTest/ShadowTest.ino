@@ -57,6 +57,8 @@ long dmax = amax;
 #define SH_BOW_4_REGISTER 0x4c
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
+#define START_OUT_ADD_REGISTER 0x11
+
 
 //values
 #define TMC_26X_CONFIG_SPI 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -175,6 +177,10 @@ void setup() {
   set260Register(squirrel_b, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue());
+  
+  write43x(squirrel_a, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
+  write43x(squirrel_b, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
+  
 
 }
 
@@ -241,7 +247,7 @@ void loop() {
       write43x(squirrel_b, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
       //     | _BV(3) //buggy?
-      //   | _BV(4)  //use shaddow motion profiles
+      //   | _BV(4)  //use shWow motion profiles
       // | _BV(5) //external start is an start
       | _BV(6)  //target reached triggers start event
       | _BV(10) //immediate start

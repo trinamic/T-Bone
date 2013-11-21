@@ -110,17 +110,16 @@ void checkMotion() {
         } 
         else {
           write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-            | _BV(0) //from now on listen to your own start signal
-            | _BV(3) //buggy?
+       //     | _BV(0) //from now on listen to your own start signal
+         //   | _BV(3) //buggy?
           | _BV(4)  //use shaddow motion profiles
-          | _BV(5) //external start is an start
+         // | _BV(5) //external start is an start
           | _BV(6)  //target reached triggers start event
           | _BV(10) //immediate start
           | _BV(11)  // the shaddow registers cycle
           | _BV(13)  // coordinate yourself with busy starts
           );   
         }
-
       }
 
       //for the first move we need to configure everything a bit 
