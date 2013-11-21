@@ -109,7 +109,7 @@ void setup() {
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER, 0
     | _BV(0) //xtarget requires start
-  | _BV(1) //vmax requires start
+ // | _BV(1) //vmax requires start
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
@@ -144,8 +144,8 @@ void setup() {
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER, 0
     | _BV(0) //xtarget requires start
-  | _BV(1) //vmax requires start
-  | _BV(3)
+//  | _BV(1) //vmax requires start
+ // | _BV(3)
     | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
@@ -199,7 +199,7 @@ void loop() {
     target = next_target;
     next_target= random(1000ul)*100ul;
 
-    next_v = random(100)*vmax+1;
+    next_v = random(10)*vmax+1;
     float gear_ratio = (float)random(201)/100.0;
 
     if (isMoving) {
@@ -213,16 +213,21 @@ void loop() {
     } 
     else {
 
+      isMoving=true;
+
+      toMove=true;
+      write43x(squirrel_a, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
+
+      write43x(squirrel_b, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_b, X_TARGET_REGISTER,target*gear_ratio);
       digitalWrite(start_signal_pin,HIGH);
       pinMode(start_signal_pin,OUTPUT);
       digitalWrite(start_signal_pin,LOW);
       pinMode(start_signal_pin,INPUT);
 
-      isMoving=true;
+      attachInterrupt(4,start_handler,RISING);
 
-      toMove=true;
-      write43x(squirrel_a, X_TARGET_REGISTER,target);
-      write43x(squirrel_a, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
       //     | _BV(3) //buggy?
@@ -233,9 +238,6 @@ void loop() {
       //     | _BV(11)  // the shaddow registers cycle
       | _BV(13)  // coordinate yourself with busy starts
       );   
-
-      write43x(squirrel_b, X_TARGET_REGISTER,target*gear_ratio);
-      write43x(squirrel_b, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_b, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
       //     | _BV(3) //buggy?
@@ -247,14 +249,12 @@ void loop() {
       | _BV(13)  // coordinate yourself with busy starts
       );   
 
-      attachInterrupt(4,start_handler,RISING);
-
     }
 
     Serial.print("Move to ");
     Serial.print(target);
     Serial.print(" with ");
-    Serial.println(this_v);
+    Serial.println(next_v);
     Serial.print("Gear ration: ");
     Serial.println(gear_ratio);
     Serial.println(); 
