@@ -82,6 +82,47 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     startBow = startBow * factor;
     endBow = (endBow!=0)? endBow * factor: startBow;
   }
+  
+  /*
+  Master: (Startsignal generieren)
+	bit4 = 1 (shadow on)
+	bit9 je nach Bedarf und in Abstimmung mit dem Slave
+	bit12= 1 (pipeline on)
+
+	rest = 0 (wenn kein zyklische und/oder verzögerte Shadowregisterübernahme gewünscht)
+
+Slave: (auf externes Startsignal reagieren)
+	bit0 = 1
+	bit5 = 1
+	bit4 = 1 (shadow on)
+	bit9 je nach Bedarf und in Abstimmung mit dem Master
+	bit12= 1 (pipeline on)
+
+	rest = 0 (wenn kein zyklische und/oder verzögerte Shadowregisterübernahme gewünscht)
+
+Mindestens eines der ersten 5Bit muss eingeschaltet sein, sonst gibt es kein internes Startsignal. Aufgrund des Bugs, sollten es nicht Bit0 bis Bit2 sein. Wenn auch kein Shadowregister benutzt werden soll, dann bleibt nur Bit3, was allerdings auch gleichzeitig eine Gearingfaktoränderung bis zum nächsten Startsignal hält. Daher folgendes Setup für das Startregister:
+	bit3 = 1 (Startsignal notwendig für Gearingfaktoränderung)
+	bit6 = 1 (Startsignal nach Target_reached-Event)
+	bit12= 1 (pipeline on) 
+	bit13= 1 (busy-state on)
+	Rest=0
+
+*/
+
+/* my conclusions
+
+  b 0 -> xtarget
+  b 3 -> bug
+  b 4 -> shaddow
+  b 6 -> target reach is start
+  b11 -> shaddow
+  b13 für busy (ab erstem oder erst mit nachfolgenden??
+  
+  start_out_add für 'wie lange warte ich '
+  
+  beim ersten eventuell b 5 für externen start??
+*/
+
 
   if (factor!=0) {
     if (!configure_shadow) {
