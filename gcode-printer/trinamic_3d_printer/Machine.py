@@ -100,11 +100,11 @@ class Machine():
     def set_acceleration_settings(self, motor, max_acceleration, max_deceleration=None, start_bow=None, end_bow=None):
         #reconstruct all values
         if not max_deceleration:
-            max_deceleration = max_acceleration
+            max_deceleration = 0
         if not start_bow:
             start_bow = max_acceleration / 3 #todo test
         if not end_bow:
-            end_bow = start_bow
+            end_bow = 0
         command = MachineCommand()
         command.command_number = 3
         command.arguments = [
