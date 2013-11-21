@@ -150,16 +150,17 @@ void onAccelerationSetttings() {
   }
   const __FlashStringHelper* error = setAccelerationSetttings(motor, aMax, dMax, startBow, endBow);
   if (error==NULL) {
-#ifdef DEBUG_MOTOR_CONTFIG    Serial.print(F("Motor "));
+#ifdef DEBUG_MOTOR_CONTFIG    
+    Serial.print(F("Motor "));
     Serial.print(motor,DEC);
     Serial.print(F(": aMax="));
     Serial.print(aMax);
     Serial.print(F(", dMax="));
     Serial.print(dMax);
     Serial.print(F(": startBow="));
-    Serial.print(aMax);
+    Serial.print(startBow);
     Serial.print(F(", endBow="));
-    Serial.print(aMax);
+    Serial.print(endBow);
     Serial.println();
 #endif    
     messenger.sendCmd(kOK,F("Ramp Bows set"));

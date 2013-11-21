@@ -81,8 +81,27 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     dMax = (dMax!=0)? dMax * factor: aMax;
     startBow = startBow * factor;
     endBow = (endBow!=0)? endBow * factor: startBow;
+  } else {
+    dMax = (dMax!=0)? dMax: aMax;
+    endBow = (endBow!=0)? endBow: startBow;
   }
   
+  #ifdef DEBUG_MOTOR_CONTFIG    
+    Serial.print(F("Motor "));
+    Serial.print(motor_nr,DEC);
+    Serial.print(F(": vMax="));
+    Serial.print(vMax);
+    Serial.print(F(", aMax="));
+    Serial.print(aMax);
+    Serial.print(F(", dMax="));
+    Serial.print(dMax);
+    Serial.print(F(": startBow="));
+    Serial.print(startBow);
+    Serial.print(F(", endBow="));
+    Serial.print(endBow);
+    Serial.println();
+#endif    
+
   if (!configure_shadow) {
     write43x(cs_pin,V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
     write43x(cs_pin, A_MAX_REGISTER,aMax); //set maximum acceleration

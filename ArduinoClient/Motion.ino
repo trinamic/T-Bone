@@ -111,7 +111,7 @@ void checkMotion() {
         else {
           write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
             | _BV(0) //from now on listen to your own start signal
-            | _BV(3)
+            | _BV(3) //buggy?
           | _BV(4)  //use shaddow motion profiles
           | _BV(5) //external start is an start
           | _BV(6)  //target reached triggers start event
