@@ -11,10 +11,10 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 1000ul;
+long vmax = 200ul;
 long bow = vmax;
 long end_bow = bow;
-long amax = vmax/10;
+long amax = vmax;
 long dmax = amax;
 
 //register
@@ -30,7 +30,7 @@ long dmax = amax;
 #define GEAR_RATIO_REGISTER 0x12
 #define START_DELAY_REGISTER 0x13
 #define RAMP_MODE_REGISTER 0x20
-#define X_ACTUAL_REGISTER 0x21
+#define X_ACTUAL_REGISTER 0x21 
 #define V_ACTUAL_REGISTER 0x22
 #define V_MAX_REGISTER 0x24
 #define V_START_REGISTER 0x25
@@ -107,11 +107,11 @@ void setup() {
   //initialize SPI
   SPI.begin();
   //configure the TMC26x A
-  write43x(squirrel_a, GENERAL_CONFIG_REGISTER, _BV(0) | _BV(1)); //we use direct values
+  write43x(squirrel_a, GENERAL_CONFIG_REGISTER, 0); //we use direct values
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER, 0
     | _BV(0) //xtarget requires start
- // | _BV(1) //vmax requires start
+  // | _BV(1) //vmax requires start
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
@@ -142,13 +142,13 @@ void setup() {
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue());
 
   //configure the TMC26x B
-  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(0) | _BV(1)); //direct values and no clock
+  write43x(squirrel_b, GENERAL_CONFIG_REGISTER, 0); //direct values and no clock
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER, 0
     | _BV(0) //xtarget requires start
-//  | _BV(1) //vmax requires start
- // | _BV(3)
-    | _BV(5) //external start is an start
+  //  | _BV(1) //vmax requires start
+  // | _BV(3)
+  | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
   write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -177,10 +177,10 @@ void setup() {
   set260Register(squirrel_b, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue());
-  
+
   write43x(squirrel_a, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
   write43x(squirrel_b, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
-  
+
 
 }
 
@@ -224,20 +224,23 @@ void loop() {
       toMove=true;
       write43x(squirrel_a, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_a, X_TARGET_REGISTER,target);
+      //write43x(squirrel_a, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
+
 
       write43x(squirrel_b, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
       write43x(squirrel_b, X_TARGET_REGISTER,target*gear_ratio);
+      //write43x(squirrel_b, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
       digitalWrite(start_signal_pin,HIGH);
       pinMode(start_signal_pin,OUTPUT);
       digitalWrite(start_signal_pin,LOW);
       pinMode(start_signal_pin,INPUT);
 
-      attachInterrupt(4,start_handler,FALLING);
+      //attachInterrupt(4,start_handler,FALLING);
 
       write43x(squirrel_a, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
-      //     | _BV(3) //buggy?
-      //   | _BV(4)  //use shaddow motion profiles
+  //         | _BV(3) //buggy?
+      | _BV(4)  //use shaddow motion profiles
       // | _BV(5) //external start is an start
       | _BV(6)  //target reached triggers start event
       | _BV(10) //immediate start
@@ -246,8 +249,8 @@ void loop() {
       );   
       write43x(squirrel_b, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
-      //     | _BV(3) //buggy?
-      //   | _BV(4)  //use shWow motion profiles
+    //      | _BV(3) //buggy?
+      | _BV(4)  //use shWow motion profiles
       // | _BV(5) //external start is an start
       | _BV(6)  //target reached triggers start event
       | _BV(10) //immediate start
@@ -308,6 +311,7 @@ void interrupt_a_handler() {
 void start_handler() {
   Serial.println("start");
 }
+
 
 
 

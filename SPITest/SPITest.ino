@@ -44,9 +44,9 @@ TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_
 Metro moveMetro = Metro(5000ul);
 Metro checkMetro = Metro(1000ul);
 
-int squirrel_a = 7;
+int squirrel_a = 12;
 int squirrel_b = 8;
-int reset_squirrel = 2;
+int reset_squirrel = 4;
 
 void setup() {
   //initialize the serial port for debugging
