@@ -10,8 +10,8 @@
 
 //config
 unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 500;
-long vmax = 200ul;
+unsigned int current_in_ma = 800;
+long vmax = 2000ul;
 long bow = vmax;
 long end_bow = bow;
 long amax = vmax;
@@ -42,6 +42,7 @@ long dmax = amax;
 #define BOW_3_REGISTER 0x2f
 #define BOW_4_REGISTER 0x30
 #define CLK_FREQ_REGISTER 0x31
+#define POS_COMP_REGISTER 0x32
 #define X_TARGET_REGISTER 0x37
 #define X_TARGET_PIPE_0_REGSISTER 0x38
 #define SH_RAMP_MODE_REGISTER 0x40
@@ -110,13 +111,13 @@ void setup() {
   write43x(squirrel_a, GENERAL_CONFIG_REGISTER, 0); //we use direct values
   write43x(squirrel_a, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_a, START_CONFIG_REGISTER, 0
-    | _BV(0) //xtarget requires start
-  // | _BV(1) //vmax requires start
+    | _BV(0) //bug
+  | _BV(1) //vmax requires start
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
-  write43x(squirrel_a, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
-  write43x(squirrel_a, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(squirrel_a, RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(squirrel_a, SH_RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, BOW_1_REGISTER,bow);
   write43x(squirrel_a, BOW_2_REGISTER,end_bow);
   write43x(squirrel_a, BOW_3_REGISTER,end_bow);
@@ -145,14 +146,14 @@ void setup() {
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER, 0); //direct values and no clock
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER, 0
-    | _BV(0) //xtarget requires start
-  //  | _BV(1) //vmax requires start
+    | _BV(0) //bug
+  | _BV(1) //vmax requires start
   // | _BV(3)
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
-  write43x(squirrel_b, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
-  write43x(squirrel_b, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(squirrel_b, RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+  write43x(squirrel_b, SH_RAMP_MODE_REGISTER,  2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_b, BOW_1_REGISTER,bow);
   write43x(squirrel_b, BOW_2_REGISTER,end_bow);
   write43x(squirrel_b, BOW_3_REGISTER,end_bow);
@@ -181,6 +182,7 @@ void setup() {
   write43x(squirrel_a, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
   write43x(squirrel_b, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
 
+  delay(10000ul);
 
 }
 
@@ -194,10 +196,7 @@ unsigned long prev_target = 0;
 unsigned long target=0;
 unsigned long next_target = random(100000ul);
 
-unsigned long prev_v = 0;
-unsigned long this_v = 0;
 unsigned long next_v =vmax+random(10)*vmax;
-long dir = 0;
 
 void loop() {
   if (toMove || !isMoving) {
@@ -206,15 +205,19 @@ void loop() {
     next_target= random(1000ul)*100ul;
 
     next_v = random(10)*vmax+1;
+    unsigned long direction = 0;
+    if (target<next_target) {
+      direction = _BV(31);  
+    }
     float gear_ratio = (float)random(201)/100.0;
 
     if (isMoving) {
       toMove=false;
-      write43x(squirrel_a, X_TARGET_REGISTER,target);
-      write43x(squirrel_a, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, POS_COMP_REGISTER,target);
+      write43x(squirrel_a, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v) | direction); //set the velocity - TODO recalculate float numbers
 
-      write43x(squirrel_b, X_TARGET_REGISTER,target*gear_ratio);
-      write43x(squirrel_b, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_b, POS_COMP_REGISTER,target*gear_ratio);
+      write43x(squirrel_b, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio) | direction); //set the velocity - TODO recalculate float numbers
 
     } 
     else {
@@ -223,12 +226,12 @@ void loop() {
 
       toMove=true;
       write43x(squirrel_a, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
-      write43x(squirrel_a, X_TARGET_REGISTER,target);
+      write43x(squirrel_a, POS_COMP_REGISTER,target);
       //write43x(squirrel_a, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
 
 
       write43x(squirrel_b, V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
-      write43x(squirrel_b, X_TARGET_REGISTER,target*gear_ratio);
+      write43x(squirrel_b, POS_COMP_REGISTER,target*gear_ratio);
       //write43x(squirrel_b, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio)); //set the velocity - TODO recalculate float numbers
       digitalWrite(start_signal_pin,HIGH);
       pinMode(start_signal_pin,OUTPUT);
@@ -236,23 +239,24 @@ void loop() {
       pinMode(start_signal_pin,INPUT);
 
       //attachInterrupt(4,start_handler,FALLING);
+      
 
       write43x(squirrel_a, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
-  //         | _BV(3) //buggy?
-      | _BV(4)  //use shaddow motion profiles
+      | _BV(1) //buggy?
+      //  | _BV(4)  //use shaddow motion profiles
       // | _BV(5) //external start is an start
-      | _BV(6)  //target reached triggers start event
+      | _BV(8)  //poscomp reached triggers start event
       | _BV(10) //immediate start
       //     | _BV(11)  // the shaddow registers cycle
       | _BV(13)  // coordinate yourself with busy starts
       );   
       write43x(squirrel_b, START_CONFIG_REGISTER, 0
         | _BV(0) //from now on listen to your own start signal
-    //      | _BV(3) //buggy?
-      | _BV(4)  //use shWow motion profiles
+      | _BV(1) //buggy?
+      //  | _BV(4)  //use shWow motion profiles
       // | _BV(5) //external start is an start
-      | _BV(6)  //target reached triggers start event
+      | _BV(8)  //poscomp reached triggers start event
       | _BV(10) //immediate start
       //     | _BV(11)  // the shaddow registers cycle
       | _BV(13)  // coordinate yourself with busy starts
@@ -276,7 +280,7 @@ void loop() {
     position = read43x(squirrel_a,X_ACTUAL_REGISTER,0);
     Serial.print(position);
     Serial.print(" -> ");
-    position  = read43x(squirrel_a,X_TARGET_REGISTER,0);
+    position  = read43x(squirrel_a,POS_COMP_REGISTER,0);
     Serial.println(position);
 
     Serial.print("V A: ");
@@ -290,7 +294,7 @@ void loop() {
     position = read43x(squirrel_b,X_ACTUAL_REGISTER,0);
     Serial.print(position);
     Serial.print(" -> ");
-    position  = read43x(squirrel_b,X_TARGET_REGISTER,0);
+    position  = read43x(squirrel_b,POS_COMP_REGISTER,0);
     Serial.println(position);
 
     Serial.print("V B: ");
@@ -311,6 +315,7 @@ void interrupt_a_handler() {
 void start_handler() {
   Serial.println("start");
 }
+
 
 
 
