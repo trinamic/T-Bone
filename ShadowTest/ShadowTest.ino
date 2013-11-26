@@ -12,10 +12,10 @@
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 800;
 long vmax = 2000ul;
-long bow = vmax;
-long end_bow = bow;
-long amax = vmax;
+long amax = vmax*1000;
 long dmax = amax;
+long bow = amax/3;
+long end_bow = bow;
 
 //register
 #define GENERAL_CONFIG_REGISTER 0x0
@@ -117,10 +117,7 @@ void setup() {
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
-  /*
-  write43x(squirrel_a, INPUT_FILTER_REGISTER, 0x220000ul);
-  write43x(squirrel_b, INPUT_FILTER_REGISTER, 0x220000ul);
-  */
+
   write43x(squirrel_a, RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, SH_RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, BOW_1_REGISTER,bow);
@@ -193,7 +190,7 @@ void setup() {
   write43x(squirrel_a,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
   write43x(squirrel_b,START_DELAY_REGISTER, 256);
 
-  delay(10000ul);
+//  delay(10000ul);
 
 }
 
