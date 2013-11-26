@@ -20,6 +20,7 @@ long dmax = amax;
 //register
 #define GENERAL_CONFIG_REGISTER 0x0
 #define START_CONFIG_REGISTER 0x2
+#define INPUT_FILTER_REGISTER 0x3
 #define SPIOUT_CONF_REGISTER 0x04
 #define STEP_CONF_REGISTER 0x0A
 #define EVENT_CLEAR_CONF_REGISTER 0x0c
@@ -116,6 +117,10 @@ void setup() {
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
   );   
+  /*
+  write43x(squirrel_a, INPUT_FILTER_REGISTER, 0x220000ul);
+  write43x(squirrel_b, INPUT_FILTER_REGISTER, 0x220000ul);
+  */
   write43x(squirrel_a, RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, SH_RAMP_MODE_REGISTER, 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
   write43x(squirrel_a, BOW_1_REGISTER,bow);
@@ -179,8 +184,14 @@ void setup() {
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue());
 
-  write43x(squirrel_a, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
-  write43x(squirrel_b, START_OUT_ADD_REGISTER,10ul*CLOCK_FREQUENCY); //set maximum acceleration
+  write43x(squirrel_a, START_OUT_ADD_REGISTER,100ul*CLOCK_FREQUENCY); //set maximum acceleration
+  write43x(squirrel_b, START_OUT_ADD_REGISTER,100ul*CLOCK_FREQUENCY); //set maximum acceleration
+/*  
+  write43x(squirrel_a,INTERRUPT_REGISTER, _BV(2));
+  write43x(squirrel_b,INTERRUPT_REGISTER, _BV(2));
+*/
+  write43x(squirrel_a,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
+  write43x(squirrel_b,START_DELAY_REGISTER, 256);
 
   delay(10000ul);
 
@@ -202,7 +213,7 @@ void loop() {
   if (toMove || !isMoving) {
     prev_target = target;
     target = next_target;
-    next_target= random(1000ul)*100ul;
+    next_target= random(1000ul)*1000ul;
 
     next_v = random(10)*vmax+1;
     unsigned long direction = 0;
@@ -238,29 +249,24 @@ void loop() {
       digitalWrite(start_signal_pin,LOW);
       pinMode(start_signal_pin,INPUT);
 
-      //attachInterrupt(4,start_handler,FALLING);
-      
+      attachInterrupt(4,start_handler,FALLING);
 
-      write43x(squirrel_a, START_CONFIG_REGISTER, 0
-        | _BV(0) //from now on listen to your own start signal
-      | _BV(1) //buggy?
-      //  | _BV(4)  //use shaddow motion profiles
-      // | _BV(5) //external start is an start
-      | _BV(8)  //poscomp reached triggers start event
-      | _BV(10) //immediate start
-      //     | _BV(11)  // the shaddow registers cycle
-      | _BV(13)  // coordinate yourself with busy starts
-      );   
-      write43x(squirrel_b, START_CONFIG_REGISTER, 0
-        | _BV(0) //from now on listen to your own start signal
-      | _BV(1) //buggy?
-      //  | _BV(4)  //use shWow motion profiles
-      // | _BV(5) //external start is an start
-      | _BV(8)  //poscomp reached triggers start event
-      | _BV(10) //immediate start
-      //     | _BV(11)  // the shaddow registers cycle
-      | _BV(13)  // coordinate yourself with busy starts
-      );   
+      write43x(squirrel_a, START_CONFIG_REGISTER, 0);   
+      write43x(squirrel_b, START_CONFIG_REGISTER, 0);   
+      const unsigned long second_start= 0
+       // | _BV(0) //from now on listen to your own start signal
+      //  | _BV(1) //v_max requires start
+            | _BV(4)  //use shaddow motion profiles
+          // | _BV(5) //external start is an start
+          | _BV(8)  //poscomp reached triggers start event
+// not neeeded since no external start            | _BV(10) //immediate start
+              //     | _BV(11)  // the shaddow registers cycle
+              | _BV(13)  // coordinate yourself with busy starts
+                ;
+
+
+      write43x(squirrel_a, START_CONFIG_REGISTER, second_start);   
+      write43x(squirrel_b, START_CONFIG_REGISTER, second_start);   
 
     }
 
@@ -287,7 +293,7 @@ void loop() {
     position = read43x(squirrel_a,V_ACTUAL_REGISTER,0);
     Serial.print(position);
     Serial.print(" -> ");
-    position  = read43x(squirrel_a,V_MAX_REGISTER,0);
+    position  = read43x(squirrel_a,V_MAX_REGISTER,0) >>8;
     Serial.println(position);
 
     Serial.print("X B: ");
@@ -301,7 +307,7 @@ void loop() {
     position = read43x(squirrel_b,V_ACTUAL_REGISTER,0);
     Serial.print(position);
     Serial.print(" -> ");
-    position  = read43x(squirrel_b,V_MAX_REGISTER,0);
+    position  = read43x(squirrel_b,V_MAX_REGISTER,0)>>8;
     Serial.println(position);
 
     Serial.println();
@@ -313,8 +319,9 @@ void interrupt_a_handler() {
 }
 
 void start_handler() {
-  Serial.println("start");
+  toMove=true;
 }
+
 
 
 
