@@ -7,13 +7,13 @@ void write43x(unsigned char motor, unsigned char tmc43x_register, unsigned long 
 
 }
 
-unsigned long read43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
+ long read43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
   send43x(motor, tmc43x_register, datagram);
-  unsigned long result =  send43x(motor,tmc43x_register, datagram);
+   long result =  send43x(motor,tmc43x_register, datagram);
   return result;
 }
 
-unsigned long send43x(unsigned char motor,unsigned char tmc43x_register, unsigned long datagram) {
+ long send43x(unsigned char motor,unsigned char tmc43x_register, unsigned long datagram) {
   unsigned long i_datagram;
   //select the TMC driver
   digitalWrite(motor,LOW);
@@ -28,11 +28,11 @@ unsigned long send43x(unsigned char motor,unsigned char tmc43x_register, unsigne
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;
-  i_datagram = SPI.transfer((datagram >> 16) & 0xff);
+  i_datagram |= SPI.transfer((datagram >> 16) & 0xff);
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram >>  8) & 0xff);
   i_datagram <<= 8;
-  i_datagram |= SPI.transfer((datagram) & 0xff);
+  i_datagram |= SPI.transfer(datagram & 0xff);
 
 #ifdef DEBUG
   Serial.print("Status :");
