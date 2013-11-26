@@ -103,7 +103,7 @@ void setup() {
   digitalWrite(interrupt_b,LOW);
   pinMode(start_signal_pin,INPUT);
   digitalWrite(start_signal_pin,LOW);
-  attachInterrupt(target_reached_interrupt_a,interrupt_a_handler,RISING);
+ 
   //initialize the serial port for debugging
   Serial.begin(9600);
   //initialize SPI
@@ -206,6 +206,9 @@ unsigned long next_target = random(100000ul);
 
 unsigned long next_v =vmax+random(10)*vmax;
 
+volatile long next_pos_comp_a = 0;
+volatile long next_pos_comp_b = 0;
+
 void loop() {
   if (toMove || !isMoving) {
     prev_target = target;
@@ -221,10 +224,12 @@ void loop() {
 
     if (isMoving) {
       toMove=false;
-      write43x(squirrel_a, POS_COMP_REGISTER,target);
+      next_pos_comp_a = target;
+//      write43x(squirrel_a, POS_COMP_REGISTER,target);
       write43x(squirrel_a, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v) | direction); //set the velocity - TODO recalculate float numbers
 
-      write43x(squirrel_b, POS_COMP_REGISTER,target*gear_ratio);
+      next_pos_comp_b = target*gear_ratio;
+//      write43x(squirrel_b, POS_COMP_REGISTER,target*gear_ratio);
       write43x(squirrel_b, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v*gear_ratio) | direction); //set the velocity - TODO recalculate float numbers
 
     } 
@@ -311,12 +316,10 @@ void loop() {
   }
 }
 
-void interrupt_a_handler() {
-  toMove=true;
-}
-
 void start_handler() {
   toMove=true;
+      write43x(squirrel_a, POS_COMP_REGISTER,next_pos_comp_a);
+      write43x(squirrel_b, POS_COMP_REGISTER,next_pos_comp_b);
 }
 
 
