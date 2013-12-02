@@ -11,11 +11,11 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 20ul*256ul;
-long bow = vmax*1000;
-long end_bow = bow;
-long amax = vmax*1000;
-long dmax = amax;
+unsigned long vmax = 20ul*256ul;
+unsigned long bow = vmax*1000;
+unsigned long end_bow = bow;
+unsigned long amax = vmax*1000;
+unsigned long dmax = amax;
 
 //register
 #define GENERAL_CONFIG_REGISTER 0x0
@@ -229,9 +229,9 @@ void loop() {
     next_pos_comp_a = target;
     unsigned long drive_target = calculate_x_target(prev_target,target); //ok let's try to drive twice as far
 
-    unsigned long geared_target = target*gear_ratio;
+    long geared_target = target*gear_ratio;
     next_pos_comp_b = geared_target;
-    unsigned long geared_drive_target =  calculate_x_target(prev_target*gear_ratio, geared_target);
+    long geared_drive_target =  calculate_x_target(prev_target*gear_ratio, geared_target);
     unsigned long geared_speed = next_v*gear_ratio;
 
     if (isMoving){
