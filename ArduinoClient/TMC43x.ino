@@ -58,6 +58,10 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
   return NULL;
 }
 
+inline long getMotorPosition(unsigned char motor_nr) {
+  return read43x(motor_nr, X_TARGET_REGISTER ,0);
+}
+
 void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boolean configure_shadow) {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
 
