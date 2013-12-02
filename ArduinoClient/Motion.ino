@@ -1,6 +1,7 @@
 volatile boolean next_move_prepared = false;
 volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
+volatile unsigned int target_motor_status;
 
 void startMotion() {
   in_motion = true;
@@ -18,6 +19,7 @@ void stopMotion() {
 
 void checkMotion() {
   if (in_motion && !next_move_prepared) {
+     
     if (moveQueue.count()>0) {
       byte moving_motors=0;
       //analysze the movement (nad take a look at the next
@@ -52,6 +54,9 @@ void checkMotion() {
         }
       } 
       while (follower.type == followmotor);
+      
+      //in the end all moviong motorts must have apssed pos_comp
+      target_motor_status = moving_motors;
 
       for (char i; i<nr_of_motors;i++) {
         //configure all non moving motors to stop
@@ -79,13 +84,7 @@ void checkMotion() {
 
       //for the first move we need to configure everything a bit 
       if (!prepare_shaddow_registers) {
-        //and carefully trigger the start pin 
-        digitalWrite(start_signal_pin,HIGH);
-        pinMode(start_signal_pin,OUTPUT);
-        digitalWrite(start_signal_pin,LOW);
-        pinMode(start_signal_pin,INPUT);
-        //From now on the motor drivers move themeself - or somethinglike this
-        attachInterrupt(start_signal_pin , target_reached_handler, RISING);
+        signal_start();
         //and we need to prepare the next move for the shadow registers
         prepare_shaddow_registers = true;
         next_move_prepared = false;

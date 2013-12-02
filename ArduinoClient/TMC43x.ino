@@ -1,3 +1,4 @@
+volatile long next_pos_comp[nr_of_motors];
 
 void initialzeTMC43x() {
   //reset the quirrel
@@ -63,7 +64,7 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
 
 inline long getMotorPosition(unsigned char motor_nr) {
   return read43x(motors[motor_nr].cs_pin, X_TARGET_REGISTER ,0);
-    //TODO do we have to take into account that the motor may never have reached the x_target??
+  //TODO do we have to take into account that the motor may never have reached the x_target??
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
@@ -90,35 +91,37 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     dMax = (dMax!=0)? dMax * factor: aMax;
     startBow = startBow * factor;
     endBow = (endBow!=0)? endBow * factor: startBow;
-  } else {
+  } 
+  else {
     dMax = (dMax!=0)? dMax: aMax;
     endBow = (endBow!=0)? endBow: startBow;
   }
-  
+
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = getMotorPosition(motor_nr);
   long aim_target = 2*(pos-last_pos)+last_pos;
-  
-  #ifdef DEBUG_MOTOR_CONTFIG    
-    Serial.print(F("Motor "));
-    Serial.print(motor_nr,DEC);
-    Serial.print(F(": pos="));
-    Serial.print(pos);
-    Serial.print(F(" ["));
-    Serial.print(last_pos);
-    Serial.print(F(" -> "));
-    Serial.print(aim_target);
-    Serial.print(F("], vMax="));
-    Serial.print(vMax);
-    Serial.print(F(", aMax="));
-    Serial.print(aMax);
-    Serial.print(F(", dMax="));
-    Serial.print(dMax);
-    Serial.print(F(": startBow="));
-    Serial.print(startBow);
-    Serial.print(F(", endBow="));
-    Serial.print(endBow);
-    Serial.println();
+
+
+#ifdef DEBUG_MOTOR_CONTFIG    
+  Serial.print(F("Motor "));
+  Serial.print(motor_nr,DEC);
+  Serial.print(F(": pos="));
+  Serial.print(pos);
+  Serial.print(F(" ["));
+  Serial.print(last_pos);
+  Serial.print(F(" -> "));
+  Serial.print(aim_target);
+  Serial.print(F("], vMax="));
+  Serial.print(vMax);
+  Serial.print(F(", aMax="));
+  Serial.print(aMax);
+  Serial.print(F(", dMax="));
+  Serial.print(dMax);
+  Serial.print(F(": startBow="));
+  Serial.print(startBow);
+  Serial.print(F(", endBow="));
+  Serial.print(endBow);
+  Serial.println();
 #endif    
 
   if (!configure_shadow) {
@@ -129,6 +132,10 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     write43x(cs_pin,BOW_2_REGISTER,endBow);
     write43x(cs_pin,BOW_3_REGISTER,endBow);
     write43x(cs_pin,BOW_4_REGISTER,startBow);
+    //TODO pos comp is not shaddowwed
+    next_pos_comp[motor_nr] = 0;
+    write43x(cs_pin,POS_COMP_REGISTER,startBow);
+
   } 
   else {
     write43x(cs_pin,SH_V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
@@ -138,10 +145,22 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     write43x(cs_pin,SH_BOW_2_REGISTER,endBow);
     write43x(cs_pin,SH_BOW_3_REGISTER,endBow);
     write43x(cs_pin,SH_BOW_4_REGISTER,startBow);
+
+    //TODO pos comp is not shaddowwed
+    next_pos_comp[motor_nr] = pos;
+
   }
   write43x(cs_pin,X_TARGET_REGISTER,pos);
 }
 
+
+inline void signal_start() {
+  //carefully trigger the start pin 
+  digitalWrite(start_signal_pin,HIGH);
+  pinMode(start_signal_pin,OUTPUT);
+  digitalWrite(start_signal_pin,LOW);
+  pinMode(start_signal_pin,INPUT);
+}
 
 
 
