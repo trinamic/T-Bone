@@ -13,6 +13,7 @@ void initialzeTMC43x() {
     pinMode(motors[i].cs_pin,OUTPUT);
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
+    attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
   }
   //enable the reset again
   delay(1);

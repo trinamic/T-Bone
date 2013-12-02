@@ -27,6 +27,7 @@ struct squirrel {
   char cs_pin;
   char target_reached_interrupt_pin;
   char target_reached_interrupt_nr;
+  void (*target_reached_interrupt_routine)();
   //we have a TMC260 at the end so we configure a configurer
   TMC26XGenerator tmc260;
   int steps_per_revolution;
@@ -34,7 +35,6 @@ struct squirrel {
   float dMax;
   long startBow;
   long endBow;
-  void (*target_reached_interrupt_routine)();
 };
 
 
