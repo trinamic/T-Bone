@@ -224,7 +224,7 @@ void loop() {
 
     next_v = random(10)*vmax+1;
 
-    float gear_ratio = (float)random(201)/100.0;
+    float gear_ratio = (float)random(101)/100.0;
 
     next_pos_comp_a = target;
     unsigned long drive_target = calculate_x_target(prev_target,target); //ok let's try to drive twice as far
@@ -288,7 +288,7 @@ void loop() {
 
   }
   if (checkMetro.check()) {
-    unsigned long position;
+    long position;
     Serial.print("X A: ");
     position = read43x(squirrel_a,X_ACTUAL_REGISTER,0);
     Serial.print(position);
@@ -296,12 +296,13 @@ void loop() {
     position  = read43x(squirrel_a,X_TARGET_REGISTER,0);
     Serial.println(position);
 
+    unsigned long velocity;
     Serial.print("V A: ");
-    position = read43x(squirrel_a,V_ACTUAL_REGISTER,0);
-    Serial.print(position);
+    velocity = read43x(squirrel_a,V_ACTUAL_REGISTER,0);
+    Serial.print(velocity);
     Serial.print(" -> ");
-    position  = read43x(squirrel_a,V_MAX_REGISTER,0) >> 8;
-    Serial.println(position);
+    velocity  = read43x(squirrel_a,V_MAX_REGISTER,0) >> 8;
+    Serial.println(velocity);
 
     Serial.print("X B: ");
     position = read43x(squirrel_b,X_ACTUAL_REGISTER,0);
@@ -311,11 +312,11 @@ void loop() {
     Serial.println(position);
 
     Serial.print("V B: ");
-    position = read43x(squirrel_b,V_ACTUAL_REGISTER,0);
-    Serial.print(position);
+    velocity = read43x(squirrel_b,V_ACTUAL_REGISTER,0);
+    Serial.print(velocity);
     Serial.print(" -> ");
-    position  = read43x(squirrel_b,V_MAX_REGISTER,0) >> 8;
-    Serial.println(position);
+    velocity  = read43x(squirrel_b,V_MAX_REGISTER,0) >> 8;
+    Serial.println(velocity);
 
     Serial.println();
   }
@@ -358,7 +359,7 @@ inline void signal_start() {
 }
 
 inline long calculate_x_target(long from, long to) {
-  return 2*(to-from)+from;
+  return 2l*(to-from)+from;
 }
 
 
