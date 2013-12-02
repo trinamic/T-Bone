@@ -19,7 +19,7 @@ void stopMotion() {
 
 void checkMotion() {
   if (in_motion && !next_move_prepared) {
-     
+
     if (moveQueue.count()>0) {
       byte moving_motors=0;
       //analysze the movement (nad take a look at the next
@@ -54,7 +54,7 @@ void checkMotion() {
         }
       } 
       while (follower.type == followmotor);
-      
+
       //in the end all moviong motorts must have apssed pos_comp
       target_motor_status = moving_motors;
 
@@ -104,18 +104,12 @@ void checkMotion() {
   }
 }
 
-
-void target_reached_handler() {
-  Serial.println("start");
-  next_move_prepared=false;
-}
-
 void motor_1_target_reached() {
   motor_target_reached(0);
 }
 
 void motor_2_target_reached() {
-  motor_target_reached(0);
+  motor_target_reached(1);
 }
 
 void motor_target_reached(char motor_nr) {
@@ -123,7 +117,13 @@ void motor_target_reached(char motor_nr) {
   read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
   //and write down which motor touched the target
   motor_status |= _BV(motor_nr);  
+  if (motor_status == target_motor_status) {
+    //TODO we need some kind of 'At least here'??
+    Serial.println("start");
+    next_move_prepared=false;
+  }
 }
+
 
 
 
