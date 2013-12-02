@@ -1,5 +1,6 @@
 volatile boolean next_move_prepared = false;
 volatile boolean prepare_shaddow_registers = false;
+volatile unsigned int motor_status;
 
 void startMotion() {
   in_motion = true;
@@ -156,11 +157,16 @@ void target_reached_handler() {
   next_move_prepared=false;
 }
 
+void motor_1_target_reached() {
+}
+
+void motor_2_target_reached() {
+}
 
 
-
-
-
+void motor_target_reached(char motor_nr) {
+  motor_status |= _BV(motor_nr);  
+}
 
 
 

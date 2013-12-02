@@ -34,6 +34,7 @@ struct squirrel {
   float dMax;
   long startBow;
   long endBow;
+  void (*target_reached_interrupt_routine)();
 };
 
 
