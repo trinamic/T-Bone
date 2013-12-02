@@ -158,13 +158,17 @@ void target_reached_handler() {
 }
 
 void motor_1_target_reached() {
+  motor_target_reached(0);
 }
 
 void motor_2_target_reached() {
+  motor_target_reached(0);
 }
 
-
 void motor_target_reached(char motor_nr) {
+  //clear the event register
+  read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
+  //and write down which motor touched the target
   motor_status |= _BV(motor_nr);  
 }
 
