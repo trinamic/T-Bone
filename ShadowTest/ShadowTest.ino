@@ -11,7 +11,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 200ul*256ul;
+long vmax = 20ul*256ul;
 long bow = vmax*1000;
 long end_bow = bow;
 long amax = vmax*1000;
@@ -24,7 +24,7 @@ long dmax = amax;
 #define SPIOUT_CONF_REGISTER 0x04
 #define STEP_CONF_REGISTER 0x0A
 #define EVENT_CLEAR_CONF_REGISTER 0x0c
-#define INTERRUPT_REGISTER 0x0d
+#define INTERRUPT_CONFIG_REGISTER 0x0d
 #define EVENTS_REGISTER 0x0e
 #define STATUS_REGISTER 0x0f
 #define START_OUT_ADD_REGISTER 0x11
@@ -76,12 +76,12 @@ Metro checkMetro = Metro(1000ul);
 
 int squirrel_a = 8;
 int interrupt_a = 3;
-int target_reached_interrupt_a=0;
+int pos_com_reached_interrupt_a=0;
 
 int squirrel_b = 12;
 int interrupt_b = 2;
 int reset_squirrel = 4;
-int target_reached_interrupt_b=1;
+int pos_com_reached_interrupt_b=1;
 int start_signal_pin = 7;
 
 
@@ -100,7 +100,7 @@ void setup() {
   digitalWrite(interrupt_a,LOW);
   pinMode(interrupt_b,INPUT);
   digitalWrite(interrupt_b,LOW);
-  pinMode(start_signal_pin,INPUT);
+  pinMode(start_signal_pin,OUTPUT);
   digitalWrite(start_signal_pin,LOW);
   //initialize the serial port for debugging
   Serial.begin(9600);
@@ -146,7 +146,7 @@ void setup() {
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER, _BV(0) | _BV(1)); //direct values and no clock
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
   write43x(squirrel_b, START_CONFIG_REGISTER, 0
-    | _BV(0) //bug
+    | _BV(0) //xstart requires start
   | _BV(1) //vmax requires start
   | _BV(5) //external start is an start
   | _BV(10)//immediate start
@@ -185,7 +185,13 @@ void setup() {
   write43x(squirrel_a,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
   write43x(squirrel_b,START_DELAY_REGISTER, 256);
 
-  delay(10000ul);
+  //attach our pos comp handlers to the internal interrupts and configure them
+  attachInterrupt(pos_com_reached_interrupt_a,squirrel_a_pos_comp_reached,FALLING);
+  write43x(squirrel_a, INTERRUPT_CONFIG_REGISTER,_BV(1));
+  attachInterrupt(pos_com_reached_interrupt_b,squirrel_b_pos_comp_reached,FALLING);
+  write43x(squirrel_b, INTERRUPT_CONFIG_REGISTER,_BV(1));
+
+  delay(3000ul);
 }
 
 unsigned long tmc43xx_write;
@@ -194,37 +200,46 @@ unsigned long tmc43xx_read;
 volatile boolean toMove = true;
 boolean isMoving =false;
 
-unsigned long prev_target = 0;
-unsigned long target=0;
-unsigned long next_target = random(100000ul);
+long prev_target = 0;
+long target= 0;
 
 unsigned long prev_v = 0;
 unsigned long this_v = 0;
 unsigned long next_v =vmax+random(10)*vmax;
 long dir = 0;
 
+long next_pos_comp_a;
+long next_pos_comp_b;
+
+char all_targets_reached = 0;
+#define SQUIRREL_A_TARGET_REACHED 0
+#define SQUIRREL_B_TARGET_REACHED 1
+#define ALL_TARGETS_REACHED 3
+
+
 void loop() {
   if (toMove || !isMoving) {
     prev_target = target;
-    target = next_target;
-    unsigned long drive_target = target << 1; //ok let's try to drive twice as far
-
-    next_target= random(1000ul)*100ul;
+    target = random(1000ul)*100ul;
 
     next_v = random(10)*vmax+1;
 
     float gear_ratio = (float)random(201)/100.0;
+
+    next_pos_comp_a = target;
+    unsigned long drive_target = calculate_x_target(prev_target,target); //ok let's try to drive twice as far
+
     unsigned long geared_target = target*gear_ratio;
-    unsigned long geared_drive_target =  geared_target << 1;
+    next_pos_comp_b = geared_target;
+    unsigned long geared_drive_target =  calculate_x_target(prev_target*gear_ratio, geared_target);
     unsigned long geared_speed = next_v*gear_ratio;
 
-    if (isMoving) {
+    if (isMoving){
       toMove=false;
-      write43x(squirrel_a, POS_COMP_REGISTER,target);
+
       write43x(squirrel_a, X_TARGET_REGISTER,drive_target);
       write43x(squirrel_a, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(next_v)); //set the velocity - TODO recalculate float numbers
 
-      write43x(squirrel_b, POS_COMP_REGISTER,geared_target);
       write43x(squirrel_b, X_TARGET_REGISTER,geared_drive_target);
       write43x(squirrel_b, SH_V_MAX_REGISTER, FIXED_24_8_MAKE(geared_speed)); //set the velocity - TODO recalculate float numbers
 
@@ -241,23 +256,19 @@ void loop() {
       write43x(squirrel_b, POS_COMP_REGISTER,geared_target);
       write43x(squirrel_b, X_TARGET_REGISTER,geared_drive_target);
       write43x(squirrel_b, V_MAX_REGISTER, FIXED_24_8_MAKE(geared_speed)); //set the velocity - TODO recalculate float numbers
-      digitalWrite(start_signal_pin,HIGH);
-      pinMode(start_signal_pin,OUTPUT);
-      digitalWrite(start_signal_pin,LOW);
-      pinMode(start_signal_pin,INPUT);
 
-      attachInterrupt(4,start_handler,RISING);
+      signal_start();
 
-       const unsigned long second_start= 0
-     //   | _BV(0) //x_target
-        | _BV(1) //v_max requires start
-            | _BV(4)  //use shaddow motion profiles
-          // | _BV(5) //external start is an start
-          | _BV(8)  //poscomp reached triggers start event
-// not neeeded since no external start            | _BV(10) //immediate start
-              //     | _BV(11)  // the shaddow registers cycle
-              | _BV(13)  // coordinate yourself with busy starts
-                ;
+      const unsigned long second_start= 0
+        | _BV(0) //x_target
+        //| _BV(1) //v_max requires start
+        | _BV(4)  //use shaddow motion profiles
+          | _BV(5) //external start is an start
+            //  | _BV(8)  //poscomp reached triggers start event
+            // not neeeded since no external start            | _BV(10) //immediate start
+            //     | _BV(11)  // the shaddow registers cycle
+            //  | _BV(13)  // coordinate yourself with busy starts
+            ;
 
 
       write43x(squirrel_a, START_CONFIG_REGISTER, second_start);   
@@ -310,9 +321,49 @@ void loop() {
   }
 }
 
-void start_handler() {
-  Serial.println("start");
+void squirrel_a_pos_comp_reached() {
+  all_targets_reached |= _BV(SQUIRREL_A_TARGET_REACHED);
+  if (all_targets_reached == ALL_TARGETS_REACHED) {
+    initialise_new_targets(); 
+  }
+}
+
+void squirrel_b_pos_comp_reached() {  
+  all_targets_reached |= _BV(SQUIRREL_B_TARGET_REACHED);
+  if (all_targets_reached == ALL_TARGETS_REACHED) {
+    initialise_new_targets(); 
+  }
+}
+
+void initialise_new_targets() {
+  Serial.println("Next");
+  //set the new pos_comp values
+  write43x(squirrel_a,POS_COMP_REGISTER,next_pos_comp_a);
+  write43x(squirrel_b,POS_COMP_REGISTER,next_pos_comp_b);
+  //and we start again
+  all_targets_reached=0;
+  //clear the squirrel events
+  read43x(squirrel_a,EVENTS_REGISTER,0);
+  read43x(squirrel_b,EVENTS_REGISTER,0);
+  //and start again()
+  signal_start();
+  //we need a new position
   toMove=true;
 }
+
+inline void signal_start() {
+  digitalWrite(start_signal_pin,HIGH);
+
+  digitalWrite(start_signal_pin,LOW);
+}
+
+inline long calculate_x_target(long from, long to) {
+  return 2*(to-from)+from;
+}
+
+
+
+
+
 
 
