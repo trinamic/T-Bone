@@ -62,7 +62,9 @@ const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long
 }
 
 inline long getMotorPosition(unsigned char motor_nr) {
-  return read43x(motor_nr, X_TARGET_REGISTER ,0);
+  return read43x(motors[motor_nr].cs_pin, X_TARGET_REGISTER ,0);
+    //TODO do we have to take into account that the motor may never have reached the x_target??
+  //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
 void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boolean configure_shadow) {
@@ -93,10 +95,20 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     endBow = (endBow!=0)? endBow: startBow;
   }
   
+  //calculate the value for x_target so taht we go over pos_comp
+  long last_pos = getMotorPosition(motor_nr);
+  long aim_target = 2*(pos-last_pos)+last_pos;
+  
   #ifdef DEBUG_MOTOR_CONTFIG    
     Serial.print(F("Motor "));
     Serial.print(motor_nr,DEC);
-    Serial.print(F(": vMax="));
+    Serial.print(F(": pos="));
+    Serial.print(pos);
+    Serial.print(F(" ["));
+    Serial.print(last_pos);
+    Serial.print(F(" -> "));
+    Serial.print(aim_target);
+    Serial.print(F("], vMax="));
     Serial.print(vMax);
     Serial.print(F(", aMax="));
     Serial.print(aMax);
