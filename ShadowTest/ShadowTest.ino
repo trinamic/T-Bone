@@ -20,6 +20,7 @@ long dmax = amax;
 //register
 #define GENERAL_CONFIG_REGISTER 0x0
 #define START_CONFIG_REGISTER 0x2
+#define INPUT_FILTER_REGISTER 0x3
 #define SPIOUT_CONF_REGISTER 0x04
 #define STEP_CONF_REGISTER 0x0A
 #define EVENT_CLEAR_CONF_REGISTER 0x0c
@@ -30,7 +31,7 @@ long dmax = amax;
 #define GEAR_RATIO_REGISTER 0x12
 #define START_DELAY_REGISTER 0x13
 #define RAMP_MODE_REGISTER 0x20
-#define X_ACTUAL_REGISTER 0x21
+#define X_ACTUAL_REGISTER 0x21 
 #define V_ACTUAL_REGISTER 0x22
 #define V_MAX_REGISTER 0x24
 #define V_START_REGISTER 0x25
@@ -42,6 +43,7 @@ long dmax = amax;
 #define BOW_3_REGISTER 0x2f
 #define BOW_4_REGISTER 0x30
 #define CLK_FREQ_REGISTER 0x31
+#define POS_COMP_REGISTER 0x32
 #define X_TARGET_REGISTER 0x37
 #define X_TARGET_PIPE_0_REGSISTER 0x38
 #define SH_RAMP_MODE_REGISTER 0x40
@@ -58,7 +60,6 @@ long dmax = amax;
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
 #define START_OUT_ADD_REGISTER 0x11
-
 
 //values
 #define TMC_26X_CONFIG_SPI 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
