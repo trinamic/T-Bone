@@ -277,12 +277,20 @@ void loop() {
 
     }
 
-    Serial.print("Move to ");
+    Serial.print("Move from ");
+    Serial.print(prev_target);
+    Serial.print(" to ");
     Serial.print(target);
     Serial.print(" with ");
     Serial.println(next_v);
-    Serial.print("Gear ration: ");
+    Serial.print("Gear at ");
     Serial.println(gear_ratio);
+    Serial.print(" from ");
+    Serial.print(prev_target*gear_ratio);
+    Serial.print(" to ");
+    Serial.print(geared_target);
+    Serial.print(" with ");
+    Serial.println(geared_speed);
     Serial.println(); 
 
 
