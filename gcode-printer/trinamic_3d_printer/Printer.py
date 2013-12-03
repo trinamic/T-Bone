@@ -115,28 +115,78 @@ class Printer():
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to " + str(x_step))
-            self.machine.move_to(self.x_axis_motor, x_step, step_speed_vector['x'])
+            self.machine.move_to((
+                {
+                    'motor': self.x_axis_motor,
+                    'target:': x_step,
+                    'speed': step_speed_vector['x'],
+                    'acceleration': self.x_axis_max_step_acceleration,
+                    'deceleration': self.x_axis_max_step_acceleration,
+                    'startBow': self.x_axis_bow,
+                    'endBow': self.x_axis_bow
+                }
+            ))
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to " + str(y_step))
-            self.machine.move_to(self.y_axis_motor, y_step, step_speed_vector['y'])
+            self.machine.move_to((
+                {
+                    'motor': self.y_axis_motor,
+                    'target:': y_step,
+                    'speed': step_speed_vector['y'],
+                    'acceleration': self.y_axis_max_step_acceleration,
+                    'deceleration': self.y_axis_max_step_acceleration,
+                    'startBow': self.y_axis_bow,
+                    'endBow': self.y_axis_bow
+                }
+            ))
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if abs(delta_x) > abs(delta_y):
-                y_gearing = move_vector['y'] / move_vector['x']
-                _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_gearing))
-                self.machine.move_to(self.x_axis_motor, x_step, step_speed_vector['x'], [{
-                                                                                            'motor': self.y_axis_motor,
-                                                                                            'gearing': y_gearing
-                                                                                        }])
+                y_factor = move_vector['y'] / move_vector['x']
+                _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_factor))
+                self.machine.move_to((
+                    {
+                        'motor': self.x_axis_motor,
+                        'target:': x_step,
+                        'speed': step_speed_vector['x'],
+                        'acceleration': self.x_axis_max_step_acceleration,
+                        'deceleration': self.x_axis_max_step_acceleration,
+                        'startBow': self.x_axis_bow,
+                        'endBow': self.x_axis_bow
+                    }, {
+                        'motor': self.y_axis_motor,
+                        'target:': y_step,
+                        'speed': step_speed_vector['y'],
+                        'acceleration': self.y_axis_max_step_acceleration * y_factor,
+                        'deceleration': self.y_axis_max_step_acceleration * y_factor,
+                        'startBow': self.y_axis_bow * y_factor,
+                        'endBow': self.y_axis_bow * y_factor
+                    }
+                ))
                 #move
             else:
-                x_gearing = move_vector['x'] / move_vector['y']
-                _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_gearing))
-                self.machine.move_to(self.y_axis_motor, y_step, step_speed_vector['y'], [{
-                                                                                            'motor': self.x_axis_motor,
-                                                                                            'gearing': x_gearing
-                                                                                        }])
+                x_factor = move_vector['x'] / move_vector['y']
+                _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_factor))
+                self.machine.move_to((
+                    {
+                        'motor': self.x_axis_motor,
+                        'target:': x_step,
+                        'speed': step_speed_vector['x'],
+                        'acceleration': self.x_axis_max_step_acceleration * x_factor,
+                        'deceleration': self.x_axis_max_step_acceleration * x_factor,
+                        'startBow': self.x_axis_bow * x_factor,
+                        'endBow': self.x_axis_bow * x_factor
+                    }, {
+                        'motor': self.y_axis_motor,
+                        'target:': y_step,
+                        'speed': step_speed_vector['y'],
+                        'acceleration': self.y_axis_max_step_acceleration,
+                        'deceleration': self.y_axis_max_step_acceleration,
+                        'startBow': self.y_axis_bow,
+                        'endBow': self.y_axis_bow
+                    }
+                ))
                 #move
         if not target_speed == None:
             self.current_speed = target_speed
@@ -145,11 +195,6 @@ class Printer():
         motor = axis_config["motor"]
         current = axis_config["current"]
         self.machine.set_current(motor, current)
-
-        max_acceleration = axis_config["max-acceleration"]
-        axis_scale = axis_config["steps-per-mm"]
-
-        self.machine.set_acceleration_settings(motor, max_acceleration * axis_scale)
 
 
 def _convert_mm_to_steps(millimeters, conversion_factor):

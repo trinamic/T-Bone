@@ -62,6 +62,7 @@ class Machine():
         command.arguments = []
         for motor in motors:
             command.arguments.append(int(motor['motor']))
+            command.arguments.append(float(motor['target']))
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
             command.arguments.append(int(motor['deceleration']))
@@ -98,28 +99,6 @@ class Machine():
         else:
         #while self.machine_connection.internal_queue_length > 0:
             pass # just wait TODO timeout??
-
-    def set_acceleration_settings(self, motor, max_acceleration, max_deceleration=None, start_bow=None, end_bow=None):
-        #reconstruct all values
-        if not max_deceleration:
-            max_deceleration = 0
-        if not start_bow:
-            start_bow = max_acceleration / 3 #todo test
-        if not end_bow:
-            end_bow = 0
-        command = MachineCommand()
-        command.command_number = 3
-        command.arguments = [
-            int(motor),
-            int(max_acceleration),
-            int(max_deceleration),
-            int(start_bow),
-            int(end_bow)
-        ]
-        reply = self.machine_connection.send_command(command)
-        if not reply or reply.command_number != 0:
-            raise MachineError("Unable to set acceleration settings")
-
 
 class _MachineConnection:
     def __init__(self, machine_serial):
