@@ -8,19 +8,12 @@ enum movement_type {
 struct movement { 
   movement_type type; //movement to pos or gearing chain
   unsigned char motor;
-  union data {
-    struct {
-      long target;
-      double vmax;
-    } 
-    move;
-    struct {
-      long target;
-      double factor;
-    } 
-    follow;
-  } 
-  data;
+  long target;
+  double vMax;
+  long aMax;
+  long dMax;
+  long startBow;
+  long endBow;
 };
 
 struct squirrel {
@@ -31,10 +24,8 @@ struct squirrel {
   //we have a TMC260 at the end so we configure a configurer
   TMC26XGenerator tmc260;
   int steps_per_revolution;
-  float aMax;
-  float dMax;
-  long startBow;
-  long endBow;
 };
+
+
 
 

@@ -31,11 +31,11 @@ void checkMotion() {
       Serial.print(F("Moving motor "));
       Serial.print(move.motor,DEC);
       Serial.print(F(" to "));
-      Serial.print(move.data.move.target);
+      Serial.print(move.target);
       Serial.print(F(" at "));
-      Serial.println(move.data.move.vmax);
+      Serial.println(move.vMax);
 #endif
-      moveMotor(move.motor, move.data.move.target,move.data.move.vmax, 1, prepare_shaddow_registers);
+      moveMotor(move.motor, move.target, move.vMax, move.aMax, move.dMax, move.startBow, move.endBow, prepare_shaddow_registers);
       moving_motors |= _BV(move.motor);
 
       movement follower;
@@ -46,10 +46,10 @@ void checkMotion() {
 #ifdef DEBUG_MOTION
           Serial.print(F(", following motor "));
           Serial.print(follower.motor,DEC);
-          Serial.print(F(" by "));
-          Serial.println(follower.data.follow.factor,DEC);
+          Serial.print(F(" to "));
+          Serial.println(follower.target,DEC);
 #endif
-          moveMotor(follower.motor, follower.data.follow.target,move.data.move.vmax, follower.data.follow.factor, prepare_shaddow_registers);
+          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
           moving_motors |= _BV(follower.motor);
         }
       } 
@@ -60,9 +60,12 @@ void checkMotion() {
 
       for (char i; i<nr_of_motors;i++) {
         //configure all non moving motors to stop
-        if (moving_motors && _BV(i) == 0) {
-          moveMotor(i, 0,0, 0, prepare_shaddow_registers);
+/*
+  TODO needed?
+      if (moving_motors && _BV(i) == 0) {
+          moveMotor(i, 0,0, 0, 0,0,prepare_shaddow_registers);
         }
+*/
 
         //give all motors a nice start signal
         if (!prepare_shaddow_registers) {

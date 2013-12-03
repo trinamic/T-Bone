@@ -45,57 +45,15 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigne
   return NULL;
 }
 
-
-const __FlashStringHelper* setAccelerationSetttings(unsigned char motor_nr, long aMax, long dMax,long startbow, long endbow) {
-  //get the motor number
-  unsigned char cs_pin = motors[motor_nr].cs_pin;
-  //TODO some validity settings??
-  motors[motor_nr].aMax = aMax;
-  motors[motor_nr].dMax = dMax;
-  motors[motor_nr].startBow = startbow;
-  motors[motor_nr].endBow = endbow!=0;
-
-  if (endbow==0) {
-    endbow=startbow;
-  }
-
-  return NULL;
-}
-
 inline long getMotorPosition(unsigned char motor_nr) {
   return read43x(motors[motor_nr].cs_pin, X_TARGET_REGISTER ,0);
   //TODO do we have to take into account that the motor may never have reached the x_target??
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boolean configure_shadow) {
+void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dMax, long startBow, long endBow, boolean configure_shadow) {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
 
-  long aMax = motors[motor_nr].aMax;
-  long dMax = motors[motor_nr].dMax;
-  long startBow = motors[motor_nr].startBow;
-  long endBow = motors[motor_nr].endBow;
-
-  //TODO can't start commands be part of this movement ??
-
-  if (factor==0) {
-    vMax = 0;
-    aMax = 0;
-    dMax = 0;
-    startBow = 0;
-    endBow = 0;
-  } 
-  else if (factor!=1.0) {
-    vMax = factor*vMax;
-    aMax = aMax * factor;
-    dMax = (dMax!=0)? dMax * factor: aMax;
-    startBow = startBow * factor;
-    endBow = (endBow!=0)? endBow * factor: startBow;
-  } 
-  else {
-    dMax = (dMax!=0)? dMax: aMax;
-    endBow = (endBow!=0)? endBow: startBow;
-  }
 
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = getMotorPosition(motor_nr);

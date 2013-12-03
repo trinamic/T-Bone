@@ -5,7 +5,6 @@ enum {
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
   kStepsPerRev = 2,
-  kAccelerationSetttings = 3,
   //intitalize all drivers with default values - TODO or preconfigured??
   kInit=9,
   //Kommandos die Aktionen auslösen
@@ -29,7 +28,6 @@ void attachCommandCallbacks() {
   messenger.attach(kInit, onInit);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
-  messenger.attach(kAccelerationSetttings, onAccelerationSetttings);
   messenger.attach(kMove, onMove);
   messenger.attach(kMovement, onMovement);
   messenger.attach(kPos, onPosition);
@@ -114,62 +112,6 @@ void onStepsPerRevolution() {
   }
 }
 
-void onAccelerationSetttings() {
-  char motor = decodeMotorNumber();
-  if (motor<0) {
-    return;
-  }
-  long aMax = messenger.readLongArg();
-  if (aMax==0) {
-    messenger.sendCmdStart(kAccelerationSetttings);
-    messenger.sendCmdArg(motors[motor].aMax);
-    messenger.sendCmdArg(motors[motor].dMax);
-    messenger.sendCmdArg(motors[motor].startBow);
-    messenger.sendCmdArg(motors[motor].endBow);
-    messenger.sendCmdEnd();
-    return;
-  }
-  if (aMax<0) {
-    messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
-    return;
-  }
-  long dMax = messenger.readLongArg();
-  if (dMax<0) {
-    messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
-    return;
-  }
-  long startBow = messenger.readLongArg();
-  if (startBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
-    return;
-  }
-  long endBow = messenger.readLongArg();
-  if (endBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
-    return;
-  }
-  const __FlashStringHelper* error = setAccelerationSetttings(motor, aMax, dMax, startBow, endBow);
-  if (error==NULL) {
-#ifdef DEBUG_MOTOR_CONTFIG    
-    Serial.print(F("Motor "));
-    Serial.print(motor,DEC);
-    Serial.print(F(": aMax="));
-    Serial.print(aMax);
-    Serial.print(F(", dMax="));
-    Serial.print(dMax);
-    Serial.print(F(": startBow="));
-    Serial.print(startBow);
-    Serial.print(F(", endBow="));
-    Serial.print(endBow);
-    Serial.println();
-#endif    
-    messenger.sendCmd(kOK,F("Ramp Bows set"));
-  } 
-  else {
-    messenger.sendCmd(kError,error);
-  }
-}
-
 void onMove() {
   char motor = decodeMotorNumber();
   if (motor<0) {
@@ -180,18 +122,15 @@ void onMove() {
     messenger.sendCmd (kError,F("cannot move beyond home"));
     return;
   }
-  double vMax = messenger.readFloatArg();
-  if (vMax<=0) {
-    Serial.println(vMax);
-    messenger.sendCmd (kError,F("cannot move with no or negative speed"));
-    return;
-  }
   movement move;
   movement followers[MAX_FOLLOWING_MOTORS];
   move.type = movemotor;
   move.motor=motor;
-  move.data.move.target=newPos;
-  move.data.move.vmax = vMax;
+  move.target=newPos;
+  if (readMovementParameters(&move)) {
+    //if there was an error return 
+    return;
+  }
   int following_motors=0;
 #ifdef DEBUG_MOTOR_QUEUE
   Serial.print(F("Adding movement for motor "));
@@ -210,14 +149,15 @@ void onMove() {
     if (motor!=0 && motionFactor!=0) {
       followers[following_motors].type=followmotor;
       followers[following_motors].motor=motor - 1;
-      followers[following_motors].data.follow.target=newPos;
-      followers[following_motors].data.follow.factor=motionFactor;
+      followers[following_motors].target=newPos;
+      if (readMovementParameters(&(followers[following_motors]))) {
+        //if there was an error return 
+        return;
+      } 
       following_motors++;
 #ifdef DEBUG_MOTOR_QUEUE
-      Serial.print(F(", gearing motor "));
-      Serial.print(gearmotor,DEC);
-      Serial.print(F(" by "));
-      Serial.print(gearingFactor);
+      Serial.print(F(", following motor "));
+      Serial.print(motor - 1,DEC);
       Serial.print(F(" to "));
       Serial.print(newPos);
 #endif
@@ -247,6 +187,55 @@ void onMove() {
   messenger.sendCmdArg(F("command added"));
   messenger.sendCmdEnd();
 } 
+
+char readMovementParameters(movement* move) {
+  double vMax = messenger.readFloatArg();
+  if (vMax<=0) {
+    Serial.println(vMax);
+    messenger.sendCmd (kError,F("cannot move with no or negative speed"));
+    return -1;
+  }
+  long aMax = messenger.readLongArg();
+  if (aMax<=0) {
+    messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
+    return -1;
+  }
+  long dMax = messenger.readLongArg();
+  if (dMax<=0) {
+    messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
+    return -1;
+  }
+  long startBow = messenger.readLongArg();
+  if (startBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return -1;
+  }
+  long endBow = messenger.readLongArg();
+  if (endBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return -1;
+  }
+#ifdef DEBUG_MOTION    
+  Serial.print(F("vMax="));
+  Serial.print(vMax);
+  Serial.print(F(", aMax="));
+  Serial.print(aMax);
+  Serial.print(F(", dMax="));
+  Serial.print(dMax);
+  Serial.print(F(": startBow="));
+  Serial.print(startBow);
+  Serial.print(F(", endBow="));
+  Serial.print(endBow);
+#endif    
+
+  move->vMax=vMax;
+  move->aMax=aMax;
+  move->dMax=dMax;
+  move->startBow=startBow;
+  move->endBow=endBow;
+
+  return 0;
+}
 
 void onMovement() {
   char movement = messenger.readIntArg();
@@ -362,6 +351,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 
