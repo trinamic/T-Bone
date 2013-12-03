@@ -107,7 +107,7 @@ class Printer():
 
         speed_vector = find_shortest_vector(speed_vectors)
         #and finally find the shortest speed vector …
-        step_seed_vector = {
+        step_speed_vector = {
             'x': _convert_mm_to_steps(speed_vector['x'], self.x_axis_scale),
             'y': _convert_mm_to_steps(speed_vector['y'], self.y_axis_scale)
         }
@@ -115,17 +115,17 @@ class Printer():
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to " + str(x_step))
-            self.machine.move_to(self.x_axis_motor, x_step, step_seed_vector['x'])
+            self.machine.move_to(self.x_axis_motor, x_step, step_speed_vector['x'])
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to " + str(y_step))
-            self.machine.move_to(self.y_axis_motor, y_step, step_seed_vector['y'])
+            self.machine.move_to(self.y_axis_motor, y_step, step_speed_vector['y'])
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if abs(delta_x) > abs(delta_y):
                 y_gearing = move_vector['y'] / move_vector['x']
                 _logger.info("Moving X axis to " + str(x_step) + " gearing Y by " + str(y_gearing))
-                self.machine.move_to(self.x_axis_motor, x_step, step_seed_vector['x'], [{
+                self.machine.move_to(self.x_axis_motor, x_step, step_speed_vector['x'], [{
                                                                                             'motor': self.y_axis_motor,
                                                                                             'gearing': y_gearing
                                                                                         }])
@@ -133,7 +133,7 @@ class Printer():
             else:
                 x_gearing = move_vector['x'] / move_vector['y']
                 _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_gearing))
-                self.machine.move_to(self.y_axis_motor, y_step, step_seed_vector['y'], [{
+                self.machine.move_to(self.y_axis_motor, y_step, step_speed_vector['y'], [{
                                                                                             'motor': self.x_axis_motor,
                                                                                             'gearing': x_gearing
                                                                                         }])
