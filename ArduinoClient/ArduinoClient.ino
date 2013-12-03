@@ -9,8 +9,9 @@
 #include "types.h"
 
 #define DEBUG_MOTOR_CONTFIG
-//#define DEBUG_STATUS
+#define DEBUG_STATUS
 #define DEBUG_MOTION
+#define DEBUG_MOTION_TRACE
 
 #define COMMAND_QUEUE_LENGTH 20
 //how many otors can be theoretically geared together

@@ -102,8 +102,13 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
   long aim_target = 2*(pos-last_pos)+last_pos;
 
 
-#ifdef DEBUG_MOTOR_CONTFIG    
-  Serial.print(F("Motor "));
+#ifdef DEBUG_MOTOR_CONTFIG  
+  if (!configure_shadow) {
+    Serial.print(F("Moving motor"));
+  } 
+  else {
+    Serial.print(F("Preparing Motor"));
+  }
   Serial.print(motor_nr,DEC);
   Serial.print(F(": pos="));
   Serial.print(pos);
@@ -134,7 +139,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
     write43x(cs_pin,BOW_4_REGISTER,startBow);
     //TODO pos comp is not shaddowwed
     next_pos_comp[motor_nr] = 0;
-    write43x(cs_pin,POS_COMP_REGISTER,startBow);
+    write43x(cs_pin,POS_COMP_REGISTER,pos);
 
   } 
   else {
@@ -155,12 +160,21 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double factor, boo
 
 
 inline void signal_start() {
+  //prepare the pos compr registers
+  for (char i=0; i< nr_of_motors; i++) {
+    if (next_pos_comp[i]!=0) {
+      write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
+      next_pos_comp[i] = 0;
+    }
+  }    
   //carefully trigger the start pin 
   digitalWrite(start_signal_pin,HIGH);
   pinMode(start_signal_pin,OUTPUT);
   digitalWrite(start_signal_pin,LOW);
   pinMode(start_signal_pin,INPUT);
 }
+
+
 
 
 
