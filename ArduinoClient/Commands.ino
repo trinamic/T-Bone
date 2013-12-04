@@ -138,7 +138,6 @@ void onMove() {
   Serial.print(motor,DEC);
   Serial.print(F(" to "));
   Serial.print(newPos);
-#endif
 #ifdef DEBUG_MOTION    
   Serial.print(F(", vMax="));
   Serial.print(move.vMax);
@@ -151,6 +150,7 @@ void onMove() {
   Serial.print(F(", endBow="));
   Serial.print(move.endBow);
 #endif    
+#endif
 
   do {
     motor = messenger.readIntArg();
@@ -172,7 +172,6 @@ void onMove() {
       Serial.print(motor - 1,DEC);
       Serial.print(F(" to "));
       Serial.print(newPos);
-#endif
 #ifdef DEBUG_MOTION    
       Serial.print(F(", vMax="));
       Serial.print(followers[following_motors].vMax);
@@ -185,6 +184,7 @@ void onMove() {
       Serial.print(F(", endBow="));
       Serial.print(followers[following_motors].endBow);
 #endif    
+#endif
       following_motors++;
 
     }  

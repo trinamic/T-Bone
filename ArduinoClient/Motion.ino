@@ -69,15 +69,17 @@ void checkMotion() {
         follower = moveQueue.peek();
         if (follower.type==followmotor) {  
           moveQueue.pop();
+          if (last_target[follower.motor]!=follower.target) {
 #ifdef DEBUG_MOTION
-          Serial.print(F(", following motor "));
-          Serial.print(follower.motor,DEC);
-          Serial.print(F(" to "));
-          Serial.println(follower.target,DEC);
+            Serial.print(F(", following motor "));
+            Serial.print(follower.motor,DEC);
+            Serial.print(F(" to "));
+            Serial.println(follower.target,DEC);
 #endif
-          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
-          moving_motors |= _BV(follower.motor);
-          last_target[follower.motor]=follower.target;
+            moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
+            moving_motors |= _BV(follower.motor);
+            last_target[follower.motor]=follower.target;
+          }
         }
       } 
       while (follower.type == followmotor);
@@ -119,7 +121,9 @@ void motor_target_reached(char motor_nr) {
     //clear the event register
     read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
     //and write down which motor touched the target
-    motor_status |= _BV(motor_nr);  
+    if (_BV(motor_nr) & target_motor_status) {
+      motor_status |= _BV(motor_nr);
+    }  
 #ifdef DEBUG_MOTION_TRACE
     Serial.print(F("Motor "));
     Serial.print(motor_nr,DEC);
@@ -139,6 +143,7 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
 
 
 
