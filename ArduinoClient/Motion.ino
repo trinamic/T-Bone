@@ -71,7 +71,7 @@ void checkMotion() {
          }
          */
 
-        //give all motors a nice start signal
+        //give all motors a nice start config
         if (!prepare_shaddow_registers) {
           write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
             | _BV(0) //xtarget requires start
@@ -124,7 +124,7 @@ void motor_target_reached(char motor_nr) {
 #ifdef DEBUG_MOTION_TRACE
     Serial.print(F("Motor "));
     Serial.print(motor_nr,DEC);
-    Serial.print(F("reached target! At"));
+    Serial.print(F("reached target! At "));
     Serial.print(motor_status,BIN);
     Serial.print(F(" of "));
     Serial.println(target_motor_status,BIN);
@@ -138,10 +138,13 @@ void motor_target_reached(char motor_nr) {
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));
 #endif
+      signal_start();
+
       next_move_prepared=false;
     }
   }
 }
+
 
 
 

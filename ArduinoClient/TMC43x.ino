@@ -51,6 +51,12 @@ inline long getMotorPosition(unsigned char motor_nr) {
 
 void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dMax, long startBow, long endBow, boolean configure_shadow) {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
+  
+  if (pos==0) {
+    //We avoid 0 since it is a marker 
+    //TDOD silly hack!
+    pos=1;
+  }
 
 
   //calculate the value for x_target so taht we go over pos_comp
