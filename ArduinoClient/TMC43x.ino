@@ -12,9 +12,6 @@ void initialzeTMC43x() {
     //initialize CS pin
     digitalWrite(motors[i].cs_pin,HIGH);
     pinMode(motors[i].cs_pin,OUTPUT);
-    pinMode(motors[i].target_reached_interrupt_pin,INPUT);
-    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
-    attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
   }
   //enable the reset again
   delay(1);
@@ -28,7 +25,6 @@ void initialzeTMC43x() {
     write43x(motors[i].cs_pin, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER,_BV(1)); //POS_COMP_REACHED is our target reached
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolution(motors[i].cs_pin,motors[i].steps_per_revolution);
   }

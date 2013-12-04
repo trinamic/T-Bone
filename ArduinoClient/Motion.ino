@@ -10,6 +10,10 @@ void startMotion() {
   //TODO initialize drivers??
   for (char i; i<nr_of_motors;i++) {
     write43x(motors[i].cs_pin, START_OUT_ADD_REGISTER, 16000000ul);
+    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER,_BV(1)); //POS_COMP_REACHED is our target reached
+    pinMode(motors[i].target_reached_interrupt_pin,INPUT);
+    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
+    attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
   }
 }
 
@@ -60,12 +64,12 @@ void checkMotion() {
 
       for (char i; i<nr_of_motors;i++) {
         //configure all non moving motors to stop
-/*
+        /*
   TODO needed?
-      if (moving_motors && _BV(i) == 0) {
-          moveMotor(i, 0,0, 0, 0,0,prepare_shaddow_registers);
-        }
-*/
+         if (moving_motors && _BV(i) == 0) {
+         moveMotor(i, 0,0, 0, 0,0,prepare_shaddow_registers);
+         }
+         */
 
         //give all motors a nice start signal
         if (!prepare_shaddow_registers) {
@@ -138,6 +142,7 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
 
 
 
