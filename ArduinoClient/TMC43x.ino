@@ -66,10 +66,10 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
 
 #ifdef DEBUG_MOTOR_CONTFIG  
   if (!configure_shadow) {
-    Serial.print(F("Moving motor"));
+    Serial.print(F("Moving motor "));
   } 
   else {
-    Serial.print(F("Preparing Motor"));
+    Serial.print(F("Preparing motor "));
   }
   Serial.print(motor_nr,DEC);
   Serial.print(F(": pos="));
