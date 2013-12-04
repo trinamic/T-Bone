@@ -69,17 +69,15 @@ void checkMotion() {
         follower = moveQueue.peek();
         if (follower.type==followmotor) {  
           moveQueue.pop();
-          if (last_target[follower.motor]!=follower.target) {
 #ifdef DEBUG_MOTION
-            Serial.print(F("Following motor "));
-            Serial.print(follower.motor,DEC);
-            Serial.print(F(" to "));
-            Serial.println(follower.target,DEC);
+          Serial.print(F("Following motor "));
+          Serial.print(follower.motor,DEC);
+          Serial.print(F(" to "));
+          Serial.println(follower.target,DEC);
 #endif
-            moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
-            moving_motors |= _BV(follower.motor);
-            last_target[follower.motor]=follower.target;
-          }
+          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
+          moving_motors |= _BV(follower.motor);
+          last_target[follower.motor]=follower.target;
         }
       } 
       while (follower.type == followmotor);
@@ -141,6 +139,7 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
 
 
 
