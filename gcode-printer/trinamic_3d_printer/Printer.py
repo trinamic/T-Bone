@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Printer():
-    def __init__(self):
+    def __init__(self, print_queue_length=100):
         self.ready = False
         self.config = None
         self.x_axis_motor = None
@@ -29,6 +29,8 @@ class Printer():
         self.current_speed = 0
         self.x_axis_bow = None
         self.y_axis_bow = None
+        self.print_queue_length = print_queue_length
+        self.print_queue = []
 
 
         #finally create and conect the machine
