@@ -127,7 +127,7 @@ class Printer():
             self.machine.move_to((
                 {
                     'motor': self.x_axis_motor,
-                    'target:': x_step,
+                    'target': x_step,
                     'speed': step_speed_vector['x'],
                     'acceleration': self.x_axis_max_step_acceleration,
                     'deceleration': self.x_axis_max_step_acceleration,
@@ -141,7 +141,7 @@ class Printer():
             self.machine.move_to((
                 {
                     'motor': self.y_axis_motor,
-                    'target:': y_step,
+                    'target': y_step,
                     'speed': step_speed_vector['y'],
                     'acceleration': self.y_axis_max_step_acceleration,
                     'deceleration': self.y_axis_max_step_acceleration,
@@ -157,7 +157,7 @@ class Printer():
                 self.machine.move_to((
                     {
                         'motor': self.x_axis_motor,
-                        'target:': x_step,
+                        'target': x_step,
                         'speed': step_speed_vector['x'],
                         'acceleration': self.x_axis_max_step_acceleration,
                         'deceleration': self.x_axis_max_step_acceleration,
@@ -165,7 +165,7 @@ class Printer():
                         'endBow': self.x_axis_bow
                     }, {
                         'motor': self.y_axis_motor,
-                        'target:': y_step,
+                        'target': y_step,
                         'speed': step_speed_vector['y'],
                         'acceleration': self.y_axis_max_step_acceleration * y_factor,
                         'deceleration': self.y_axis_max_step_acceleration * y_factor,
@@ -180,7 +180,7 @@ class Printer():
                 self.machine.move_to((
                     {
                         'motor': self.x_axis_motor,
-                        'target:': x_step,
+                        'target': x_step,
                         'speed': step_speed_vector['x'],
                         'acceleration': self.x_axis_max_step_acceleration * x_factor,
                         'deceleration': self.x_axis_max_step_acceleration * x_factor,
@@ -188,7 +188,7 @@ class Printer():
                         'endBow': self.x_axis_bow * x_factor
                     }, {
                         'motor': self.y_axis_motor,
-                        'target:': y_step,
+                        'target': y_step,
                         'speed': step_speed_vector['y'],
                         'acceleration': self.y_axis_max_step_acceleration,
                         'deceleration': self.y_axis_max_step_acceleration,

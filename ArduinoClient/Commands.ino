@@ -1,4 +1,4 @@
-// Die Kommandos die der Beagle senden kann
+ // Die Kommandos die der Beagle senden kann
 enum {
   // Kommandos zur Bewegung
 
@@ -39,7 +39,8 @@ void attachCommandCallbacks() {
 // Fehlerfunktion wenn ein Kommand nicht bekannt ist
 void OnUnknownCommand() {
   messenger.sendCmd(kError,F("Unknonwn command"));
-  Serial.println(F("communication error"));
+  Serial.print(messenger.CommandID());
+  Serial.println(F(" - unknown command"));
 }
 
 void onInit() {
@@ -138,6 +139,19 @@ void onMove() {
   Serial.print(F(" to "));
   Serial.print(newPos);
 #endif
+#ifdef DEBUG_MOTION    
+  Serial.print(F(", vMax="));
+  Serial.print(move.vMax);
+  Serial.print(F(", aMax="));
+  Serial.print(move.aMax);
+  Serial.print(F(", dMax="));
+  Serial.print(move.dMax);
+  Serial.print(F(": startBow="));
+  Serial.print(move.startBow);
+  Serial.print(F(", endBow="));
+  Serial.print(move.endBow);
+#endif    
+
   do {
     motor = messenger.readIntArg();
     double motionFactor =  messenger.readFloatArg();
@@ -161,6 +175,19 @@ void onMove() {
       Serial.print(F(" to "));
       Serial.print(newPos);
 #endif
+#ifdef DEBUG_MOTION    
+  Serial.print(F(", vMax="));
+  Serial.print(followers[following_motors].vMax);
+  Serial.print(F(", aMax="));
+  Serial.print(followers[following_motors].aMax);
+  Serial.print(F(", dMax="));
+  Serial.print(followers[following_motors].dMax);
+  Serial.print(F(": startBow="));
+  Serial.print(followers[following_motors].startBow);
+  Serial.print(F(", endBow="));
+  Serial.print(followers[following_motors].endBow);
+#endif    
+
     }  
   } 
   while (motor!=0);
@@ -215,18 +242,6 @@ char readMovementParameters(movement* move) {
     messenger.sendCmd (kError,F("Start bow cannot be negative")); 
     return -1;
   }
-#ifdef DEBUG_MOTION    
-  Serial.print(F("vMax="));
-  Serial.print(vMax);
-  Serial.print(F(", aMax="));
-  Serial.print(aMax);
-  Serial.print(F(", dMax="));
-  Serial.print(dMax);
-  Serial.print(F(": startBow="));
-  Serial.print(startBow);
-  Serial.print(F(", endBow="));
-  Serial.print(endBow);
-#endif    
 
   move->vMax=vMax;
   move->aMax=aMax;

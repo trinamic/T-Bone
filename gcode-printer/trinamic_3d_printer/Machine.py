@@ -66,12 +66,12 @@ class Machine():
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
             command.arguments.append(int(motor['deceleration']))
-            command.arguments.append(int(motor['startbow']))
-            command.arguments.append(int(motor['endbow']))
+            command.arguments.append(int(motor['startBow']))
+            command.arguments.append(int(motor['endBow']))
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-            raise MachineError("Unable to set move motor", reply)
+            raise MachineError("Unable to add motor move", reply)
         if self.batch_mode:
             command_buffer_length = int(reply.arguments[0])
             command_max_buffer_length = int(reply.arguments[1])
