@@ -55,7 +55,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
 
   if (pos==0) {
     //We avoid 0 since it is a marker 
-    //TDOD silly hack!
+    //TODO silly hack!
     pos=1;
   }
 
