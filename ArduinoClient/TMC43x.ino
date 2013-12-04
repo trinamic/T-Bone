@@ -27,6 +27,7 @@ void initialzeTMC43x() {
     write43x(motors[i].cs_pin, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
     write43x(motors[i].cs_pin,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
+    write43x(motors[i].cs_pin,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolution(motors[i].cs_pin,motors[i].steps_per_revolution);
   }
@@ -123,6 +124,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
 inline void signal_start() {
   //prepare the pos compr registers
   for (char i=0; i< nr_of_motors; i++) {
+    read43x(motors[i].cs_pin,EVENTS_REGISTER,0);
     if (next_pos_comp[i]!=0) {
       write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
       next_pos_comp[i] = 0;
@@ -137,6 +139,9 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
+
+
+
 
 
 

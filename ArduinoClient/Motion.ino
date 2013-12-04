@@ -4,16 +4,15 @@ volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
 
 void startMotion() {
-  next_move_prepared=false; //TODO in theory this is not needed  
-  prepare_shaddow_registers = false;
   //TODO initialize drivers??
   for (char i; i<nr_of_motors;i++) {
-    write43x(motors[i].cs_pin, START_OUT_ADD_REGISTER, 16000000ul);
-    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER,_BV(1)); //POS_COMP_REACHED is our target reached
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
+    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER,_BV(1)); //POS_COMP_REACHED is our target reached
   }
+  next_move_prepared=false; //TODO in theory this is not needed  
+  prepare_shaddow_registers = false;
   in_motion = true;
 }
 
@@ -23,6 +22,26 @@ void stopMotion() {
 
 void checkMotion() {
   if (in_motion && !next_move_prepared) {
+
+    for (char i; i<nr_of_motors;i++) {
+      //give all motors a nice start config
+      if (!prepare_shaddow_registers) {
+        write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+          | _BV(0) //xtarget requires start
+        | _BV(1) //vmax requires start
+        | _BV(5) //external start is an start
+        | _BV(10)//immediate start         
+        );   
+      } 
+      else {
+        write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+          | _BV(0) //x_target requires start
+        | _BV(4)  //use shaddow motion profiles
+        | _BV(5) //external start is an start
+        );   
+      }
+    }
+
 
     if (moveQueue.count()>0) {
       byte moving_motors=0;
@@ -61,34 +80,6 @@ void checkMotion() {
 
       //in the end all moviong motorts must have apssed pos_comp
       target_motor_status = moving_motors;
-
-      for (char i; i<nr_of_motors;i++) {
-        //configure all non moving motors to stop
-        /*
-  TODO needed?
-         if (moving_motors && _BV(i) == 0) {
-         moveMotor(i, 0,0, 0, 0,0,prepare_shaddow_registers);
-         }
-         */
-
-        //give all motors a nice start config
-        if (!prepare_shaddow_registers) {
-          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-            | _BV(0) //xtarget requires start
-          | _BV(1) //vmax requires start
-          | _BV(5) //external start is an start
-          | _BV(10)//immediate start         
-          );   
-        } 
-        else {
-          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-            | _BV(0) //x_target requires start
-          | _BV(4)  //use shaddow motion profiles
-          | _BV(5) //external start is an start
-          );   
-        }
-      }
-
       //for the first move we need to configure everything a bit 
       if (!prepare_shaddow_registers) {
         signal_start();
@@ -144,6 +135,8 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
+
 
 
 
