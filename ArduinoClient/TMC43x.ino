@@ -64,7 +64,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   long last_pos = last_target[motor_nr];
   long aim_target = 2*(pos-last_pos)+last_pos;
 
-#ifdef DEBUG_MOTOR_CONTFIG  
+#ifdef DEBUG_MOTION_TRACE  
   if (!configure_shadow) {
     Serial.print(F("Moving motor "));
   } 
