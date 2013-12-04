@@ -23,27 +23,28 @@ void stopMotion() {
 void checkMotion() {
   if (in_motion && !next_move_prepared) {
 
-    for (char i; i<nr_of_motors;i++) {
-      //give all motors a nice start config
-      if (!prepare_shaddow_registers) {
-        write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-          | _BV(0) //xtarget requires start
-        | _BV(1) //vmax requires start
-        | _BV(5) //external start is an start
-        | _BV(10)//immediate start         
-        );   
-      } 
-      else {
-        write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
-          | _BV(0) //x_target requires start
-        | _BV(4)  //use shaddow motion profiles
-        | _BV(5) //external start is an start
-        );   
-      }
-    }
-
 
     if (moveQueue.count()>0) {
+
+      for (char i; i<nr_of_motors;i++) {
+        //give all motors a nice start config
+        if (!prepare_shaddow_registers) {
+          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+            | _BV(0) //xtarget requires start
+          | _BV(1) //vmax requires start
+          | _BV(5) //external start is an start
+          | _BV(10)//immediate start         
+          );   
+        } 
+        else {
+          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+            | _BV(0) //x_target requires start
+          | _BV(4)  //use shaddow motion profiles
+          | _BV(5) //external start is an start
+          );   
+        }
+      }
+
       byte moving_motors=0;
       //analysze the movement (nad take a look at the next
       movement move = moveQueue.pop();
@@ -135,6 +136,7 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
 
 
 
