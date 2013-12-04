@@ -120,7 +120,6 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   write43x(cs_pin,X_TARGET_REGISTER,pos);
 }
 
-
 inline void signal_start() {
   //prepare the pos compr registers
   for (char i=0; i< nr_of_motors; i++) {
@@ -138,7 +137,6 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
-
 
 
 

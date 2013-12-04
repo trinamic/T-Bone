@@ -186,8 +186,3 @@ void motor_target_reached(char motor_nr) {
 
 
 
-
-
-
-
-
