@@ -100,7 +100,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
     write43x(cs_pin,BOW_3_REGISTER,endBow);
     write43x(cs_pin,BOW_4_REGISTER,startBow);
     //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = 0;
+    next_pos_comp[motor_nr] = pos;
     write43x(cs_pin,POS_COMP_REGISTER,pos);
 
   } 
@@ -123,11 +123,12 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
 inline void signal_start() {
   //prepare the pos compr registers
   for (char i=0; i< nr_of_motors; i++) {
+    
+    //clear the event register
     read43x(motors[i].cs_pin,EVENTS_REGISTER,0);
-    if (next_pos_comp[i]!=0) {
+    
       write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
       next_pos_comp[i] = 0;
-    }
   }    
   //carefully trigger the start pin 
   digitalWrite(start_signal_pin,HIGH);

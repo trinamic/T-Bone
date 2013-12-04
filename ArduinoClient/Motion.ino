@@ -71,7 +71,7 @@ void checkMotion() {
           moveQueue.pop();
           if (last_target[follower.motor]!=follower.target) {
 #ifdef DEBUG_MOTION
-            Serial.print(F(", following motor "));
+            Serial.print(F("Following motor "));
             Serial.print(follower.motor,DEC);
             Serial.print(F(" to "));
             Serial.println(follower.target,DEC);
@@ -119,11 +119,9 @@ void motor_2_target_reached() {
 void motor_target_reached(char motor_nr) {
   if (in_motion) {
     //clear the event register
-    read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
+    //read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
     //and write down which motor touched the target
-    if (_BV(motor_nr) & target_motor_status) {
-      motor_status |= _BV(motor_nr);
-    }  
+    motor_status |= _BV(motor_nr);
 #ifdef DEBUG_MOTION_TRACE
     Serial.print(F("Motor "));
     Serial.print(motor_nr,DEC);
@@ -143,6 +141,7 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
 
 
 
