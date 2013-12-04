@@ -1,4 +1,4 @@
- // Die Kommandos die der Beagle senden kann
+// Die Kommandos die der Beagle senden kann
 enum {
   // Kommandos zur Bewegung
 
@@ -154,21 +154,19 @@ void onMove() {
 
   do {
     motor = messenger.readIntArg();
-    double motionFactor =  messenger.readFloatArg();
     long newPos = messenger.readLongArg();
     if (newPos<0) {
       messenger.sendCmd (kError,F("cannot move beyond home"));
       return;
     }
-    if (motor!=0 && motionFactor!=0) {
+    if (motor!=0) {
       followers[following_motors].type=followmotor;
       followers[following_motors].motor=motor - 1;
       followers[following_motors].target=newPos;
-      if (readMovementParameters(&(followers[following_motors]))) {
+      if (readMovementParameters(&followers[following_motors])) {
         //if there was an error return 
         return;
       } 
-      following_motors++;
 #ifdef DEBUG_MOTOR_QUEUE
       Serial.print(F(", following motor "));
       Serial.print(motor - 1,DEC);
@@ -176,17 +174,18 @@ void onMove() {
       Serial.print(newPos);
 #endif
 #ifdef DEBUG_MOTION    
-  Serial.print(F(", vMax="));
-  Serial.print(followers[following_motors].vMax);
-  Serial.print(F(", aMax="));
-  Serial.print(followers[following_motors].aMax);
-  Serial.print(F(", dMax="));
-  Serial.print(followers[following_motors].dMax);
-  Serial.print(F(": startBow="));
-  Serial.print(followers[following_motors].startBow);
-  Serial.print(F(", endBow="));
-  Serial.print(followers[following_motors].endBow);
+      Serial.print(F(", vMax="));
+      Serial.print(followers[following_motors].vMax);
+      Serial.print(F(", aMax="));
+      Serial.print(followers[following_motors].aMax);
+      Serial.print(F(", dMax="));
+      Serial.print(followers[following_motors].dMax);
+      Serial.print(F(": startBow="));
+      Serial.print(followers[following_motors].startBow);
+      Serial.print(F(", endBow="));
+      Serial.print(followers[following_motors].endBow);
 #endif    
+      following_motors++;
 
     }  
   } 
@@ -218,7 +217,6 @@ void onMove() {
 char readMovementParameters(movement* move) {
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
-    Serial.println(vMax);
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
     return -1;
   }
@@ -366,6 +364,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

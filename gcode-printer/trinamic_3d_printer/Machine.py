@@ -62,7 +62,7 @@ class Machine():
         command.arguments = []
         for motor in motors:
             command.arguments.append(int(motor['motor']))
-            command.arguments.append(float(motor['target']))
+            command.arguments.append(int(motor['target']))
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
             command.arguments.append(int(motor['deceleration']))
