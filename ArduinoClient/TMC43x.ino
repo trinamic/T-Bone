@@ -61,9 +61,8 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
 
 
   //calculate the value for x_target so taht we go over pos_comp
-  long last_pos = getMotorPosition(motor_nr);
+  long last_pos = last_target[motor_nr];
   long aim_target = 2*(pos-last_pos)+last_pos;
-
 
 #ifdef DEBUG_MOTOR_CONTFIG  
   if (!configure_shadow) {

@@ -10,6 +10,7 @@ void startMotion() {
     digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
     write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER,_BV(1)); //POS_COMP_REACHED is our target reached
+    last_target[i]=0;//TODO isn't this more or less a homing 
   }
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
@@ -61,6 +62,7 @@ void checkMotion() {
 #endif
       moveMotor(move.motor, move.target, move.vMax, move.aMax, move.dMax, move.startBow, move.endBow, prepare_shaddow_registers);
       moving_motors |= _BV(move.motor);
+      last_target[move.motor]=move.target;
 
       movement follower;
       do {
@@ -75,6 +77,7 @@ void checkMotion() {
 #endif
           moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
           moving_motors |= _BV(follower.motor);
+          last_target[follower.motor]=follower.target;
         }
       } 
       while (follower.type == followmotor);
@@ -136,6 +139,7 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
 
 
 
