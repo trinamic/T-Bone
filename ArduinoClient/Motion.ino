@@ -4,7 +4,6 @@ volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
 
 void startMotion() {
-  in_motion = true;
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
   //TODO initialize drivers??
@@ -15,6 +14,7 @@ void startMotion() {
     digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
   }
+  in_motion = true;
 }
 
 void stopMotion() {
@@ -121,25 +121,25 @@ void motor_2_target_reached() {
 
 void motor_target_reached(char motor_nr) {
   if (in_motion) {
-#ifdef DEBUG_MOTION_TRACE
-    Serial.print(F("Motor "));
-    Serial.print(motor_nr,DEC);
-    Serial.print(F("reached target! At "));
-    Serial.print(motor_status,BIN);
-    Serial.print(F(" of "));
-    Serial.println(target_motor_status,BIN);
-#endif
     //clear the event register
     read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
     //and write down which motor touched the target
     motor_status |= _BV(motor_nr);  
+#ifdef DEBUG_MOTION_TRACE
+    Serial.print(F("Motor "));
+    Serial.print(motor_nr,DEC);
+    Serial.print(F(" reached target! At "));
+    Serial.print(motor_status,BIN);
+    Serial.print(F(" of "));
+    Serial.println(target_motor_status,BIN);
+#endif
     if (motor_status == target_motor_status) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));
 #endif
       signal_start();
-
+      motor_status=0;
       next_move_prepared=false;
     }
   }
