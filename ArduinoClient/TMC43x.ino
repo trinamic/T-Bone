@@ -12,6 +12,8 @@ void initialzeTMC43x() {
     //initialize CS pin
     digitalWrite(motors[i].cs_pin,HIGH);
     pinMode(motors[i].cs_pin,OUTPUT);
+    pinMode(motors[i].target_reached_interrupt_pin,INPUT);
+    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
   }
   //enable the reset again
   delay(1);
