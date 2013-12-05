@@ -343,7 +343,7 @@ class PrintQueue():
         if delta_y != 0:
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
-                'x': self.axis['x']['max_speed'] * move_vector['x'] / move_vector['y'],
+                'x': self.axis['y']['max_speed'] * move_vector['x'] / move_vector['y'],
                 'y': self.axis['y']['max_speed']
             })
             max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_x
