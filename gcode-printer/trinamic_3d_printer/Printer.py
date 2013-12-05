@@ -1,4 +1,5 @@
 # coding=utf-8
+from Queue import Queue
 from collections import defaultdict
 import logging
 from math import sqrt
@@ -83,7 +84,7 @@ class Printer():
             move_speed = self.current_speed
             #next store new current positions
 
-        move_vector = calculate_relative_vector(delta_x, delta_y)
+        move_vector = _calculate_relative_vector(delta_x, delta_y)
         #derrive the various speed vectors from the movement … for desired head and maximum axis speed
         speed_vectors = [
             {
@@ -194,7 +195,7 @@ def _convert_mm_to_steps(millimeters, conversion_factor):
     return int(millimeters * conversion_factor)
 
 
-def calculate_relative_vector(delta_x, delta_y):
+def _calculate_relative_vector(delta_x, delta_y):
     length = sqrt(delta_x ** 2 + delta_y ** 2)
     if length == 0:
         return {
@@ -205,7 +206,7 @@ def calculate_relative_vector(delta_x, delta_y):
     return {
         'x': float(delta_x) / length,
         'y': float(delta_y) / length,
-        'l': 1.0
+        'l': length
     }
 
 
@@ -220,10 +221,133 @@ def find_shortest_vector(vector_list):
     return find_list[shortest_vector]
 
 
-'''
 class PrintQueue():
-    def __init__(self, queue_size = 100):
-'''
+    def __init__(self, axis_config, min_length=20, max_length=100, default_target_speed=None):
+        self.axis = axis_config
+        self.queue_size = min_length
+        self.queue = Queue(maxsize=max_length)
+        self.last_movement = None
+        #we will use the last_movement as special case since it may not fully configured
+        self.default_target_speed = default_target_speed
+
+    def add_movement(self, target_position):
+        move = {}
+        #calculate the target
+        self._extract_movement_values(move, target_position)
+        #and see how fast we can allowable go
+        move['max_achievable_speed_vector'] = self._maximum_achievable_speed(move)
+        #and since we do not know it better the first guess is that the final speed is the max speed
+        move['speed'] = move['max_achievable_speed_vector']
+        #now we can push the previous move to the queue and recalculate the whole queue
+        self.queue.put(self.last_movement)
+        #and recalculate the maximum allowed speed
+        max_speed = move['speed']
+        for movement in reversed(self.queue):
+            delta_X = move['delta_x']
+            max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_X
+            delta_y = move['delta_y']
+            max_speed_y = max_speed['y'] ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
+            speed_vectors = [
+                movement['speed']
+            ]
+            move_vector = movement['relative_move_vector']
+            speed_vectors.append({
+                #what would the speed vector for max x speed look like
+                'x': max_speed_x,
+                'y': max_speed_x * move_vector['y'] / move_vector['x']
+            })
+            speed_vectors.append({
+                #what would the speed vector for max x speed look like
+                'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                'y': max_speed_y
+            })
+            movement['speed']=find_shortest_vector(speed_vectors)
+
+    def next_movment(self, timeout = None):
+        return self.queue.get(timeout=timeout)
+
+    def _extract_movement_values(self, move, target_position):
+        #extract values
+        if 'x' in target_position:
+            move['x'] = target_position['x']
+        else:
+            if self.last_movement:
+                move['x'] = self.last_movement['x']
+            else:
+                move['x'] = 0
+        if 'y' in target_position:
+            move['y'] = target_position['y']
+        else:
+            if self.last_movement:
+                move['y'] = self.last_movement['y']
+            else:
+                move['y'] = 0
+        if 'f' in target_position:
+            move['target_speed'] = target_position['f']
+        elif self.last_movement:
+            move['target_speed'] = self.last_movement['target_speed']
+        elif self.default_target_speed:
+            move['target_speed'] = self.default_target_speed
+        else:
+            raise PrinterError("movement w/o a set speed and no default speed is set!")
+        if self.last_movement:
+            last_x = self.last_movement['x']
+            last_y = self.last_movement['y']
+        else:
+            last_x = 0
+            last_y = 0
+        move['delta_x'] = move['x'] - last_x
+        move['delta_y'] = move['y'] - last_y
+        move_vector = _calculate_relative_vector(move['delta_x'], move['delta_y'])
+        #save the move vector for later use …
+        move['relative_move_vector'] = move_vector
+
+    def _maximum_achievable_speed(self, move):
+        if self.last_movement:
+            last_x_speed = self.last_movement['speed']['x']
+            last_y_speed = self.last_movement['speed']['y']
+        else:
+            last_x_speed = 0
+            last_y_speed = 0
+        delta_x = move['delta_x']
+        delta_y = move['delta_y']
+        move_vector = move['relative_move_vector']
+        #derrive the various speed vectors from the movement … for desired head and maximum axis speed
+        speed_vectors = [
+            {
+                # add the desired speed vector as initial value
+                'x': move['target_speed'] * move_vector['x'],
+                'y': move['target_speed'] * move_vector['y']
+            }
+        ]
+        if delta_x != 0:
+            speed_vectors.append({
+                #what would the speed vector for max x speed look like
+                'x': self.axis['x']['max_speed'],
+                'y': self.axis['x']['max_speed'] * move_vector['y'] / move_vector['x']
+            })
+            max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
+            speed_vectors.append({
+                #how fast can we accelerate in X direction anyway
+                'x': max_speed_x,
+                'y': max_speed_x * move_vector['y'] / move_vector['x']
+            })
+        if delta_y != 0:
+            speed_vectors.append({
+                #what would the maximum speed vector for y movement look like
+                'x': self.axis['x']['max_speed'] * move_vector['x'] / move_vector['y'],
+                'y': self.axis['y']['max_speed']
+            })
+            max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_x
+            speed_vectors.append({
+                #how fast can we accelerate in X direction anyway
+                'x': max_speed_y * move_vector['y'] / move_vector['x'],
+                'y': max_speed_y
+            })
+        max_local_speed_vector = find_shortest_vector(speed_vectors)
+        #the minimum achievable speed is the minimum of all those local vectors
+
+        return max_local_speed_vector
 
 
 class PrinterError(Exception):
