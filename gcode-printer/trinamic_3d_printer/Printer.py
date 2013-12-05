@@ -12,25 +12,25 @@ class Printer():
     def __init__(self, print_queue_length=100):
         self.ready = False
         self.config = None
-        self.x_axis_motor = None
-        self.y_axis_motor = None
-        self.x_axis_scale = None
-        self.y_axis_scale = None
+        self.axis = {'x': {}, 'y': {}}
+        self.axis['x']['motor'] = None
+        self.axis['y']['motor'] = None
+        self.axis['x']['scale'] = None
+        self.axis['y']['scale'] = None
+        self.axis['x']['max_speed'] = None
+        self.axis['y']['max_speed'] = None
+        self.axis['x']['max_acceleration'] = None
+        self.axis['y']['max_acceleration'] = None
+        self.axis['x']['bow'] = None
+        self.axis['y']['bow'] = None
+
+        #this will be removed
         self.x_pos = None
         self.x_pos_step = None
         self.y_pos = None
         self.y_pos_step = None
-        self.x_axis_max_speed = None
-        self.x_axis_max_acceleration = None
-        self.x_axis_max_step_acceleration = None
-        self.y_axis_max_speed = None
-        self.y_axis_max_acceleration = None
-        self.y_axis_max_step_acceleration = None
         self.current_speed = 0
-        self.x_axis_bow = None
-        self.y_axis_bow = None
-        self.print_queue_length = print_queue_length
-        self.print_queue = []
+
 
 
         #finally create and conect the machine
@@ -41,23 +41,8 @@ class Printer():
         if not config:
             raise PrinterError("No printer config given!")
 
-        x_axis_config = config["x-axis"]
-        self.x_axis_motor = x_axis_config["motor"]
-        self.configure_axis_motor(x_axis_config)
-        self.x_axis_scale = x_axis_config["steps-per-mm"]
-        self.x_axis_max_speed = x_axis_config["max-speed"]
-        self.x_axis_max_acceleration = x_axis_config["max-acceleration"]
-        self.x_axis_max_step_acceleration = x_axis_config["max-acceleration"] * x_axis_config["steps-per-mm"]
-        self.x_axis_bow = self.x_axis_max_step_acceleration / 3
-
-        y_axis_config = config["y-axis"]
-        self.y_axis_motor = y_axis_config["motor"]
-        self.configure_axis_motor(y_axis_config)
-        self.y_axis_scale = y_axis_config["steps-per-mm"]
-        self.y_axis_max_speed = y_axis_config["max-speed"]
-        self.y_axis_max_acceleration = y_axis_config["max-acceleration"]
-        self.y_axis_max_step_acceleration = y_axis_config["max-acceleration"] * y_axis_config["steps-per-mm"]
-        self.y_axis_bow = self.x_axis_max_step_acceleration / 3
+        self._configure_axis(self.axis['x'], config["x-axis"])
+        self._configure_axis(self.axis['y'], config["y-axis"])
 
         self.config = config
 
@@ -76,7 +61,7 @@ class Printer():
         #extract and convert values
         if 'x' in position:
             x_move = position['x']
-            x_step = _convert_mm_to_steps(x_move, self.x_axis_scale)
+            x_step = _convert_mm_to_steps(x_move, self.axis['x']['scale'])
             delta_x = x_move - self.x_pos
         else:
             x_move = None
@@ -84,7 +69,7 @@ class Printer():
             delta_x = 0
         if 'y' in position:
             y_move = position['y']
-            y_step = _convert_mm_to_steps(y_move, self.y_axis_scale)
+            y_step = _convert_mm_to_steps(y_move, self.axis['y']['scale'])
             delta_y = y_move - self.y_pos
         else:
             y_step = None
@@ -110,50 +95,52 @@ class Printer():
         if move_vector['x'] != 0:
             speed_vectors.append({
                 #what would the speed vector for max x speed look like
-                'x': self.x_axis_max_speed,
-                'y': self.x_axis_max_speed * move_vector['y'] / move_vector['x']
+                'x': self.axis['x']['max_speed'],
+                'y': self.axis['x']['max_speed'] * move_vector['y'] / move_vector['x']
             })
         if move_vector['y'] != 0:
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
-                'x': self.y_axis_max_speed * move_vector['x'] / move_vector['y'],
-                'y': self.y_axis_max_speed
+                'x': self.axis['x']['max_speed'] * move_vector['x'] / move_vector['y'],
+                'y': self.axis['y']['max_speed']
             })
-
         speed_vector = find_shortest_vector(speed_vectors)
         #and finally find the shortest speed vector …
         step_speed_vector = {
-            'x': abs(_convert_mm_to_steps(speed_vector['x'], self.x_axis_scale)),
-            'y': abs(_convert_mm_to_steps(speed_vector['y'], self.y_axis_scale))
+            'x': abs(_convert_mm_to_steps(speed_vector['x'], self.axis['x']['scale'])),
+            'y': abs(_convert_mm_to_steps(speed_vector['y'], self.axis['y']['scale']))
         }
+
+        def _axis_movement_template(axis):
+            return {
+                'motor': axis['motor'],
+                'acceleration': axis['max_step_acceleration'],
+                'deceleration': axis['max_step_acceleration'],
+                'startBow': axis['bow'],
+                'endBow': axis['bow']
+            }
+
+        x_move_config = _axis_movement_template(self.axis['x'])
+        x_move_config['target'] = x_step
+        x_move_config['speed'] = step_speed_vector['x']
+        y_move_config = _axis_movement_template(self.axis['y'])
+        y_move_config['target'] = x_step
+        y_move_config['speed'] = step_speed_vector['y']
 
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to " + str(x_step))
+
             self.machine.move_to([
-                {
-                    'motor': self.x_axis_motor,
-                    'target': x_step,
-                    'speed': step_speed_vector['x'],
-                    'acceleration': self.x_axis_max_step_acceleration,
-                    'deceleration': self.x_axis_max_step_acceleration,
-                    'startBow': self.x_axis_bow,
-                    'endBow': self.x_axis_bow
-                }
+                x_move_config
             ])
+
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to " + str(y_step))
+
             self.machine.move_to([
-                {
-                    'motor': self.y_axis_motor,
-                    'target': y_step,
-                    'speed': step_speed_vector['y'],
-                    'acceleration': self.y_axis_max_step_acceleration,
-                    'deceleration': self.y_axis_max_step_acceleration,
-                    'startBow': self.y_axis_bow,
-                    'endBow': self.y_axis_bow
-                }
+                y_move_config
             ])
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
@@ -161,48 +148,23 @@ class Printer():
                 y_factor = abs(move_vector['y'] / move_vector['x'])
                 _logger.info(
                     "Moving X axis to " + str(x_step) + " gearing Y by " + str(y_factor) + " to " + str(y_step))
+
+                y_move_config['acceleration'] *= y_factor
+                y_move_config['deceleration'] *= y_factor
                 self.machine.move_to([
-                    {
-                        'motor': self.x_axis_motor,
-                        'target': x_step,
-                        'speed': step_speed_vector['x'],
-                        'acceleration': self.x_axis_max_step_acceleration,
-                        'deceleration': self.x_axis_max_step_acceleration,
-                        'startBow': self.x_axis_bow,
-                        'endBow': self.x_axis_bow
-                    }, {
-                        'motor': self.y_axis_motor,
-                        'target': y_step,
-                        'speed': step_speed_vector['y'],
-                        'acceleration': self.y_axis_max_step_acceleration * y_factor,
-                        'deceleration': self.y_axis_max_step_acceleration * y_factor,
-                        'startBow': self.y_axis_bow * y_factor,
-                        'endBow': self.y_axis_bow * y_factor
-                    }
+                    x_move_config,
+                    y_move_config
                 ])
                 #move
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'])
                 _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_factor))
-                self.machine.move_to((
-                    {
-                        'motor': self.x_axis_motor,
-                        'target': x_step,
-                        'speed': step_speed_vector['x'],
-                        'acceleration': self.x_axis_max_step_acceleration * x_factor,
-                        'deceleration': self.x_axis_max_step_acceleration * x_factor,
-                        'startBow': self.x_axis_bow * x_factor,
-                        'endBow': self.x_axis_bow * x_factor
-                    }, {
-                        'motor': self.y_axis_motor,
-                        'target': y_step,
-                        'speed': step_speed_vector['y'],
-                        'acceleration': self.y_axis_max_step_acceleration,
-                        'deceleration': self.y_axis_max_step_acceleration,
-                        'startBow': self.y_axis_bow,
-                        'endBow': self.y_axis_bow
-                    }
-                ))
+                x_move_config['acceleration'] *= x_factor
+                x_move_config['deceleration'] *= x_factor
+                self.machine.move_to([
+                    x_move_config,
+                    y_move_config
+                ])
                 #move
         if not target_speed == None:
             #finally update the state
@@ -214,9 +176,15 @@ class Printer():
             self.y_pos = y_move
             self.y_pos_step = y_step
 
-    def configure_axis_motor(self, axis_config):
-        motor = axis_config["motor"]
-        current = axis_config["current"]
+    def _configure_axis(self, axis, config):
+        axis['motor'] = config['motor']
+        axis['scale'] = config['steps-per-mm']
+        axis['max_speed'] = config['max-speed']
+        axis['max_acceleration'] = config['max-acceleration']
+        axis['bow'] = config['bow-acceleration']
+
+        motor = config["motor"]
+        current = config["current"]
         self.machine.set_current(motor, current)
 
 
@@ -250,6 +218,12 @@ def find_shortest_vector(vector_list):
         if vector['x'] < find_list[shortest_vector]['x']:
             shortest_vector = number
     return find_list[shortest_vector]
+
+
+'''
+class PrintQueue():
+    def __init__(self, queue_size = 100):
+'''
 
 
 class PrinterError(Exception):
