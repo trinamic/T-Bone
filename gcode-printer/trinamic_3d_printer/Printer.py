@@ -224,8 +224,9 @@ def find_shortest_vector(vector_list):
 class PrintQueue():
     def __init__(self, axis_config, min_length=20, max_length=100, default_target_speed=None):
         self.axis = axis_config
+        self.planning_list = list()
         self.queue_size = min_length
-        self.queue = Queue(maxsize=max_length)
+        self.queue = Queue(maxsize=(max_length - min_length))
         self.last_movement = None
         #we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
@@ -239,10 +240,12 @@ class PrintQueue():
         #and since we do not know it better the first guess is that the final speed is the max speed
         move['speed'] = move['max_achievable_speed_vector']
         #now we can push the previous move to the queue and recalculate the whole queue
-        self.queue.put(self.last_movement)
+        self.planning_list.append(self.last_movement)
+        #if the list is long enough we can give it to the queue so that readers can get it
+        self.queue.put(self.planning_list.pop())
         #and recalculate the maximum allowed speed
         max_speed = move['speed']
-        for movement in reversed(self.queue):
+        for movement in reversed(self.planning_list):
             delta_X = move['delta_x']
             max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_X
             delta_y = move['delta_y']
@@ -261,9 +264,9 @@ class PrintQueue():
                 'x': max_speed_y * move_vector['x'] / move_vector['y'],
                 'y': max_speed_y
             })
-            movement['speed']=find_shortest_vector(speed_vectors)
+            movement['speed'] = find_shortest_vector(speed_vectors)
 
-    def next_movment(self, timeout = None):
+    def next_movment(self, timeout=None):
         return self.queue.get(timeout=timeout)
 
     def _extract_movement_values(self, move, target_position):

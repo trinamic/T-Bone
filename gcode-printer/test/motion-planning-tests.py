@@ -9,22 +9,24 @@ class VectorTests(unittest.TestCase):
     def test_print_queue_blocking(self):
         axis_config = {
             'x': {
-                'max_acceleration': 1
+                'max_acceleration': 1,
+                'max_speed':1
             },
             'y': {
-                'max_acceleration': 1
+                'max_acceleration': 1,
+                'max_speed':1
             }
         }
-        queue = PrintQueue(axis_config=axis_config,min_length=2, max_length=5)
+        queue = PrintQueue(axis_config=axis_config, min_length=2, max_length=5)
         for i in range(5):
             position = {
                 'x': i,
                 'y': i,
-                'f':1
+                'f': 1
             }
             queue.add_movement(position)
         try:
-            queue.next_movment(timeout=1)
+            queue.next_movment(timeout=0.01)
             exception_thrown = False
         except Empty:
             exception_thrown = True
@@ -34,14 +36,22 @@ class VectorTests(unittest.TestCase):
             'y': 1
         })
         try:
-            queue.next_movment(timeout=1)
+            queue.next_movment(timeout=0.01)
             exception_thrown = False
         except Empty:
             exception_thrown = True
         assert_that(exception_thrown, equal_to(True))
         queue.add_movement(position)
         try:
-            queue.next_movment(timeout=1)
+            queue.next_movment(timeout=0.01)
+            exception_thrown = False
+        except Empty:
+            exception_thrown = True
+        assert_that(exception_thrown, equal_to(False))
+        for i in range(2):
+            queue.next_movment()
+        try:
+            queue.next_movment(timeout=0.01)
             exception_thrown = False
         except Empty:
             exception_thrown = True
