@@ -249,9 +249,9 @@ class PrintQueue():
         #and recalculate the maximum allowed speed
         max_speed = move['speed']
         for movement in reversed(self.planning_list):
-            delta_X = move['delta_x']
+            delta_X = movement['delta_x']
             max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_X
-            delta_y = move['delta_y']
+            delta_y = movement['delta_y']
             max_speed_y = max_speed['y'] ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
             speed_vectors = [
                 movement['speed']

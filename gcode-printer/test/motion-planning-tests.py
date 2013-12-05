@@ -1,5 +1,5 @@
 from Queue import Empty, Full
-from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to
+from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than
 from math import sqrt
 import unittest
 from trinamic_3d_printer.Printer import _calculate_relative_vector, find_shortest_vector, PrintQueue
@@ -55,15 +55,16 @@ class VectorTests(unittest.TestCase):
         max_speed_y = 2
         axis_config = {
             'x': {
-                'max_acceleration': 1,
+                'max_acceleration': 0.5,
                 'max_speed': max_speed_x
             },
             'y': {
-                'max_acceleration': 1,
+                'max_acceleration': 0.5,
                 'max_speed': max_speed_y
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
+        #TODO add a movement to check if it accelerates correctly
         #we do not need any real buffer
         for i in range(6):
             queue.add_movement({
@@ -78,8 +79,24 @@ class VectorTests(unittest.TestCase):
         assert_that(last_movement['speed']['y'], not_none())
         assert_that(last_movement['speed']['y'], less_than_or_equal_to(max_speed_y))
         queue.add_movement({
-            'x':5,
-            'y':6
+            'x': 7,
+            'y': 6
+        })
+        last_movement = queue.last_movement
+        assert_that(last_movement['speed'], not_none())
+        assert_that(last_movement['speed']['x'], not_none())
+        assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
+        assert_that(last_movement['speed']['x'], greater_than(0))
+        assert_that(last_movement['speed']['y'], not_none())
+        assert_that(last_movement['speed']['y'], equal_to(0))
+        previous_movement = queue.planning_list[-1]
+        assert_that(previous_movement['speed']['x'], not_none())
+        assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
+        assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
+        assert_that(previous_movement['speed']['y'], greater_than(0)) #todo doe we really need to calculate this??
+        queue.add_movement({
+            'x': 5,
+            'y': 6
         })
         last_movement = queue.last_movement
         #boring test but brings a break point
