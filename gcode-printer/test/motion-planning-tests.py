@@ -1,4 +1,4 @@
-from Queue import Empty
+from Queue import Empty, Full
 from hamcrest import assert_that, not_none, equal_to, close_to
 from math import sqrt
 import unittest
@@ -7,6 +7,7 @@ from trinamic_3d_printer.Printer import _calculate_relative_vector, find_shortes
 
 class VectorTests(unittest.TestCase):
     def test_print_queue_blocking(self):
+        default_timeout=0.1
         axis_config = {
             'x': {
                 'max_acceleration': 1,
@@ -24,34 +25,25 @@ class VectorTests(unittest.TestCase):
                 'y': i,
                 'f': 1
             }
-            queue.add_movement(position)
+            queue.add_movement(position, timeout=default_timeout)
         try:
-            queue.next_movment(timeout=0.01)
+            queue.add_movement({
+                'x': 0,
+                'y': 1
+            },timeout=default_timeout)
             exception_thrown = False
-        except Empty:
+        except Full:
             exception_thrown = True
         assert_that(exception_thrown, equal_to(True))
-        queue.add_movement({
-            'x': 0,
-            'y': 1
-        })
+        for i in range(3):
+            try:
+                queue.next_movment(timeout=default_timeout)
+                exception_thrown = False
+            except Empty:
+                exception_thrown = True
+            assert_that(exception_thrown, equal_to(False))
         try:
-            queue.next_movment(timeout=0.01)
-            exception_thrown = False
-        except Empty:
-            exception_thrown = True
-        assert_that(exception_thrown, equal_to(True))
-        queue.add_movement(position)
-        try:
-            queue.next_movment(timeout=0.01)
-            exception_thrown = False
-        except Empty:
-            exception_thrown = True
-        assert_that(exception_thrown, equal_to(False))
-        for i in range(2):
-            queue.next_movment()
-        try:
-            queue.next_movment(timeout=0.01)
+            queue.next_movment(timeout=default_timeout)
             exception_thrown = False
         except Empty:
             exception_thrown = True

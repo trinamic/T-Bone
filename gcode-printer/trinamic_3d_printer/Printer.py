@@ -225,13 +225,13 @@ class PrintQueue():
     def __init__(self, axis_config, min_length=20, max_length=100, default_target_speed=None):
         self.axis = axis_config
         self.planning_list = list()
-        self.queue_size = min_length
+        self.queue_size = min_length -1 #since we got one extra
         self.queue = Queue(maxsize=(max_length - min_length))
         self.last_movement = None
         #we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
 
-    def add_movement(self, target_position):
+    def add_movement(self, target_position, timeout=None):
         move = {}
         #calculate the target
         self._extract_movement_values(move, target_position)
@@ -240,9 +240,12 @@ class PrintQueue():
         #and since we do not know it better the first guess is that the final speed is the max speed
         move['speed'] = move['max_achievable_speed_vector']
         #now we can push the previous move to the queue and recalculate the whole queue
-        self.planning_list.append(self.last_movement)
+        if self.last_movement:
+            self.planning_list.append(self.last_movement)
         #if the list is long enough we can give it to the queue so that readers can get it
-        self.queue.put(self.planning_list.pop())
+        if len(self.planning_list) > self.queue_size:
+            self.queue.put(self.planning_list.pop(), timeout=timeout)
+        self.last_movement = move
         #and recalculate the maximum allowed speed
         max_speed = move['speed']
         for movement in reversed(self.planning_list):
@@ -254,16 +257,18 @@ class PrintQueue():
                 movement['speed']
             ]
             move_vector = movement['relative_move_vector']
-            speed_vectors.append({
-                #what would the speed vector for max x speed look like
-                'x': max_speed_x,
-                'y': max_speed_x * move_vector['y'] / move_vector['x']
-            })
-            speed_vectors.append({
-                #what would the speed vector for max x speed look like
-                'x': max_speed_y * move_vector['x'] / move_vector['y'],
-                'y': max_speed_y
-            })
+            if move_vector['x']!=0:
+                speed_vectors.append({
+                    #what would the speed vector for max x speed look like
+                    'x': max_speed_x,
+                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                })
+            if move_vector['y']!=0:
+                speed_vectors.append({
+                    #what would the speed vector for max x speed look like
+                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'y': max_speed_y
+                })
             movement['speed'] = find_shortest_vector(speed_vectors)
 
     def next_movment(self, timeout=None):
