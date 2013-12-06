@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Printer():
-    def __init__(self, print_queue_length=100):
+    def __init__(self, print_min_length=50, print_max_length=100):
         self.ready = False
         self.config = None
         self.axis = {'x': {}, 'y': {}}
@@ -28,7 +28,9 @@ class Printer():
         self.axis['y']['bow'] = None
 
         self.printer_thread = None
-        self.print_queue = PrintQueue()
+        self.print_queue = None
+        self.print_queue_min_length = print_min_length
+        self.print_queue_max_length = print_max_length
 
         #finally create and conect the machine
         self.machine = Machine()
@@ -49,6 +51,7 @@ class Printer():
 
     def start_print(self):
         self.machine.batch_mode = True
+        self.print_queue = PrintQueue(axis_config=self.axis,min_length=self.print_queue_min_length,max_length=self.print_queue_max_length)
         self.printer_thread = Thread(target=self._printer())
         self.printer_thread.start()
 
@@ -180,7 +183,7 @@ def find_shortest_vector(vector_list):
 
 
 class PrintQueue():
-    def __init__(self, axis_config, min_length=20, max_length=100, default_target_speed=None):
+    def __init__(self, axis_config, min_length, max_length, default_target_speed=None):
         self.axis = axis_config
         self.planning_list = list()
         self.queue_size = min_length - 1 #since we got one extra
