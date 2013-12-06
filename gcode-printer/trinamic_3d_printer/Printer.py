@@ -2,7 +2,7 @@
 from Queue import Queue
 from collections import defaultdict
 import logging
-from math import sqrt
+from math import sqrt, copysign
 from trinamic_3d_printer.Machine import Machine
 
 __author__ = 'marcus'
@@ -216,7 +216,7 @@ def find_shortest_vector(vector_list):
     shortest_vector = 0
     #and wildly guess the shortest vector
     for number, vector in enumerate(find_list):
-        if vector['x'] < find_list[shortest_vector]['x']:
+        if (vector['x']**2+vector['y']**2) < (find_list[shortest_vector]['x']**2+find_list[shortest_vector]['y']**2):
             shortest_vector = number
     return find_list[shortest_vector]
 
@@ -225,7 +225,7 @@ class PrintQueue():
     def __init__(self, axis_config, min_length=20, max_length=100, default_target_speed=None):
         self.axis = axis_config
         self.planning_list = list()
-        self.queue_size = min_length -1 #since we got one extra
+        self.queue_size = min_length - 1 #since we got one extra
         self.queue = Queue(maxsize=(max_length - min_length))
         self.last_movement = None
         #we will use the last_movement as special case since it may not fully configured
@@ -242,7 +242,7 @@ class PrintQueue():
         #now we can push the previous move to the queue and recalculate the whole queue
         if self.last_movement:
             self.planning_list.append(self.last_movement)
-        #if the list is long enough we can give it to the queue so that readers can get it
+            #if the list is long enough we can give it to the queue so that readers can get it
         if len(self.planning_list) > self.queue_size:
             self.queue.put(self.planning_list.pop(), timeout=timeout)
         self.last_movement = move
@@ -257,13 +257,13 @@ class PrintQueue():
                 movement['speed']
             ]
             move_vector = movement['relative_move_vector']
-            if move_vector['x']!=0:
+            if move_vector['x'] != 0:
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_x,
                     'y': max_speed_x * move_vector['y'] / move_vector['x']
                 })
-            if move_vector['y']!=0:
+            if move_vector['y'] != 0:
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_y * move_vector['x'] / move_vector['y'],
@@ -332,7 +332,7 @@ class PrintQueue():
         if delta_x != 0:
             speed_vectors.append({
                 #what would the speed vector for max x speed look like
-                'x': self.axis['x']['max_speed'],
+                'x': copysign(self.axis['x']['max_speed'], move_vector['x']),
                 'y': self.axis['x']['max_speed'] * move_vector['y'] / move_vector['x']
             })
             max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
@@ -345,12 +345,12 @@ class PrintQueue():
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
                 'x': self.axis['y']['max_speed'] * move_vector['x'] / move_vector['y'],
-                'y': self.axis['y']['max_speed']
+                'y': copysign(self.axis['y']['max_speed'], move_vector['y'])
             })
-            max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_x
+            max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
             speed_vectors.append({
                 #how fast can we accelerate in X direction anyway
-                'x': max_speed_y * move_vector['y'] / move_vector['x'],
+                'x': max_speed_y * move_vector['x'] / move_vector['y'],
                 'y': max_speed_y
             })
         max_local_speed_vector = find_shortest_vector(speed_vectors)

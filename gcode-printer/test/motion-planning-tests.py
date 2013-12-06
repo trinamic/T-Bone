@@ -83,28 +83,48 @@ class VectorTests(unittest.TestCase):
             'y': 6
         })
         last_movement = queue.last_movement
-        assert_that(last_movement['speed'], not_none())
-        assert_that(last_movement['speed']['x'], not_none())
         assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
         assert_that(last_movement['speed']['x'], greater_than(0))
-        assert_that(last_movement['speed']['y'], not_none())
         assert_that(last_movement['speed']['y'], equal_to(0))
         previous_movement = queue.planning_list[-1]
-        assert_that(previous_movement['speed']['x'], not_none())
         assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
         assert_that(previous_movement['speed']['y'], greater_than(0))
         previous_movement = queue.planning_list[-3]
-        assert_that(previous_movement['speed']['x'], not_none())
-        assert_that(previous_movement['speed']['x'], equal_to(max_speed_x))
+        assert_that(previous_movement['speed']['x'], equal_to(max_speed_y)) #becaus we go 1/1 each time
         assert_that(previous_movement['speed']['y'], equal_to(max_speed_y))
         queue.add_movement({
-            'x': 5,
-            'y': 6
+            'x': 7,
+            'y': 7
         })
         last_movement = queue.last_movement
-        #boring test but brings a break point
-        assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
+        assert_that(last_movement['speed']['x'], equal_to(0))
+        assert_that(last_movement['speed']['y'], greater_than(0))
+        assert_that(last_movement['speed']['y'], less_than(max_speed_y))
+        previous_movement = queue.planning_list[-1]
+        assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
+        assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
+        assert_that(previous_movement['speed']['y'], equal_to(0))
+        previous_movement = queue.planning_list[-3]
+        assert_that(previous_movement['speed']['x'], equal_to(max_speed_y)) #becaus we go 1/1 each time
+        assert_that(previous_movement['speed']['y'], equal_to(max_speed_y))
+        # let's go back to zero to begin a new test
+        queue.add_movement({
+            'x': 0,
+            'y': 7
+        })
+        last_movement = queue.last_movement
+        #it is a long go - so we should be able to speed up to full steam
+        assert_that(last_movement['speed']['x'], equal_to(-max_speed_x))
+        assert_that(last_movement['speed']['y'], equal_to(0))
+        queue.add_movement({
+            'x': 0,
+            'y': 0
+        })
+        last_movement = queue.last_movement
+        #it is a long go - so we should be able to speed up to full steam
+        assert_that(last_movement['speed']['x'], equal_to(0))
+        assert_that(last_movement['speed']['y'], equal_to(-max_speed_y))
 
 
     def test_vector_math(self):
