@@ -4,6 +4,7 @@ from collections import defaultdict
 import logging
 from math import sqrt, copysign
 from numpy import sign
+from threading import Thread
 from trinamic_3d_printer.Machine import Machine
 
 __author__ = 'marcus'
@@ -26,14 +27,8 @@ class Printer():
         self.axis['x']['bow'] = None
         self.axis['y']['bow'] = None
 
-        #this will be removed
-        self.x_pos = None
-        self.x_pos_step = None
-        self.y_pos = None
-        self.y_pos_step = None
-        self.current_speed = 0
-
-
+        self.printer_thread = None
+        self.print_queue = PrintQueue()
 
         #finally create and conect the machine
         self.machine = Machine()
@@ -54,64 +49,33 @@ class Printer():
 
     def start_print(self):
         self.machine.batch_mode = True
+        self.printer_thread = Thread(target=self._printer())
+        self.printer_thread.start()
 
     def stop_print(self):
+        self.printer_thread.stop() #TODO we probably needs some kind of 'join or so
         pass
 
     # tuple with x/y/e coordinates - if left out no change is intenden
     def move_to(self, position):
-        #extract and convert values
-        if 'x' in position:
-            x_move = position['x']
-            x_step = _convert_mm_to_steps(x_move, self.axis['x']['scale'])
-            delta_x = x_move - self.x_pos
-        else:
-            x_move = None
-            x_step = None
-            delta_x = 0
-        if 'y' in position:
-            y_move = position['y']
-            y_step = _convert_mm_to_steps(y_move, self.axis['y']['scale'])
-            delta_y = y_move - self.y_pos
-        else:
-            y_step = None
-            y_move = None
-            delta_y = 0
-        if 'f' in position:
-            target_speed = position['f']
-            move_speed = target_speed
-        else:
-            target_speed = None
-            move_speed = self.current_speed
-            #next store new current positions
+        self.print_queue.add_movement(position)
 
-        move_vector = _calculate_relative_vector(delta_x, delta_y)
-        #derrive the various speed vectors from the movement … for desired head and maximum axis speed
-        speed_vectors = [
-            {
-                # add the desired speed vector as initial value
-                'x': move_speed * move_vector['x'],
-                'y': move_speed * move_vector['y']
-            }
-        ]
-        if move_vector['x'] != 0:
-            speed_vectors.append({
-                #what would the speed vector for max x speed look like
-                'x': self.axis['x']['max_speed'],
-                'y': self.axis['x']['max_speed'] * move_vector['y'] / move_vector['x']
-            })
-        if move_vector['y'] != 0:
-            speed_vectors.append({
-                #what would the maximum speed vector for y movement look like
-                'x': self.axis['x']['max_speed'] * move_vector['x'] / move_vector['y'],
-                'y': self.axis['y']['max_speed']
-            })
-        speed_vector = find_shortest_vector(speed_vectors)
-        #and finally find the shortest speed vector …
-        step_speed_vector = {
-            'x': abs(_convert_mm_to_steps(speed_vector['x'], self.axis['x']['scale'])),
-            'y': abs(_convert_mm_to_steps(speed_vector['y'], self.axis['y']['scale']))
+    def _printer(self):
+        #get the next movement from stack
+        movement = self.print_queue.next_movment()
+
+        step_pos = {
+            'x': _convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
+            'y': _convert_mm_to_steps(movement['y'], self.axis['y']['scale'])
         }
+        step_speed_vector = {
+            'x': _convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
+            'y': _convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
+        }
+        delta_x = movement['delta_y']
+        delta_y = movement['delta_y']
+        move_vector = movement['relative_move_vector']
+
 
         def _axis_movement_template(axis):
             return {
@@ -123,15 +87,15 @@ class Printer():
             }
 
         x_move_config = _axis_movement_template(self.axis['x'])
-        x_move_config['target'] = x_step
+        x_move_config['target'] = step_pos['x']
         x_move_config['speed'] = step_speed_vector['x']
         y_move_config = _axis_movement_template(self.axis['y'])
-        y_move_config['target'] = x_step
+        y_move_config['target'] = step_pos['y']
         y_move_config['speed'] = step_speed_vector['y']
 
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
-            _logger.debug("Moving X axis to " + str(x_step))
+            _logger.debug("Moving X axis to " + str(step_pos['x']))
 
             self.machine.move_to([
                 x_move_config
@@ -139,7 +103,7 @@ class Printer():
 
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
-            _logger.debug("Moving Y axis to " + str(y_step))
+            _logger.debug("Moving Y axis to " + str(step_pos['y']))
 
             self.machine.move_to([
                 y_move_config
@@ -149,7 +113,8 @@ class Printer():
             if abs(delta_x) > abs(delta_y):
                 y_factor = abs(move_vector['y'] / move_vector['x'])
                 _logger.info(
-                    "Moving X axis to " + str(x_step) + " gearing Y by " + str(y_factor) + " to " + str(y_step))
+                    "Moving X axis to " + str(step_pos['x']) + " gearing Y by " + str(y_factor) + " to " + str(
+                        step_pos['y']))
 
                 y_move_config['acceleration'] *= y_factor
                 y_move_config['deceleration'] *= y_factor
@@ -160,23 +125,14 @@ class Printer():
                 #move
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'])
-                _logger.info("Moving Y axis to " + str(y_step) + " gearing X by " + str(x_factor))
+                _logger.info("Moving Y axis to " + str(step_pos['y']) + " gearing X by " + str(x_factor) + " to " + str(
+                    step_pos['x']))
                 x_move_config['acceleration'] *= x_factor
                 x_move_config['deceleration'] *= x_factor
                 self.machine.move_to([
                     x_move_config,
                     y_move_config
                 ])
-                #move
-        if not target_speed == None:
-            #finally update the state
-            self.current_speed = target_speed
-        if x_move:
-            self.x_pos = x_move
-            self.x_pos_step = x_step
-        if y_move:
-            self.y_pos = y_move
-            self.y_pos_step = y_step
 
     def _configure_axis(self, axis, config):
         axis['motor'] = config['motor']
