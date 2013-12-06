@@ -4,14 +4,16 @@
         "current":0.5,
         "steps-per-mm":177.6123,
         "max-speed":600,
-        "max-acceleration":3000
+        "max-acceleration":3000,
+        "bow-acceleration":1000
     },
     "y-axis":{
         "motor":2 ,
         "current":0.5,
         "steps-per-mm":177.6123,
         "max-speed":600,
-        "max-acceleration":3000
+        "max-acceleration":3000,
+        "bow-acceleration":1000
     },
     "printer": {
         "print_queue":{
