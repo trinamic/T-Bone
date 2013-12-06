@@ -4,6 +4,7 @@ This serves as a long usage message.
 """
 import json
 import logging
+import os
 from pprint import pprint
 import sys
 import getopt
@@ -21,6 +22,9 @@ class Usage(Exception):
 
 
 def main(argv=None):
+
+    os.system("echo BB-UART1 > /sys/devices/bone_capemgr.8/slots")
+
     #configure the overall logging
     logging.basicConfig(filename='print.log', level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
