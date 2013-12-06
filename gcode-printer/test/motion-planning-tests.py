@@ -93,7 +93,11 @@ class VectorTests(unittest.TestCase):
         assert_that(previous_movement['speed']['x'], not_none())
         assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
-        assert_that(previous_movement['speed']['y'], greater_than(0)) #todo doe we really need to calculate this??
+        assert_that(previous_movement['speed']['y'], greater_than(0))
+        previous_movement = queue.planning_list[-3]
+        assert_that(previous_movement['speed']['x'], not_none())
+        assert_that(previous_movement['speed']['x'], equal_to(max_speed_x))
+        assert_that(previous_movement['speed']['y'], equal_to(max_speed_y))
         queue.add_movement({
             'x': 5,
             'y': 6

@@ -270,6 +270,7 @@ class PrintQueue():
                     'y': max_speed_y
                 })
             movement['speed'] = find_shortest_vector(speed_vectors)
+            max_speed = movement['speed']
 
     def next_movment(self, timeout=None):
         return self.queue.get(timeout=timeout)
