@@ -43,6 +43,13 @@ class Printer():
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
 
+        if "printer" in config:
+            printer_config = config['printer']
+            if "print_queue" in printer_config:
+                print_queue_config = printer_config["print_queue"]
+                self.print_queue_min_length = print_queue_config['min_length']
+                self.print_queue_max_length = print_queue_config['max_length']
+
         self.config = config
 
         #todo in thery we should have homed here
@@ -210,6 +217,7 @@ class PrintQueue():
         #and recalculate the maximum allowed speed
         max_speed = move['speed']
         for movement in reversed(self.planning_list):
+            #tosdo in theory we can stop somewhere …
             delta_x = movement['delta_x']
             if sign(delta_x) == sign(max_speed['x']):
                 max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x

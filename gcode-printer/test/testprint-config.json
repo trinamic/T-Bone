@@ -12,5 +12,11 @@
         "steps-per-mm":177.6123,
         "max-speed":600,
         "max-acceleration":3000
+    },
+    "printer": {
+        "print_queue":{
+            "min_length":20,
+            "max_length":50
+        }
     }
 }
