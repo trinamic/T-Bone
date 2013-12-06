@@ -3,6 +3,7 @@ from Queue import Queue
 from collections import defaultdict
 import logging
 from math import sqrt, copysign
+from numpy import sign
 from trinamic_3d_printer.Machine import Machine
 
 __author__ = 'marcus'
@@ -216,7 +217,8 @@ def find_shortest_vector(vector_list):
     shortest_vector = 0
     #and wildly guess the shortest vector
     for number, vector in enumerate(find_list):
-        if (vector['x']**2+vector['y']**2) < (find_list[shortest_vector]['x']**2+find_list[shortest_vector]['y']**2):
+        if (vector['x'] ** 2 + vector['y'] ** 2) < (
+                find_list[shortest_vector]['x'] ** 2 + find_list[shortest_vector]['y'] ** 2):
             shortest_vector = number
     return find_list[shortest_vector]
 
@@ -251,8 +253,10 @@ class PrintQueue():
         for movement in reversed(self.planning_list):
             delta_X = movement['delta_x']
             max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_X
+            max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
             delta_y = movement['delta_y']
             max_speed_y = max_speed['y'] ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
+            max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)# little trick to have a proper sign
             speed_vectors = [
                 movement['speed']
             ]
@@ -333,26 +337,53 @@ class PrintQueue():
             speed_vectors.append({
                 #what would the speed vector for max x speed look like
                 'x': copysign(self.axis['x']['max_speed'], move_vector['x']),
-                'y': self.axis['x']['max_speed'] * move_vector['y'] / move_vector['x']
+                'y': self.axis['x']['max_speed'] * copysign(move_vector['y'] / move_vector['x'], move_vector['y'])
             })
-            max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
-            speed_vectors.append({
-                #how fast can we accelerate in X direction anyway
-                'x': max_speed_x,
-                'y': max_speed_x * move_vector['y'] / move_vector['x']
-            })
+            if not self.last_movement or sign(delta_x) == sign(self.last_movement['delta_x']):
+                #ww can accelerate further
+                max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
+                max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
+                speed_vectors.append({
+                    #how fast can we accelerate in X direction anyway
+                    'x': max_speed_x,
+                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                })
+            else:
+                #we HAVE to turn around!
+                max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x
+                max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
+                speed_vectors.append({
+                    #how fast can we accelerate in X direction anyway
+                    'x': max_speed_x,
+                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                })
+
         if delta_y != 0:
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
                 'x': self.axis['y']['max_speed'] * move_vector['x'] / move_vector['y'],
                 'y': copysign(self.axis['y']['max_speed'], move_vector['y'])
             })
-            max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
-            speed_vectors.append({
-                #how fast can we accelerate in X direction anyway
-                'x': max_speed_y * move_vector['x'] / move_vector['y'],
-                'y': max_speed_y
-            })
+            if not self.last_movement or sign(delta_y) == sign(self.last_movement['delta_y']):
+                #ww can accelerate further
+                max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
+                max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
+                speed_vectors.append({
+                    #how fast can we accelerate in X direction anyway
+                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'y': max_speed_y
+                })
+            else:
+                #we HAVE to turn around!
+                max_speed_y = 2 * self.axis['y']['max_acceleration'] * delta_y
+                max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
+                speed_vectors.append({
+                    #how fast can we accelerate in X direction anyway
+                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'y': max_speed_y
+                })
+
+
         max_local_speed_vector = find_shortest_vector(speed_vectors)
         #the minimum achievable speed is the minimum of all those local vectors
 
