@@ -218,7 +218,7 @@ def find_shortest_vector(vector_list):
     #and wildly guess the shortest vector
     for number, vector in enumerate(find_list):
         if (vector['x'] ** 2 + vector['y'] ** 2) < (
-                find_list[shortest_vector]['x'] ** 2 + find_list[shortest_vector]['y'] ** 2):
+                    find_list[shortest_vector]['x'] ** 2 + find_list[shortest_vector]['y'] ** 2):
             shortest_vector = number
     return find_list[shortest_vector]
 
@@ -356,6 +356,8 @@ class PrintQueue():
                 })
             else:
                 #we HAVE to turn around!
+                if self.last_movement:
+                    self.last_movement['x_stop'] = True
                 max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x
                 max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
                 speed_vectors.append({
@@ -363,6 +365,10 @@ class PrintQueue():
                     'x': max_speed_x,
                     'y': max_speed_x * move_vector['y'] / move_vector['x']
                 })
+        else:
+            #we HAVE to turn around!
+            if self.last_movement:
+                self.last_movement['x_stop'] = True
 
         if delta_y != 0:
             speed_vectors.append({
@@ -381,6 +387,8 @@ class PrintQueue():
                 })
             else:
                 #we HAVE to turn around!
+                if self.last_movement:
+                    self.last_movement['y_stop'] = True
                 max_speed_y = 2 * self.axis['y']['max_acceleration'] * delta_y
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
                 speed_vectors.append({
@@ -388,7 +396,10 @@ class PrintQueue():
                     'x': max_speed_y * move_vector['x'] / move_vector['y'],
                     'y': max_speed_y
                 })
-
+        else:
+            #we HAVE to turn around!
+            if self.last_movement:
+                self.last_movement['y_stop'] = True
 
         max_local_speed_vector = find_shortest_vector(speed_vectors)
         #the minimum achievable speed is the minimum of all those local vectors

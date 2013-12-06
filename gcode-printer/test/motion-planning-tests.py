@@ -91,8 +91,9 @@ class VectorTests(unittest.TestCase):
         previous_movement = queue.planning_list[-1]
         assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
+        assert_that(previous_movement['y_stop'], equal_to(True))
         #we still go on in x - so in thery we can speed up to desired target speed
-        assert_that(last_movement['speed']['x'],greater_than(previous_movement['speed']['x']))
+        assert_that(last_movement['speed']['x'], greater_than(previous_movement['speed']['x']))
         previous_movement = queue.planning_list[-3]
         assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5)) #becaus we go 1/1 each time
         assert_that(previous_movement['speed']['y'], close_to(max_speed_y, 0.5))
@@ -106,6 +107,7 @@ class VectorTests(unittest.TestCase):
         assert_that(last_movement['speed']['y'], less_than(max_speed_y))
         previous_movement = queue.planning_list[-1]
         assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
+        assert_that(previous_movement['x_stop'], equal_to(True))
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
         assert_that(previous_movement['speed']['y'], equal_to(0))
         previous_movement = queue.planning_list[-4]
@@ -120,6 +122,8 @@ class VectorTests(unittest.TestCase):
         #it is a long go - so we should be able to speed up to full steam
         assert_that(last_movement['speed']['x'], close_to(-max_speed_x, 0.5))
         assert_that(last_movement['speed']['y'], equal_to(0))
+        previous_movement = queue.planning_list[-1]
+        assert_that(previous_movement['y_stop'], equal_to(True))
         queue.add_movement({
             'x': 0,
             'y': 0
@@ -128,6 +132,8 @@ class VectorTests(unittest.TestCase):
         #it is a long go - so we should be able to speed up to full steam
         assert_that(last_movement['speed']['x'], equal_to(0))
         assert_that(last_movement['speed']['y'], close_to(-max_speed_y, 0.5))
+        previous_movement = queue.planning_list[-1]
+        assert_that(previous_movement['x_stop'], equal_to(True))
         #speed up
         for i in range(4):
             queue.add_movement({
@@ -150,8 +156,11 @@ class VectorTests(unittest.TestCase):
         previous_movement = queue.planning_list[-1]
         assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
+        assert_that(previous_movement['y_stop'], equal_to(True))
+        assert_that(previous_movement['x_stop'], equal_to(True))
         another_previous_movement = queue.planning_list[-3]
-        assert_that(another_previous_movement['speed']['x'], greater_than(previous_movement['speed']['x'])) #becaus we stopped to turn around
+        assert_that(another_previous_movement['speed']['x'],
+                    greater_than(previous_movement['speed']['x'])) #becaus we stopped to turn around
         assert_that(another_previous_movement['speed']['y'], greater_than(previous_movement['speed']['x']))
 
 
