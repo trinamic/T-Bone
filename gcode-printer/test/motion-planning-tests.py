@@ -169,13 +169,13 @@ class VectorTests(unittest.TestCase):
         assert_that(result, not_none())
         assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
-        assert_that(result['l'], close_to(1, 0.0001))
+        assert_that(result['l'], close_to(1.4, 0.1))
 
         result = _calculate_relative_vector(23, 23)
         assert_that(result, not_none())
         assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
-        assert_that(result['l'], close_to(1, 0.0001))
+        assert_that(result['l'], close_to(32.5, 0.1))
 
         result = _calculate_relative_vector(0, 0)
         assert_that(result, not_none())
@@ -187,7 +187,7 @@ class VectorTests(unittest.TestCase):
         assert_that(result, not_none())
         assert_that(result['x'], equal_to(0))
         assert_that(result['y'], equal_to(1))
-        assert_that(result['l'], equal_to(1))
+        assert_that(result['l'], equal_to(20))
 
     def test_vector_comparison(self):
         testvectors = [
@@ -206,3 +206,19 @@ class VectorTests(unittest.TestCase):
         ]
         result = find_shortest_vector(testvectors)
         assert_that(result['x'], equal_to(0.5))
+        testvectors = [
+            {
+                'x': 0,
+                'y': 1
+            },
+            {
+                'x': 0,
+                'y': 0.5
+            },
+            {
+                'x': 0,
+                'y': 2.3
+            }
+        ]
+        result = find_shortest_vector(testvectors)
+        assert_that(result['y'], equal_to(0.5))
