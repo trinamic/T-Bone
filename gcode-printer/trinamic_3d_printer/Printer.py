@@ -1,18 +1,19 @@
 # coding=utf-8
 from Queue import Queue
-from collections import defaultdict
 import logging
 from math import sqrt, copysign
 from numpy import sign
 from threading import Thread
 from trinamic_3d_printer.Machine import Machine
+from trinamic_3d_printer.helpers import _convert_mm_to_steps, find_shortest_vector, _calculate_relative_vector
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
 
 
-class Printer():
+class Printer(Thread):
     def __init__(self, print_min_length=50, print_max_length=100):
+        Thread.__init__(self)
         self.ready = False
         self.config = None
         self.axis = {'x': {}, 'y': {}}
@@ -59,8 +60,7 @@ class Printer():
     def start_print(self):
         self.machine.batch_mode = True
         self.print_queue = PrintQueue(axis_config=self.axis,min_length=self.print_queue_min_length,max_length=self.print_queue_max_length)
-        self.printer_thread = Thread(target=self._printer())
-        self.printer_thread.start()
+        self.start()
 
     def stop_print(self):
         self.printer_thread.stop() #TODO we probably needs some kind of 'join or so
@@ -70,7 +70,19 @@ class Printer():
     def move_to(self, position):
         self.print_queue.add_movement(position)
 
-    def _printer(self):
+    def _configure_axis(self, axis, config):
+        axis['motor'] = config['motor']
+        axis['scale'] = config['steps-per-mm']
+        axis['max_speed'] = config['max-speed']
+        axis['max_acceleration'] = config['max-acceleration']
+        axis['bow'] = config['bow-acceleration']
+
+        motor = config["motor"]
+        current = config["current"]
+        self.machine.set_current(motor, current)
+
+    def run(self):
+
         #get the next movement from stack
         movement = self.print_queue.next_movment()
 
@@ -144,49 +156,6 @@ class Printer():
                     y_move_config
                 ])
 
-    def _configure_axis(self, axis, config):
-        axis['motor'] = config['motor']
-        axis['scale'] = config['steps-per-mm']
-        axis['max_speed'] = config['max-speed']
-        axis['max_acceleration'] = config['max-acceleration']
-        axis['bow'] = config['bow-acceleration']
-
-        motor = config["motor"]
-        current = config["current"]
-        self.machine.set_current(motor, current)
-
-
-def _convert_mm_to_steps(millimeters, conversion_factor):
-    if millimeters is None:
-        return None
-    return int(millimeters * conversion_factor)
-
-
-def _calculate_relative_vector(delta_x, delta_y):
-    length = sqrt(delta_x ** 2 + delta_y ** 2)
-    if length == 0:
-        return {
-            'x': 0.0,
-            'y': 0.0,
-            'l': 0.0
-        }
-    return {
-        'x': float(delta_x) / length,
-        'y': float(delta_y) / length,
-        'l': length
-    }
-
-
-def find_shortest_vector(vector_list):
-    find_list = list(vector_list)
-    #ensure it is a list
-    shortest_vector = 0
-    #and wildly guess the shortest vector
-    for number, vector in enumerate(find_list):
-        if (vector['x'] ** 2 + vector['y'] ** 2) < (
-                    find_list[shortest_vector]['x'] ** 2 + find_list[shortest_vector]['y'] ** 2):
-            shortest_vector = number
-    return find_list[shortest_vector]
 
 
 class PrintQueue():
@@ -372,7 +341,6 @@ class PrintQueue():
         #the minimum achievable speed is the minimum of all those local vectors
 
         return max_local_speed_vector
-
 
 class PrinterError(Exception):
     def __init__(self, msg):
