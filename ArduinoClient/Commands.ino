@@ -120,7 +120,7 @@ void onMove() {
   }
   movement move;
   movement followers[MAX_FOLLOWING_MOTORS];
-  move.type = move_over;
+  move.type = move_to;
   move.motor=motor;
   if (readMovementParameters(&move)) {
     //if there was an error return 
@@ -149,7 +149,7 @@ void onMove() {
   do {
     motor = messenger.readIntArg();
     if (motor!=0) {
-      followers[following_motors].type=follow_over;
+      followers[following_motors].type=follow_to;
       followers[following_motors].motor=motor - 1;
       if (readMovementParameters(&followers[following_motors])) {
         //if there was an error return 
@@ -208,6 +208,17 @@ char readMovementParameters(movement* move) {
     messenger.sendCmd (kError,F("cannot move beyond home"));
     return -1;
   }
+  char movementType = (char)messenger.readIntArg();
+  boolean isWaypoint;
+  if (movementType == 's') {
+    //the movement is no waypoint  we do not have to do anything
+    isWaypoint = true;
+  } else if (movementType== 'w') {
+    isWaypoint = false;
+  } else {
+    messenger.sendCmd (kError,F("unknown movement type (s or w)"));
+    return -1;
+  }  
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
@@ -235,6 +246,13 @@ char readMovementParameters(movement* move) {
   }
 
   move->target = newPos;
+  if (isWaypoint) {
+    if (move->target==move_to) {
+      move->target=move_over;
+    } else {
+      move-target=follow_over;
+    }
+  }
   move->vMax=vMax;
   move->aMax=aMax;
   move->dMax=dMax;

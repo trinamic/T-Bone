@@ -1,8 +1,5 @@
 //what kind of information is in the queue
 
-#define MOVING_MOTOR _BV(1)
-#define MOVING_OVER _BV(2)
-
 enum movement_type {
   move_to = MOVING_MOTOR | MOVING_OVER,
   follow_to = MOVING_OVER ,
