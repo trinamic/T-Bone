@@ -1,3 +1,5 @@
+from numpy import sqrt
+
 __author__ = 'marcus'
 
 def _convert_mm_to_steps(millimeters, conversion_factor):
