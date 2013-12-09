@@ -149,7 +149,7 @@ class Printer(Thread):
             #ok we have to see which axis has bigger movement
             if abs(delta_x) > abs(delta_y):
                 y_factor = abs(move_vector['y'] / move_vector['x'])
-                _logger.info(
+                _logger.debug(
                     "Moving X axis to " + str(step_pos['x']) + " gearing Y by " + str(y_factor) + " to " + str(
                         step_pos['y']))
 
@@ -162,7 +162,7 @@ class Printer(Thread):
                 #move
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'])
-                _logger.info("Moving Y axis to " + str(step_pos['y']) + " gearing X by " + str(x_factor) + " to " + str(
+                _logger.debug("Moving Y axis to " + str(step_pos['y']) + " gearing X by " + str(x_factor) + " to " + str(
                     step_pos['x']))
                 x_move_config['acceleration'] *= x_factor
                 x_move_config['deceleration'] *= x_factor
