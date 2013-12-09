@@ -15,6 +15,7 @@ class Printer(Thread):
     def __init__(self, print_min_length=50, print_max_length=100):
         Thread.__init__(self)
         self.ready = False
+        self.printing = False
         self.config = None
         self.axis = {'x': {}, 'y': {}}
         self.axis['x']['motor'] = None
@@ -56,15 +57,17 @@ class Printer(Thread):
         #todo in thery we should have homed here
         self.x_pos = 0
         self.y_pos = 0
+        self.ready = True
 
     def start_print(self):
         self.machine.batch_mode = True
         self._print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
-                                      max_length=self.print_queue_max_length)
+                                       max_length=self.print_queue_max_length)
+        self.printing = True
         self.start()
 
     def stop_print(self):
-        self.printer_thread.stop() #TODO we probably needs some kind of 'join or so
+        self.printing = False
         pass
 
     # tuple with x/y/e coordinates - if left out no change is intenden
@@ -84,10 +87,17 @@ class Printer(Thread):
         self.machine.set_current(motor, current)
 
     def run(self):
+        while self.printing:
+            #get the next movement from stack
+            movement = self._print_queue.next_movment()
 
-        #get the next movement from stack
-        movement = self._print_queue.next_movment()
+            delta_x, delta_y, move_vector, step_pos, step_speed_vector = self._add_movement_calculations(movement)
 
+            x_move_config, y_move_config = self._generate_move_config(step_pos, step_speed_vector)
+
+            self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+
+    def _add_movement_calculations(self, movement):
         step_pos = {
             'x': _convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
             'y': _convert_mm_to_steps(movement['y'], self.axis['y']['scale'])
@@ -99,8 +109,9 @@ class Printer(Thread):
         delta_x = movement['delta_y']
         delta_y = movement['delta_y']
         move_vector = movement['relative_move_vector']
+        return delta_x, delta_y, move_vector, step_pos, step_speed_vector
 
-
+    def _generate_move_config(self, step_pos, step_speed_vector):
         def _axis_movement_template(axis):
             return {
                 'motor': axis['motor'],
@@ -116,7 +127,9 @@ class Printer(Thread):
         y_move_config = _axis_movement_template(self.axis['y'])
         y_move_config['target'] = step_pos['y']
         y_move_config['speed'] = step_speed_vector['y']
+        return x_move_config, y_move_config
 
+    def _move(self, delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config):
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to " + str(step_pos['x']))
@@ -220,13 +233,13 @@ class PrintQueue():
         else:
             last_x = 0
             last_y = 0
-        #logg this move
+            #logg this move
         if _logger.isEnabledFor(logging.DEBUG) and ('x' in move or 'y' in move):
-            log_text="moving to "
+            log_text = "moving to "
             if 'x' in move:
-                log_text += "X:"+str(move['x'])+" "
+                log_text += "X:" + str(move['x']) + " "
             if 'y' in move:
-                log_text += "Y:"+str(move['y'])+" "
+                log_text += "Y:" + str(move['y']) + " "
             _logger.debug(log_text)
 
         move['delta_x'] = move['x'] - last_x
