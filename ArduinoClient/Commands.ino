@@ -125,7 +125,7 @@ void onMove() {
   }
   movement move;
   movement followers[MAX_FOLLOWING_MOTORS];
-  move.type = movemotor;
+  move.type = move_over;
   move.motor=motor;
   move.target=newPos;
   if (readMovementParameters(&move)) {
@@ -160,7 +160,7 @@ void onMove() {
       return;
     }
     if (motor!=0) {
-      followers[following_motors].type=followmotor;
+      followers[following_motors].type=follow_over;
       followers[following_motors].motor=motor - 1;
       followers[following_motors].target=newPos;
       if (readMovementParameters(&followers[following_motors])) {

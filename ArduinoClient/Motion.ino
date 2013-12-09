@@ -67,7 +67,7 @@ void checkMotion() {
       movement follower;
       do {
         follower = moveQueue.peek();
-        if (follower.type==followmotor) {  
+        if (follower.type==follow_over) {  
           moveQueue.pop();
 #ifdef DEBUG_MOTION
           Serial.print(F("Following motor "));
@@ -80,7 +80,7 @@ void checkMotion() {
           last_target[follower.motor]=follower.target;
         }
       } 
-      while (follower.type == followmotor);
+      while (follower.type == follow_over);
 
       //in the end all moviong motorts must have apssed pos_comp
       target_motor_status = moving_motors;

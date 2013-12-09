@@ -1,7 +1,9 @@
 //what kind of information is in the queue
 enum movement_type {
-  movemotor,
-  followmotor,
+  move_to,
+  follow_to,
+  move_over,
+  follow_over
 };
 
 //general datatypes we use, conveniently in an header file 
