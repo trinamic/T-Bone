@@ -1,9 +1,13 @@
 //what kind of information is in the queue
+
+#define MOVING_MOTOR _BV(1)
+#define MOVING_OVER _BV(2)
+
 enum movement_type {
-  move_to,
-  follow_to,
-  move_over,
-  follow_over
+  move_to = MOVING_MOTOR | MOVING_OVER,
+  follow_to = MOVING_OVER ,
+  move_over = MOVING_MOTOR,
+  follow_over = 0
 };
 
 //general datatypes we use, conveniently in an header file 

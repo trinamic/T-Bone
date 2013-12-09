@@ -118,16 +118,10 @@ void onMove() {
   if (motor<0) {
     return;
   }
-  long newPos = messenger.readLongArg();
-  if (newPos<0) {
-    messenger.sendCmd (kError,F("cannot move beyond home"));
-    return;
-  }
   movement move;
   movement followers[MAX_FOLLOWING_MOTORS];
   move.type = move_over;
   move.motor=motor;
-  move.target=newPos;
   if (readMovementParameters(&move)) {
     //if there was an error return 
     return;
@@ -154,15 +148,9 @@ void onMove() {
 
   do {
     motor = messenger.readIntArg();
-    long newPos = messenger.readLongArg();
-    if (newPos<0) {
-      messenger.sendCmd (kError,F("cannot move beyond home"));
-      return;
-    }
     if (motor!=0) {
       followers[following_motors].type=follow_over;
       followers[following_motors].motor=motor - 1;
-      followers[following_motors].target=newPos;
       if (readMovementParameters(&followers[following_motors])) {
         //if there was an error return 
         return;
@@ -215,6 +203,11 @@ void onMove() {
 } 
 
 char readMovementParameters(movement* move) {
+  long newPos = messenger.readLongArg();
+  if (newPos<0) {
+    messenger.sendCmd (kError,F("cannot move beyond home"));
+    return -1;
+  }
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
@@ -241,6 +234,7 @@ char readMovementParameters(movement* move) {
     return -1;
   }
 
+  move->target = newPos;
   move->vMax=vMax;
   move->aMax=aMax;
   move->dMax=dMax;
