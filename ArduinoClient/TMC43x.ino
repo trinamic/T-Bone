@@ -67,11 +67,12 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
     long last_pos = last_target[motor_nr];
     comp_pos = pos;
     aim_target = 2*(pos-last_pos)+last_pos;
-  } else {
+  } 
+  else {
     comp_pos = 0;
     aim_target=pos;
   }
-  
+
 #ifdef DEBUG_MOTION_TRACE  
   if (!configure_shadow) {
     Serial.print(F("Moving motor "));
@@ -82,8 +83,10 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   Serial.print(motor_nr,DEC);
   if (isWaypoint) {
     Serial.print(" via");
-  } else {
+  } 
+  else {
     Serial.print(" to");
+  }
   Serial.print(F(": pos="));
   Serial.print(pos);
   Serial.print(F(" ["));
@@ -135,12 +138,11 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
 inline void signal_start() {
   //prepare the pos compr registers
   for (char i=0; i< nr_of_motors; i++) {
-    
+
     //clear the event register
     read43x(motors[i].cs_pin,EVENTS_REGISTER,0);
-    
-      write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
-      next_pos_comp[i] = 0;
+    write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
+    next_pos_comp[i] = 0;
   }    
   //carefully trigger the start pin 
   digitalWrite(start_signal_pin,HIGH);
@@ -151,6 +153,8 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
+
+
 
 
 

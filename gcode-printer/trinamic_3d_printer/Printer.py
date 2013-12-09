@@ -93,7 +93,8 @@ class Printer(Thread):
 
             delta_x, delta_y, move_vector, step_pos, step_speed_vector = self._add_movement_calculations(movement)
 
-            x_move_config, y_move_config = self._generate_move_config(step_pos, step_speed_vector)
+            x_move_config, y_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
+
 
             self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
 
@@ -111,7 +112,7 @@ class Printer(Thread):
         move_vector = movement['relative_move_vector']
         return delta_x, delta_y, move_vector, step_pos, step_speed_vector
 
-    def _generate_move_config(self, step_pos, step_speed_vector):
+    def _generate_move_config(self, movement, step_pos, step_speed_vector):
         def _axis_movement_template(axis):
             return {
                 'motor': axis['motor'],
@@ -124,9 +125,19 @@ class Printer(Thread):
         x_move_config = _axis_movement_template(self.axis['x'])
         x_move_config['target'] = step_pos['x']
         x_move_config['speed'] = step_speed_vector['x']
+        if 'x_stop' in movement:
+            x_move_config['type'] = 'stop'
+        else:
+            x_move_config['type'] = 'way'
+
         y_move_config = _axis_movement_template(self.axis['y'])
         y_move_config['target'] = step_pos['y']
         y_move_config['speed'] = step_speed_vector['y']
+        if 'y_stop' in movement:
+            y_move_config['type'] = 'stop'
+        else:
+            y_move_config['type'] = 'way'
+
         return x_move_config, y_move_config
 
     def _move(self, delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config):
@@ -162,8 +173,9 @@ class Printer(Thread):
                 #move
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'])
-                _logger.debug("Moving Y axis to " + str(step_pos['y']) + " gearing X by " + str(x_factor) + " to " + str(
-                    step_pos['x']))
+                _logger.debug(
+                    "Moving Y axis to " + str(step_pos['y']) + " gearing X by " + str(x_factor) + " to " + str(
+                        step_pos['x']))
                 x_move_config['acceleration'] *= x_factor
                 x_move_config['deceleration'] *= x_factor
                 self.machine.move_to([

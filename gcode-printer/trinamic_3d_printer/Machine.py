@@ -63,6 +63,10 @@ class Machine():
         for motor in motors:
             command.arguments.append(int(motor['motor']))
             command.arguments.append(int(motor['target']))
+            if motor['type'] == 'stop':
+                command.arguments.append(0)
+            else:
+                command.arguments.append(1)
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
             command.arguments.append(int(motor['deceleration']))
