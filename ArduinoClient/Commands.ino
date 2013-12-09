@@ -130,7 +130,12 @@ void onMove() {
 #ifdef DEBUG_MOTOR_QUEUE
   Serial.print(F("Adding movement for motor "));
   Serial.print(motor,DEC);
-  Serial.print(F(" to "));
+  if (move.type==move_to) {
+    Serial.print(F(" to "));
+  } 
+  else {
+    Serial.print(F(" via "));
+  }
   Serial.print(move.target);
 #ifdef DEBUG_MOTION    
   Serial.print(F(", vMax="));
@@ -158,7 +163,12 @@ void onMove() {
 #ifdef DEBUG_MOTOR_QUEUE
       Serial.print(F(", following motor "));
       Serial.print(motor - 1,DEC);
-      Serial.print(F(" to "));
+      if (move.type==follow_to) {
+        Serial.print(F(" to "));
+      } 
+      else {
+        Serial.print(F(" via "));
+      }
       Serial.print(move.target);
 #ifdef DEBUG_MOTION    
       Serial.print(F(", vMax="));
@@ -379,6 +389,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
