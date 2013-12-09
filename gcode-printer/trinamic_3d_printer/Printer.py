@@ -207,7 +207,8 @@ class PrintQueue():
             self.planning_list.append(self.previous_movement)
             #if the list is long enough we can give it to the queue so that readers can get it
         if len(self.planning_list) > self.queue_size:
-            self.queue.put(self.planning_list.pop(), timeout=timeout)
+            executed_move = self.planning_list.pop(0)
+            self.queue.put(executed_move, timeout=timeout)
         self.previous_movement = move
         #and recalculate the maximum allowed speed
         self._recalculate_move_speeds(move)
