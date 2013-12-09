@@ -129,7 +129,7 @@ class _MachineConnection:
         self.internal_free_ram = 0
 
     def send_command(self, command):
-        _logger.info("sending command " + str(command))
+        _logger.debug("sending command " + str(command))
         #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
@@ -171,7 +171,7 @@ class _MachineConnection:
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
-                    _logger.info("received command " + str(command))
+                    _logger.debug("received command " + str(command))
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line

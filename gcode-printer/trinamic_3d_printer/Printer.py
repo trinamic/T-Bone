@@ -220,6 +220,15 @@ class PrintQueue():
         else:
             last_x = 0
             last_y = 0
+        #logg this move
+        if _logger.isEnabledFor(logging.DEBUG) and ('x' in move or 'y' in move):
+            log_text="moving to "
+            if 'x' in move:
+                log_text += "X:"+str(move['x'])+" "
+            if 'y' in move:
+                log_text += "Y:"+str(move['y'])+" "
+            _logger.debug(log_text)
+
         move['delta_x'] = move['x'] - last_x
         move['delta_y'] = move['y'] - last_y
         move_vector = _calculate_relative_vector(move['delta_x'], move['delta_y'])

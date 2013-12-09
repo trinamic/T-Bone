@@ -26,7 +26,7 @@ def main(argv=None):
     os.system("echo BB-UART1 > /sys/devices/bone_capemgr.8/slots")
 
     #configure the overall logging
-    logging.basicConfig(filename='print.log', level=logging.INFO,
+    logging.basicConfig(filename='print.log', level=logging.DEBUG,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.info('Started')
 
