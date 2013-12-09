@@ -131,7 +131,7 @@ void onMove() {
   Serial.print(F("Adding movement for motor "));
   Serial.print(motor,DEC);
   Serial.print(F(" to "));
-  Serial.print(newPos);
+  Serial.print(move.target);
 #ifdef DEBUG_MOTION    
   Serial.print(F(", vMax="));
   Serial.print(move.vMax);
@@ -159,7 +159,7 @@ void onMove() {
       Serial.print(F(", following motor "));
       Serial.print(motor - 1,DEC);
       Serial.print(F(" to "));
-      Serial.print(newPos);
+      Serial.print(move.target);
 #ifdef DEBUG_MOTION    
       Serial.print(F(", vMax="));
       Serial.print(followers[following_motors].vMax);
@@ -213,9 +213,11 @@ char readMovementParameters(movement* move) {
   if (movementType == 's') {
     //the movement is no waypoint  we do not have to do anything
     isWaypoint = false;
-  } else if (movementType== 'w') {
+  } 
+  else if (movementType== 'w') {
     isWaypoint = true;
-  } else {
+  } 
+  else {
     messenger.sendCmd (kError,F("unknown movement type (s or w)"));
     return -1;
   }  
@@ -247,10 +249,11 @@ char readMovementParameters(movement* move) {
 
   move->target = newPos;
   if (isWaypoint) {
-    if (move->target==move_to) {
-      move->target=move_over;
-    } else {
-      move->target=follow_over;
+    if (move->type==move_to) {
+      move->type=move_over;
+    } 
+    else {
+      move->type=follow_over;
     }
   }
   move->vMax=vMax;
@@ -376,6 +379,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
