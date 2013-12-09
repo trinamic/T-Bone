@@ -50,7 +50,7 @@ inline long getMotorPosition(unsigned char motor_nr) {
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dMax, long startBow, long endBow, boolean configure_shadow) {
+void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dMax, long startBow, long endBow, boolean configure_shadow, boolean isWaypoint) {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
 
   if (pos==0) {
@@ -60,10 +60,18 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   }
 
 
+  long aim_target;
+  long comp_pos;
   //calculate the value for x_target so taht we go over pos_comp
-  long last_pos = last_target[motor_nr];
-  long aim_target = 2*(pos-last_pos)+last_pos;
-
+  if (isWaypoint) {
+    long last_pos = last_target[motor_nr];
+    comp_pos = pos;
+    aim_target = 2*(pos-last_pos)+last_pos;
+  } else {
+    comp_pos = 0;
+    aim_target=pos;
+  }
+  
 #ifdef DEBUG_MOTION_TRACE  
   if (!configure_shadow) {
     Serial.print(F("Moving motor "));
@@ -72,6 +80,10 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
     Serial.print(F("Preparing motor "));
   }
   Serial.print(motor_nr,DEC);
+  if (isWaypoint) {
+    Serial.print(" via");
+  } else {
+    Serial.print(" to");
   Serial.print(F(": pos="));
   Serial.print(pos);
   Serial.print(F(" ["));
@@ -100,8 +112,8 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
     write43x(cs_pin,BOW_3_REGISTER,endBow);
     write43x(cs_pin,BOW_4_REGISTER,startBow);
     //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = pos;
-    write43x(cs_pin,POS_COMP_REGISTER,pos);
+    next_pos_comp[motor_nr] = comp_pos;
+    write43x(cs_pin,POS_COMP_REGISTER,comp_pos);
 
   } 
   else {
@@ -114,10 +126,10 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
     write43x(cs_pin,SH_BOW_4_REGISTER,startBow);
 
     //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = pos;
+    next_pos_comp[motor_nr] = comp_pos;
 
   }
-  write43x(cs_pin,X_TARGET_REGISTER,pos);
+  write43x(cs_pin,X_TARGET_REGISTER,aim_target);
 }
 
 inline void signal_start() {

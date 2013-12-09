@@ -9,7 +9,7 @@ void startMotion() {
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
-    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER,_BV(1)); //POS_COMP_REACHED is our target reached
+    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
     last_target[i]=0;//TODO isn't this more or less a homing 
   }
   next_move_prepared=false; //TODO in theory this is not needed  
@@ -60,7 +60,7 @@ void checkMotion() {
       Serial.print(F(" at "));
       Serial.println(move.vMax);
 #endif
-      moveMotor(move.motor, move.target, move.vMax, move.aMax, move.dMax, move.startBow, move.endBow, prepare_shaddow_registers);
+      moveMotor(move.motor, move.target, move.vMax, move.aMax, move.dMax, move.startBow, move.endBow, prepare_shaddow_registers, move.type==move_over);
       moving_motors |= _BV(move.motor);
       last_target[move.motor]=move.target;
 
@@ -75,7 +75,7 @@ void checkMotion() {
           Serial.print(F(" to "));
           Serial.println(follower.target,DEC);
 #endif
-          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers);
+          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers, follower.motor==follow_over);
           moving_motors |= _BV(follower.motor);
           last_target[follower.motor]=follower.target;
         }
