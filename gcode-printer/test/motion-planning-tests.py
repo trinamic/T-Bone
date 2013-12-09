@@ -72,7 +72,7 @@ class VectorTests(unittest.TestCase):
                 'y': i + 1,
                 'f': 10
             })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         assert_that(last_movement['speed'], not_none())
         assert_that(last_movement['speed']['x'], not_none())
         assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
@@ -84,7 +84,7 @@ class VectorTests(unittest.TestCase):
             'x': 7,
             'y': 6
         })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
         assert_that(last_movement['speed']['x'], greater_than(0))
         assert_that(last_movement['speed']['y'], equal_to(0))
@@ -101,7 +101,7 @@ class VectorTests(unittest.TestCase):
             'x': 7,
             'y': 7
         })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         assert_that(last_movement['speed']['x'], equal_to(0))
         assert_that(last_movement['speed']['y'], greater_than(0))
         assert_that(last_movement['speed']['y'], less_than(max_speed_y))
@@ -118,7 +118,7 @@ class VectorTests(unittest.TestCase):
             'x': 0,
             'y': 7
         })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         #it is a long go - so we should be able to speed up to full steam
         assert_that(last_movement['speed']['x'], close_to(-max_speed_x, 0.5))
         assert_that(last_movement['speed']['y'], equal_to(0))
@@ -128,7 +128,7 @@ class VectorTests(unittest.TestCase):
             'x': 0,
             'y': 0
         })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         #it is a long go - so we should be able to speed up to full steam
         assert_that(last_movement['speed']['x'], equal_to(0))
         assert_that(last_movement['speed']['y'], close_to(-max_speed_y, 0.5))
@@ -140,7 +140,7 @@ class VectorTests(unittest.TestCase):
                 'x': i + 1,
                 'y': i + 1,
             })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01)) #becaus we go 1/1 each time
         assert_that(last_movement['speed']['y'], close_to(max_speed_y, 0.01))
         #and check if we can do a full stop
@@ -148,7 +148,7 @@ class VectorTests(unittest.TestCase):
             'x': 3,
             'y': 3
         })
-        last_movement = queue.last_movement
+        last_movement = queue.previous_movement
         assert_that(last_movement['speed']['x'], less_than(0))
         assert_that(last_movement['speed']['x'], greater_than(-max_speed_x))
         assert_that(last_movement['speed']['y'], less_than(0))

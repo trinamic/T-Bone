@@ -29,7 +29,7 @@ class Printer(Thread):
         self.axis['y']['bow'] = None
 
         self.printer_thread = None
-        self.print_queue = None
+        self._print_queue = None
         self.print_queue_min_length = print_min_length
         self.print_queue_max_length = print_max_length
 
@@ -59,7 +59,7 @@ class Printer(Thread):
 
     def start_print(self):
         self.machine.batch_mode = True
-        self.print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
+        self._print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
                                       max_length=self.print_queue_max_length)
         self.start()
 
@@ -69,7 +69,7 @@ class Printer(Thread):
 
     # tuple with x/y/e coordinates - if left out no change is intenden
     def move_to(self, position):
-        self.print_queue.add_movement(position)
+        self._print_queue.add_movement(position)
 
     def _configure_axis(self, axis, config):
         axis['motor'] = config['motor']
@@ -86,7 +86,7 @@ class Printer(Thread):
     def run(self):
 
         #get the next movement from stack
-        movement = self.print_queue.next_movment()
+        movement = self._print_queue.next_movment()
 
         step_pos = {
             'x': _convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
@@ -165,7 +165,7 @@ class PrintQueue():
         self.planning_list = list()
         self.queue_size = min_length - 1 #since we got one extra
         self.queue = Queue(maxsize=(max_length - min_length))
-        self.last_movement = None
+        self.previous_movement = None
         #we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
 
@@ -178,12 +178,12 @@ class PrintQueue():
         #and since we do not know it better the first guess is that the final speed is the max speed
         move['speed'] = move['max_achievable_speed_vector']
         #now we can push the previous move to the queue and recalculate the whole queue
-        if self.last_movement:
-            self.planning_list.append(self.last_movement)
+        if self.previous_movement:
+            self.planning_list.append(self.previous_movement)
             #if the list is long enough we can give it to the queue so that readers can get it
         if len(self.planning_list) > self.queue_size:
             self.queue.put(self.planning_list.pop(), timeout=timeout)
-        self.last_movement = move
+        self.previous_movement = move
         #and recalculate the maximum allowed speed
         self._recalculate_move_speeds(move)
 
@@ -195,28 +195,28 @@ class PrintQueue():
         if 'x' in target_position:
             move['x'] = target_position['x']
         else:
-            if self.last_movement:
-                move['x'] = self.last_movement['x']
+            if self.previous_movement:
+                move['x'] = self.previous_movement['x']
             else:
                 move['x'] = 0
         if 'y' in target_position:
             move['y'] = target_position['y']
         else:
-            if self.last_movement:
-                move['y'] = self.last_movement['y']
+            if self.previous_movement:
+                move['y'] = self.previous_movement['y']
             else:
                 move['y'] = 0
         if 'f' in target_position:
             move['target_speed'] = target_position['f']
-        elif self.last_movement:
-            move['target_speed'] = self.last_movement['target_speed']
+        elif self.previous_movement:
+            move['target_speed'] = self.previous_movement['target_speed']
         elif self.default_target_speed:
             move['target_speed'] = self.default_target_speed
         else:
             raise PrinterError("movement w/o a set speed and no default speed is set!")
-        if self.last_movement:
-            last_x = self.last_movement['x']
-            last_y = self.last_movement['y']
+        if self.previous_movement:
+            last_x = self.previous_movement['x']
+            last_y = self.previous_movement['y']
         else:
             last_x = 0
             last_y = 0
@@ -236,9 +236,9 @@ class PrintQueue():
         move['relative_move_vector'] = move_vector
 
     def _maximum_achievable_speed(self, move):
-        if self.last_movement:
-            last_x_speed = self.last_movement['speed']['x']
-            last_y_speed = self.last_movement['speed']['y']
+        if self.previous_movement:
+            last_x_speed = self.previous_movement['speed']['x']
+            last_y_speed = self.previous_movement['speed']['y']
         else:
             last_x_speed = 0
             last_y_speed = 0
@@ -259,7 +259,7 @@ class PrintQueue():
                 'x': copysign(self.axis['x']['max_speed'], move_vector['x']),
                 'y': self.axis['x']['max_speed'] * copysign(move_vector['y'] / move_vector['x'], move_vector['y'])
             })
-            if not self.last_movement or sign(delta_x) == sign(self.last_movement['delta_x']):
+            if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
                 max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
                 max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
@@ -270,8 +270,8 @@ class PrintQueue():
                 })
             else:
                 #we HAVE to turn around!
-                if self.last_movement:
-                    self.last_movement['x_stop'] = True
+                if self.previous_movement:
+                    self.previous_movement['x_stop'] = True
                 max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x
                 max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
                 speed_vectors.append({
@@ -281,8 +281,8 @@ class PrintQueue():
                 })
         else:
             #we HAVE to turn around!
-            if self.last_movement:
-                self.last_movement['x_stop'] = True
+            if self.previous_movement:
+                self.previous_movement['x_stop'] = True
 
         if delta_y != 0:
             speed_vectors.append({
@@ -290,7 +290,7 @@ class PrintQueue():
                 'x': self.axis['y']['max_speed'] * move_vector['x'] / move_vector['y'],
                 'y': copysign(self.axis['y']['max_speed'], move_vector['y'])
             })
-            if not self.last_movement or sign(delta_y) == sign(self.last_movement['delta_y']):
+            if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
                 #ww can accelerate further
                 max_speed_y = last_y_speed ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
@@ -301,8 +301,8 @@ class PrintQueue():
                 })
             else:
                 #we HAVE to turn around!
-                if self.last_movement:
-                    self.last_movement['y_stop'] = True
+                if self.previous_movement:
+                    self.previous_movement['y_stop'] = True
                 max_speed_y = 2 * self.axis['y']['max_acceleration'] * delta_y
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
                 speed_vectors.append({
@@ -312,8 +312,8 @@ class PrintQueue():
                 })
         else:
             #we HAVE to turn around!
-            if self.last_movement:
-                self.last_movement['y_stop'] = True
+            if self.previous_movement:
+                self.previous_movement['y_stop'] = True
 
         max_local_speed_vector = find_shortest_vector(speed_vectors)
         #the minimum achievable speed is the minimum of all those local vectors
