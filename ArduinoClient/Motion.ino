@@ -75,7 +75,7 @@ void checkMotion() {
           Serial.print(F(" to "));
           Serial.println(follower.target,DEC);
 #endif
-          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers, follower.motor==follow_over);
+          moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers, follower.type==follow_over);
           moving_motors |= _BV(follower.motor);
           last_target[follower.motor]=follower.target;
         }
