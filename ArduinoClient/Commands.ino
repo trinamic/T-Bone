@@ -169,7 +169,7 @@ void onMove() {
       else {
         Serial.print(F(" via "));
       }
-      Serial.print(follow.target);
+      Serial.print(followers[following_motors].target);
 #ifdef DEBUG_MOTION    
       Serial.print(F(", vMax="));
       Serial.print(followers[following_motors].vMax);
