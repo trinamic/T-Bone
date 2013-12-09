@@ -212,9 +212,9 @@ char readMovementParameters(movement* move) {
   boolean isWaypoint;
   if (movementType == 's') {
     //the movement is no waypoint  we do not have to do anything
-    isWaypoint = true;
-  } else if (movementType== 'w') {
     isWaypoint = false;
+  } else if (movementType== 'w') {
+    isWaypoint = true;
   } else {
     messenger.sendCmd (kError,F("unknown movement type (s or w)"));
     return -1;

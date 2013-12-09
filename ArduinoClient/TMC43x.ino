@@ -90,7 +90,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   Serial.print(F(": pos="));
   Serial.print(pos);
   Serial.print(F(" ["));
-  Serial.print(last_pos);
+  Serial.print(last_target[motor_nr]);
   Serial.print(F(" -> "));
   Serial.print(aim_target);
   Serial.print(F("], vMax="));
