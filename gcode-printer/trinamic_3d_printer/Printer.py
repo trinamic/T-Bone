@@ -185,39 +185,7 @@ class PrintQueue():
             self.queue.put(self.planning_list.pop(), timeout=timeout)
         self.last_movement = move
         #and recalculate the maximum allowed speed
-        max_speed = move['speed']
-        for movement in reversed(self.planning_list):
-            #tosdo in theory we can stop somewhere …
-            delta_x = movement['delta_x']
-            if sign(delta_x) == sign(max_speed['x']):
-                max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
-            else:
-                max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x
-            max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
-            delta_y = movement['delta_y']
-            if sign(delta_y) == sign(max_speed['y']):
-                max_speed_y = max_speed['y'] ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
-            else:
-                max_speed_y = 2 * self.axis['y']['max_acceleration'] * delta_y
-            max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)# little trick to have a proper sign
-            speed_vectors = [
-                movement['speed']
-            ]
-            move_vector = movement['relative_move_vector']
-            if move_vector['x'] != 0:
-                speed_vectors.append({
-                    #what would the speed vector for max x speed look like
-                    'x': max_speed_x,
-                    'y': max_speed_x * move_vector['y'] / move_vector['x']
-                })
-            if move_vector['y'] != 0:
-                speed_vectors.append({
-                    #what would the speed vector for max x speed look like
-                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
-                    'y': max_speed_y
-                })
-            movement['speed'] = find_shortest_vector(speed_vectors)
-            max_speed = movement['speed']
+        self._recalculate_move_speeds(move)
 
     def next_movment(self, timeout=None):
         return self.queue.get(timeout=timeout)
@@ -342,6 +310,42 @@ class PrintQueue():
         #the minimum achievable speed is the minimum of all those local vectors
 
         return max_local_speed_vector
+
+
+    def _recalculate_move_speeds(self, move):
+        max_speed = move['speed']
+        for movement in reversed(self.planning_list):
+            #tosdo in theory we can stop somewhere …
+            delta_x = movement['delta_x']
+            if sign(delta_x) == sign(max_speed['x']):
+                max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
+            else:
+                max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x
+            max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
+            delta_y = movement['delta_y']
+            if sign(delta_y) == sign(max_speed['y']):
+                max_speed_y = max_speed['y'] ** 2 + 2 * self.axis['y']['max_acceleration'] * delta_y
+            else:
+                max_speed_y = 2 * self.axis['y']['max_acceleration'] * delta_y
+            max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)# little trick to have a proper sign
+            speed_vectors = [
+                movement['speed']
+            ]
+            move_vector = movement['relative_move_vector']
+            if move_vector['x'] != 0:
+                speed_vectors.append({
+                    #what would the speed vector for max x speed look like
+                    'x': max_speed_x,
+                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                })
+            if move_vector['y'] != 0:
+                speed_vectors.append({
+                    #what would the speed vector for max x speed look like
+                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'y': max_speed_y
+                })
+            movement['speed'] = find_shortest_vector(speed_vectors)
+            max_speed = movement['speed']
 
 
 class PrinterError(Exception):
