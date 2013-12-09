@@ -59,7 +59,8 @@ class Printer(Thread):
 
     def start_print(self):
         self.machine.batch_mode = True
-        self.print_queue = PrintQueue(axis_config=self.axis,min_length=self.print_queue_min_length,max_length=self.print_queue_max_length)
+        self.print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
+                                      max_length=self.print_queue_max_length)
         self.start()
 
     def stop_print(self):
@@ -75,6 +76,7 @@ class Printer(Thread):
         axis['scale'] = config['steps-per-mm']
         axis['max_speed'] = config['max-speed']
         axis['max_acceleration'] = config['max-acceleration']
+        axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         axis['bow'] = config['bow-acceleration']
 
         motor = config["motor"]
@@ -155,7 +157,6 @@ class Printer(Thread):
                     x_move_config,
                     y_move_config
                 ])
-
 
 
 class PrintQueue():
@@ -341,6 +342,7 @@ class PrintQueue():
         #the minimum achievable speed is the minimum of all those local vectors
 
         return max_local_speed_vector
+
 
 class PrinterError(Exception):
     def __init__(self, msg):
