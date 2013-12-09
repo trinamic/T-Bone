@@ -1,9 +1,9 @@
 //what kind of information is in the queue
 
 enum movement_type {
-  move_to ,
-  follow_to ,
-  move_over ,
+  move_to,
+  follow_to,
+  move_over,
   follow_over
 };
 

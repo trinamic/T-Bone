@@ -250,7 +250,7 @@ char readMovementParameters(movement* move) {
     if (move->target==move_to) {
       move->target=move_over;
     } else {
-      move-target=follow_over;
+      move->target=follow_over;
     }
   }
   move->vMax=vMax;
