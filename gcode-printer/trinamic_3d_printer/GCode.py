@@ -63,7 +63,7 @@ def decode_gcode_line(line):
         result = GCode(relevant_parts[0])
     if len(relevant_parts) > 1:
         result.options = relevant_parts[1:]
-        _logger.debug("found arguments: "+result.options)
+        _logger.debug("found arguments: "+str(result.options))
 
     return result
 
