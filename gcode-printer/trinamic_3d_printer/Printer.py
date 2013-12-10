@@ -75,18 +75,6 @@ class Printer(Thread):
     def move_to(self, position):
         self._print_queue.add_movement(position)
 
-    def _configure_axis(self, axis, config):
-        axis['motor'] = config['motor']
-        axis['scale'] = config['steps-per-mm']
-        axis['max_speed'] = config['max-speed']
-        axis['max_acceleration'] = config['max-acceleration']
-        axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
-        axis['bow'] = config['bow-acceleration']
-
-        motor = config["motor"]
-        current = config["current"]
-        self.machine.set_current(motor, current)
-
     def run(self):
         while self.printing:
             #get the next movement from stack
@@ -98,6 +86,18 @@ class Printer(Thread):
 
 
             self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+
+    def _configure_axis(self, axis, config):
+        axis['motor'] = config['motor']
+        axis['scale'] = config['steps-per-mm']
+        axis['max_speed'] = config['max-speed']
+        axis['max_acceleration'] = config['max-acceleration']
+        axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
+        axis['bow'] = config['bow-acceleration']
+
+        motor = config["motor"]
+        current = config["current"]
+        self.machine.set_current(motor, current)
 
     def _add_movement_calculations(self, movement):
         step_pos = {
