@@ -121,9 +121,6 @@ class _MachineConnection:
         self.remaining_buffer = ""
         self.response_queue = Queue()
         #let's suck empty the serial connection by reading everything with an extremely short timeout
-        while machine_serial.inWaiting():
-            machine_serial.read()
-            #and wait for the next ';'
         init_start = time.clock()
         last = ''
         while not last is ';' and time.clock() - init_start < _default_timeout:
