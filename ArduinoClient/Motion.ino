@@ -128,7 +128,7 @@ void motor_target_reached(char motor_nr) {
     Serial.print(F(" of "));
     Serial.println(target_motor_status,BIN);
 #endif
-    if (motor_status == target_motor_status) {
+    if ((motor_status & target_motor_status) == target_motor_status) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));

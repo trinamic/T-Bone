@@ -1,10 +1,10 @@
 from Queue import Queue, Empty
-import sys
 import logging
 import re
 from threading import Thread
 import serial
 import time
+import Adafruit_BBIO.GPIO as GPIO
 
 __author__ = 'marcus'
 
@@ -18,16 +18,27 @@ _logger = logging.getLogger(__name__)
 
 
 class Machine():
-    def __init__(self, serial_port):
-        self.serialport = serial_port
+    def __init__(self, serial_port, reset_pin):
+        #preapre the reset pin
+        self.reset_pin = reset_pin
+        GPIO.setup(self.reset_pin, GPIO.OUT)
+        GPIO.output(self.reset_pin, GPIO.HIGH)
+        self.serial_port = serial_port
         self.remaining_buffer = ""
         self.machine_connection = None
         self.command_queue = Queue()
         self.batch_mode = False
 
     def connect(self):
+        _logger.info("resetting arduino at " + self.serial_port)
+        GPIO.output(self.reset_pin, GPIO.LOW)
+        #reset the arduino
+        time.sleep(1)
+        GPIO.output(self.reset_pin, GPIO.HIGH)
+        time.sleep(30)
+        _logger.info("waiting for arduino")
         if not self.machine_connection:
-            machineSerial = serial.Serial(self.serialport, 115200, timeout=_default_timeout)
+            machineSerial = serial.Serial(self.serial_port, 115200, timeout=_default_timeout)
             self.machine_connection = _MachineConnection(machineSerial)
         init_command = MachineCommand()
         init_command.command_number = 9
@@ -72,7 +83,7 @@ class Machine():
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-            _logger.error("Unable to move Motor"+str(reply))
+            _logger.error("Unable to move Motor" + str(reply))
             raise MachineError("Unable to add motor move", reply)
         if self.batch_mode:
             command_buffer_length = int(reply.arguments[0])
@@ -101,6 +112,7 @@ class Machine():
         else:
         #while self.machine_connection.internal_queue_length > 0:
             pass # just wait TODO timeout??
+
 
 class _MachineConnection:
     def __init__(self, machine_serial):
