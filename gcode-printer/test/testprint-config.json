@@ -2,18 +2,18 @@
     "x-axis":{
         "motor":1,
         "current":0.5,
-        "steps-per-mm":177.6123,
-        "max-speed":600,
-        "max-acceleration":3000,
-        "bow-acceleration":1000
+        "steps-per-mm":2841.7968,
+        "max-speed":500,
+        "max-acceleration":9000,
+        "bow-acceleration":3000
     },
     "y-axis":{
         "motor":2 ,
         "current":0.5,
-        "steps-per-mm":177.6123,
-        "max-speed":600,
-        "max-acceleration":3000,
-        "bow-acceleration":1000
+        "steps-per-mm":2841.7968,
+        "max-speed":500,
+        "max-acceleration":9000,
+        "bow-acceleration":3000
     },
     "printer": {
         "print_queue":{
