@@ -64,12 +64,12 @@ void setup() {
   //initialize the serial port for commands
   Serial1.begin(115200);
   Serial.begin(115200); 
+  moveQueue.setStream(Serial)
   // Adds newline to every command
   messenger.printLfCr();   
 
   // Attach my application's user-defined callback methods
   attachCommandCallbacks();
-
 
   //finally signal that we are ready
   watchDogStart();
