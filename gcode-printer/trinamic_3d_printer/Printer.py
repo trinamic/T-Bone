@@ -71,7 +71,7 @@ class Printer(Thread):
         self.printing = False
         pass
 
-    # tuple with x/y/e coordinates - if left out no change is intenden
+    # tuple with x/y/e coordinates - if left out no change is intended
     def move_to(self, position):
         self._print_queue.add_movement(position)
 
