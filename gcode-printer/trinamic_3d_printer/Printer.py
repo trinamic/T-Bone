@@ -223,6 +223,8 @@ class PrintQueue():
     def finish(self, timeout=None):
         while len(self.planning_list) > 0:
             self._push_from_planning_to_execution(timeout)
+        while not self.queue.empty():
+            pass
 
 
     def _extract_movement_values(self, move, target_position):

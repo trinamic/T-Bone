@@ -1,6 +1,7 @@
 from Queue import Empty, Full
-from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than
+from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, has_length
 from math import sqrt
+from threading import Thread
 import unittest
 from trinamic_3d_printer.Printer import _calculate_relative_vector, find_shortest_vector, PrintQueue
 
@@ -49,6 +50,54 @@ class VectorTests(unittest.TestCase):
             exception_thrown = True
         assert_that(exception_thrown, equal_to(True))
 
+    def test_print_queue_emptying(self):
+        default_timeout = 0.1
+        axis_config = {
+            'x': {
+                'max_acceleration': 1,
+                'max_speed': 1
+            },
+            'y': {
+                'max_acceleration': 1,
+                'max_speed': 1
+            }
+        }
+        queue = PrintQueue(axis_config=axis_config, min_length=2, max_length=5)
+
+        class QueueEmptyThread(Thread):
+            def __init__(self, queue):
+                super(QueueEmptyThread, self).__init__()
+                self.running = True
+                self.queue = queue
+
+            def run(self):
+                while self.running:
+                    self.queue.next_movment()
+                    #and throw away
+
+        emptyerThread = QueueEmptyThread(queue=queue, )
+        emptyerThread.start()
+
+        try:
+            for i in range(25):
+                position = {
+                    'x': i,
+                    'y': i,
+                    'f': 1
+                }
+                queue.add_movement(position, timeout=default_timeout)
+            queue.finish(timeout=default_timeout)
+            assert_that(queue.queue.empty(), equal_to(True))
+            assert_that(queue.planning_list, has_length(0))
+        finally:
+            emptyerThread.running = False
+            queue.add_movement(
+                {
+                    'x': 0,
+                    'y': 0
+                })
+            queue.finish(timeout=default_timeout)
+            emptyerThread.join()
 
     def test_print_queue_calculations(self):
         default_timeout = 0.1
