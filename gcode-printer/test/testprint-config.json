@@ -2,7 +2,7 @@
     "x-axis":{
         "motor":1,
         "current":0.5,
-        "steps-per-mm":2841.7968,
+        "steps-per-mm":1420.8984,
         "max-speed":500,
         "max-acceleration":9000,
         "bow-acceleration":3000
@@ -10,7 +10,7 @@
     "y-axis":{
         "motor":2 ,
         "current":0.5,
-        "steps-per-mm":2841.7968,
+        "steps-per-mm":1420.8984,
         "max-speed":500,
         "max-acceleration":9000,
         "bow-acceleration":3000
