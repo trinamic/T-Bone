@@ -10,7 +10,6 @@ __author__ = 'marcus'
 
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
-_min_command_buffer = 25 # how much arduino buffer needs to be filled before we start
 _max_command_buffer = 3 # how much arduino buffer to preserve
 #todo come up with better names!
 
@@ -90,7 +89,7 @@ class Machine():
             command_max_buffer_length = int(reply.arguments[1])
             command_buffer_free = command_max_buffer_length - command_buffer_length
             command_queue_running = int(reply.arguments[2]) > 0
-            if not command_queue_running and command_buffer_length > _min_command_buffer:
+            if not command_queue_running and command_buffer_free <= _max_command_buffer:
                 start_command = MachineCommand()
                 start_command.command_number = 11
                 start_command.arguments = [1]
