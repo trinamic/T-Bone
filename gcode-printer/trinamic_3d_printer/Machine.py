@@ -30,7 +30,7 @@ class Machine():
         self.batch_mode = False
 
     def connect(self):
-        _logger.info("resetting arduino at %(serial_port)s", serial_port=self.serial_port)
+        _logger.info("resetting arduino at %s", self.serial_port)
         GPIO.output(self.reset_pin, GPIO.LOW)
         #reset the arduino
         time.sleep(1)
@@ -140,7 +140,7 @@ class _MachineConnection:
         self.internal_free_ram = 0
 
     def send_command(self, command):
-        _logger.debug("sending command %(command)s", command=command)
+        _logger.debug("sending command %s", command)
         #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
@@ -182,7 +182,7 @@ class _MachineConnection:
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
-                    _logger.debug("received command %(command)s", command=command)
+                    _logger.debug("received command %s", command)
 
     def _read_next_command(self):
         line = self._doRead()   # read a ';' terminated line
@@ -222,7 +222,7 @@ class MachineCommand():
                     if len(parts) > 1:
                         self.arguments = parts[1:]
                 except ValueError:
-                    _logger.warn("unable to decode command: %(input)s", input=input_line)
+                    _logger.warn("unable to decode command: %s", input_line)
 
     def __repr__(self):
         if self.command_number == 0:

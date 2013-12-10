@@ -46,17 +46,17 @@ def main(argv=None):
             return 2
 
         if not os.path.exists(_default_serial_port):
-            _logger.info("No serial port %(serial_port)s, creating it", serial_port=_default_serial_port)
+            _logger.info("No serial port %s, creating it", _default_serial_port)
             os.system(_create_serial_port_script)
 
         ##ok here we go
-        _logger.info("connecting to printer at %(serial_port)s", serial_port=_default_serial_port)
+        _logger.info("connecting to printer at %s", _default_serial_port)
         printer = Printer(serial_port=_default_serial_port, reset_pin=_reset_pin)
 
         config = read_config()
         #configure the printer
         printer.configure(config)
-        _logger.info("printing %(file)s", file=_print_file)
+        _logger.info("printing %s", _print_file)
         test_file = open(_print_file)
         printer.start_print()
         read_gcode_to_printer(test_file, printer)

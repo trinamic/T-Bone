@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 
 
 def read_gcode_to_printer(input, printer):
-    _logger.info("starting gcdoe interptretation from %(input)s to %(output)s", input=input, output=printer)
+    _logger.info("starting GCODE interptretation from %s to %s", input, printer)
     for line in input:
         gcode = decode_gcode_line(line)
         #handling the negative case first is silly but gives us more flexibility in the elif struct
@@ -23,11 +23,11 @@ def read_gcode_to_printer(input, printer):
                 if position:
                     positions[position[0].lower()] = position[1]
                 else:
-                    _logger.warn("Unable to interpret position %(argument)s in %(line)s", argument=argument, line=line)
+                    _logger.warn("Unable to interpret position %s in %s", argument, line)
             printer.move_to(positions)
         else:
-            _logger.warn("Unknown GCODE %(gcode)s ignored", gcode=gcode)
-    _logger.info("fininshed gcode reading to %(output)s ", output=printer)
+            _logger.warn("Unknown GCODE %s ignored", gcode)
+    _logger.info("fininshed gcode reading to %s ", printer)
 
 
 class GCode:
@@ -45,7 +45,7 @@ class GCode:
 
 # decode a line of text to gcode.
 def decode_gcode_line(line):
-    _logger.debug("decoding line %(line)s", line=line)
+    _logger.debug("decoding line %s", line)
     #we nee a result
     result = None
     #and prepare the line
@@ -60,11 +60,11 @@ def decode_gcode_line(line):
         if part.strip():
             relevant_parts.append(part.strip())
     if len(relevant_parts) > 0:
-        _logger.debug("read gcode %(gcode)s", gcode=relevant_parts[0])
+        _logger.debug("read gcode %s", relevant_parts[0])
         result = GCode(relevant_parts[0])
     if len(relevant_parts) > 1:
         result.options = relevant_parts[1:]
-        _logger.debug("found arguments: %(argument)s", argument=result.options)
+        _logger.debug("found arguments: %s", result.options)
 
     return result
 
