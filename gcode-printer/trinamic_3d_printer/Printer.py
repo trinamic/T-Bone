@@ -67,6 +67,7 @@ class Printer(Thread):
         self.start()
 
     def stop_print(self):
+        self._print_queue.finish()
         self.printing = False
         pass
 
@@ -194,6 +195,10 @@ class PrintQueue():
         #we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
 
+    def _push_from_planning_to_execution(self, timeout):
+        executed_move = self.planning_list.pop(0)
+        self.queue.put(executed_move, timeout=timeout)
+
     def add_movement(self, target_position, timeout=None):
         move = {}
         #calculate the target
@@ -207,14 +212,18 @@ class PrintQueue():
             self.planning_list.append(self.previous_movement)
             #if the list is long enough we can give it to the queue so that readers can get it
         if len(self.planning_list) > self.queue_size:
-            executed_move = self.planning_list.pop(0)
-            self.queue.put(executed_move, timeout=timeout)
+            self._push_from_planning_to_execution(timeout)
         self.previous_movement = move
         #and recalculate the maximum allowed speed
         self._recalculate_move_speeds(move)
 
     def next_movment(self, timeout=None):
         return self.queue.get(timeout=timeout)
+
+    def finish(self, timeout=None):
+        while len(self.planning_list) > 0:
+            self._push_from_planning_to_execution(timeout)
+
 
     def _extract_movement_values(self, move, target_position):
         #extract values
