@@ -124,7 +124,7 @@ class Printer(Thread):
 
         x_move_config = _axis_movement_template(self.axis['x'])
         x_move_config['target'] = step_pos['x']
-        x_move_config['speed'] = step_speed_vector['x']
+        x_move_config['speed'] = abs(step_speed_vector['x'])
         if 'x_stop' in movement:
             x_move_config['type'] = 'stop'
         else:
@@ -132,7 +132,7 @@ class Printer(Thread):
 
         y_move_config = _axis_movement_template(self.axis['y'])
         y_move_config['target'] = step_pos['y']
-        y_move_config['speed'] = step_speed_vector['y']
+        y_move_config['speed'] = abs(step_speed_vector['y'])
         if 'y_stop' in movement:
             y_move_config['type'] = 'stop'
         else:
