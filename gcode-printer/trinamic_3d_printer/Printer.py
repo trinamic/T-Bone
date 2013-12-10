@@ -145,7 +145,7 @@ class Printer(Thread):
     def _move(self, delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config):
         if delta_x and not delta_y: #silly, but simpler to understand
             #move x motor
-            _logger.debug("Moving X axis to " + str(step_pos['x']))
+            _logger.debug("Moving X axis to %(pos)s", pos=step_pos['x'])
 
             self.machine.move_to([
                 x_move_config
@@ -153,7 +153,7 @@ class Printer(Thread):
 
         elif delta_y and not delta_x: # still silly, but stil easier to understand
             #move y motor to position
-            _logger.debug("Moving Y axis to " + str(step_pos['y']))
+            _logger.debug("Moving Y axis to %(pos)s", pos=step_pos['y'])
 
             self.machine.move_to([
                 y_move_config
@@ -163,8 +163,8 @@ class Printer(Thread):
             if abs(delta_x) > abs(delta_y):
                 y_factor = abs(move_vector['y'] / move_vector['x'])
                 _logger.debug(
-                    "Moving X axis to " + str(step_pos['x']) + " gearing Y by " + str(y_factor) + " to " + str(
-                        step_pos['y']))
+                    "Moving X axis to %(x_pos)s gearing Y by %(factor)s to %(y_pos)s"
+                    , xpos=step_pos['x'], factor=y_factor, y_pos=step_pos['y'])
 
                 y_move_config['acceleration'] *= y_factor
                 y_move_config['deceleration'] *= y_factor
@@ -176,8 +176,8 @@ class Printer(Thread):
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'])
                 _logger.debug(
-                    "Moving Y axis to " + str(step_pos['y']) + " gearing X by " + str(x_factor) + " to " + str(
-                        step_pos['x']))
+                    "Moving Y axis to %(y_pos)s gearing X by %(factor)s  to %(x_pos)s"
+                    , xpos=step_pos['x'], factor=x_factor, y_pos=step_pos['y'])
                 x_move_config['acceleration'] *= x_factor
                 x_move_config['deceleration'] *= x_factor
                 self.machine.move_to([
