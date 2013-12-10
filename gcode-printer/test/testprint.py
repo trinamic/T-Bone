@@ -26,7 +26,7 @@ def main(argv=None):
 
 
     #configure the overall logging
-    logging.basicConfig(filename='print.log', level=logging.DEBUG,
+    logging.basicConfig(filename='print.log', level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.info('Started')
 
