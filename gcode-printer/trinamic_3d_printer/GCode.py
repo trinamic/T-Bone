@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 
 def read_gcode_to_printer(input, printer):
+    _logger.info("starting gcdoe interptretation from "+str(input)+" to "+str(printer))
     for line in input:
         gcode = decode_gcode_line(line)
         #handling the negative case first is silly but gives us more flexibility in the elif struct
@@ -26,7 +27,7 @@ def read_gcode_to_printer(input, printer):
             printer.move_to(positions)
         else:
             _logger.warn("Unknown GCODE " + str(gcode) + " ignored")
-
+    _logger.info("fininshed gcode reading ot "+str(printer))
 
 class GCode:
     def __init__(self, code, options=None):
@@ -43,6 +44,7 @@ class GCode:
 
 # decode a line of text to gcode.
 def decode_gcode_line(line):
+    _logger.debug("deicoding line"+line)
     #we nee a result
     result = None
     #and prepare the line
@@ -57,9 +59,11 @@ def decode_gcode_line(line):
         if part.strip():
             relevant_parts.append(part.strip())
     if len(relevant_parts) > 0:
+        _logger.debug("read gcode "+relevant_parts[0])
         result = GCode(relevant_parts[0])
     if len(relevant_parts) > 1:
         result.options = relevant_parts[1:]
+        _logger.debug("found arguments: "+result.options)
 
     return result
 
