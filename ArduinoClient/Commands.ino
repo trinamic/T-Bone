@@ -278,7 +278,7 @@ char readMovementParameters(movement* move) {
 void onMovement() {
   char movement = messenger.readIntArg();
   if (movement==0) {
-    messenger.sendCmdStart(kCommands);
+    messenger.sendCmdStart(kMovement);
     //just give out the current state of movement
     if (in_motion) {
       messenger.sendCmdArg(1);
@@ -331,10 +331,21 @@ void onCommands() {
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
   messenger.sendCmdEnd();
+#ifdef DEBUG_STATUS
+  int ram = freeRam();
+  Serial.print(F("Queue: "));
+  Serial.print(moveQueue.count());
+  Serial.print(F(" of "));
+  Serial.print(COMMAND_QUEUE_LENGTH);
+  Serial.print(F("\tRAM:  "));
+  Serial.print(ram);
+  Serial.print(in_motion? F("\tin motion"): F("\tstopped"));
+  Serial.println();
+#endif
+
 }
 
 void watchDogPing() {
-  int ram = freeRam();
   messenger.sendCmdStart(kKeepAlive);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
@@ -342,6 +353,7 @@ void watchDogPing() {
   messenger.sendCmdArg(F("still alive"));
   messenger.sendCmdEnd();
 #ifdef DEBUG_STATUS
+  int ram = freeRam();
   Serial.print(F("Queue: "));
   Serial.print(moveQueue.count());
   Serial.print(F(" of "));
@@ -389,6 +401,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

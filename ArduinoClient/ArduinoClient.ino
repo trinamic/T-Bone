@@ -8,6 +8,10 @@
 #include "constants.h"
 #include "types.h"
 
+//##################
+//# Debug Settings #
+//##################
+
 #define DEBUG_MOTOR_CONTFIG
 
 #define DEBUG_MOTION
