@@ -94,6 +94,7 @@ class Printer(Thread):
         axis['max_acceleration'] = config['max-acceleration']
         axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         axis['bow'] = config['bow-acceleration']
+        axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
 
         motor = config["motor"]
         current = config["current"]
@@ -119,8 +120,8 @@ class Printer(Thread):
                 'motor': axis['motor'],
                 'acceleration': axis['max_step_acceleration'],
                 'deceleration': axis['max_step_acceleration'],
-                'startBow': axis['bow'],
-                'endBow': axis['bow']
+                'startBow': axis['bow_step'],
+                'endBow': axis['bow_step']
             }
 
         x_move_config = _axis_movement_template(self.axis['x'])
