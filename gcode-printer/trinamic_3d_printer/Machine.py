@@ -10,7 +10,7 @@ __author__ = 'marcus'
 
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
-_min_command_buffer = 10 # how much arduino buffer needs to be filled before we start
+_min_command_buffer = 25 # how much arduino buffer needs to be filled before we start
 _max_command_buffer = 3 # how much arduino buffer to preserve
 #todo come up with better names!
 
@@ -35,7 +35,7 @@ class Machine():
         #reset the arduino
         time.sleep(1)
         GPIO.output(self.reset_pin, GPIO.HIGH)
-        time.sleep(30)
+        time.sleep(15)
         _logger.info("waiting for arduino")
         if not self.machine_connection:
             machineSerial = serial.Serial(self.serial_port, 115200, timeout=_default_timeout)
