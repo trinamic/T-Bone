@@ -15,6 +15,8 @@ from trinamic_3d_printer.gcode import read_gcode_to_printer
 _config_file = "testprint-config.json"
 _print_file = "../reference designs/test-model.gcode"
 _default_serial_port = "/dev/ttyO1"
+_create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
+_logger = logging.getLogger(__name__)
 
 
 class Usage(Exception):
@@ -44,18 +46,22 @@ def main(argv=None):
         return 2
 
     if not os.path.exists(_default_serial_port):
-            os.system("echo BB-UART1 > /sys/devices/bone_capemgr.8/slots")
+        _logger.info("No serial port "+_default_serial_port+", creating it")
+        os.system(_create_serial_port_script)
 
     ##ok here we go
+    _logger.info("connecting to printer at "+_default_serial_port)
     printer = Printer(serial_port=_default_serial_port)
 
     config = read_config()
     #configure the printer
     printer.configure(config)
+    _logger.info("printing "+str(_print_file))
     test_file = open(_print_file)
     printer.start_print()
     read_gcode_to_printer(test_file, printer)
     printer.stop_print()
+    _logger.info("finished printing")
 
 def read_config():
     json_config_file = open(_config_file)
