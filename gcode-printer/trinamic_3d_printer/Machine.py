@@ -136,7 +136,6 @@ class _MachineConnection:
         self.listening_thread.start()
         self.internal_queue_length = 0
         self.internal_queue_max_length = 1
-        self.internal_free_ram = 0
 
     def send_command(self, command):
         _logger.debug("sending command %s", command)
@@ -177,7 +176,6 @@ class _MachineConnection:
                     if command.arguments:
                         self.internal_queue_length = command.arguments[0]
                         self.internal_queue_max_length = command.arguments[1]
-                        self.internal_free_ram = command.arguments[2]
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
