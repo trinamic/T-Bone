@@ -49,6 +49,7 @@ class VectorTests(unittest.TestCase):
             exception_thrown = True
         assert_that(exception_thrown, equal_to(True))
 
+
     def test_print_queue_calculations(self):
         default_timeout = 0.1
         max_speed_x = 3
