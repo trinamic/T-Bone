@@ -107,7 +107,7 @@ class Printer(Thread):
             'x': _convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
             'y': _convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
         }
-        delta_x = movement['delta_y']
+        delta_x = movement['delta_x']
         delta_y = movement['delta_y']
         move_vector = movement['relative_move_vector']
         return delta_x, delta_y, move_vector, step_pos, step_speed_vector
