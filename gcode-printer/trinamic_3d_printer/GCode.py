@@ -10,6 +10,7 @@ _logger = logging.getLogger(__name__)
 def read_gcode_to_printer(input, printer):
     _logger.info("starting gcdoe interptretation from "+str(input)+" to "+str(printer))
     for line in input:
+        _logger.info(line)
         gcode = decode_gcode_line(line)
         #handling the negative case first is silly but gives us more flexibility in the elif struct
         if not gcode:
