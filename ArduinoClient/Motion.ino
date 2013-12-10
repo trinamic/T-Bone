@@ -24,6 +24,9 @@ void stopMotion() {
 void checkMotion() {
   if (in_motion && !next_move_prepared) {
 
+#ifdef CALCULATE_OUTPUT
+    digitalWrite(CALCULATE_OUTPUT,HIGH);
+#endif
 
     if (moveQueue.count()>0) {
 
@@ -98,6 +101,9 @@ void checkMotion() {
 #ifdef DEBUG_MOTION
       Serial.println();
 #endif
+#ifdef CALCULATE_OUTPUT
+    digitalWrite(CALCULATE_OUTPUT,LOW);
+#endif
     } 
     else {
       //we are finished here
@@ -139,6 +145,8 @@ void motor_target_reached(char motor_nr) {
     }
   }
 }
+
+
 
 
 
