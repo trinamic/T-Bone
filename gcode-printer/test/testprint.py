@@ -14,6 +14,7 @@ from trinamic_3d_printer.gcode import read_gcode_to_printer
 
 _config_file = "testprint-config.json"
 _print_file = "../reference designs/test-model.gcode"
+_default_serial_port = "/dev/ttyO1"
 
 
 class Usage(Exception):
@@ -23,7 +24,6 @@ class Usage(Exception):
 
 def main(argv=None):
 
-    os.system("echo BB-UART1 > /sys/devices/bone_capemgr.8/slots")
 
     #configure the overall logging
     logging.basicConfig(filename='print.log', level=logging.DEBUG,
@@ -43,8 +43,12 @@ def main(argv=None):
         print >> sys.stderr, "for help use --help"
         return 2
 
+    if not os.path.exists(_default_serial_port):
+            os.system("echo BB-UART1 > /sys/devices/bone_capemgr.8/slots")
+
     ##ok here we go
-    printer = Printer()
+    printer = Printer(serial_port=_default_serial_port)
+
     config = read_config()
     #configure the printer
     printer.configure(config)

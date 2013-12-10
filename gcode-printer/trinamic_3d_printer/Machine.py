@@ -8,7 +8,6 @@ import time
 
 __author__ = 'marcus'
 
-_default_serial_port = "/dev/ttyO1"
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
 _min_command_buffer = 10 # how much arduino buffer needs to be filled before we start
@@ -19,10 +18,8 @@ _logger = logging.getLogger(__name__)
 
 
 class Machine():
-    def __init__(self, serialport=None):
-        if serialport is None:
-            serialport = _default_serial_port
-        self.serialport = serialport
+    def __init__(self, serial_port):
+        self.serialport = serial_port
         self.remaining_buffer = ""
         self.machine_connection = None
         self.command_queue = Queue()

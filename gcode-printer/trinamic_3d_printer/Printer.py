@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Printer(Thread):
-    def __init__(self, print_min_length=50, print_max_length=100):
+    def __init__(self, serial_port, print_min_length=50, print_max_length=100):
         Thread.__init__(self)
         self.ready = False
         self.printing = False
@@ -35,7 +35,7 @@ class Printer(Thread):
         self.print_queue_max_length = print_max_length
 
         #finally create and conect the machine
-        self.machine = Machine()
+        self.machine = Machine(serial_port=serial_port)
         self.machine.connect()
 
     def configure(self, config):
