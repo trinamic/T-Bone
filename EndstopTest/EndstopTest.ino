@@ -125,9 +125,11 @@ void loop() {
     unsigned long this_v = vmax+random(100)*vmax;
     unsigned char motor;
     if (random(2)) {
+      Serial.println("Moving Motor A");
       motor=squirrel_a;
     } 
     else {
+      Serial.println("Moving Motor B");
       motor=squirrel_b;
     }
     if (target<es_left) {
@@ -147,9 +149,9 @@ void loop() {
   if (checkMetro.check()) {
     // put your main code here, to run repeatedly: 
     read43x(squirrel_a, 0x21,0);
-    Serial.print("x actual:");
-    read43x(squirrel_a, 0x21,0);
-    Serial.println();
+    Serial.print("x actual: ");
+    unsigned long x_acutal = read43x(squirrel_a, 0x21,0);
+    Serial.println(x_acutal);
   }
 }
 

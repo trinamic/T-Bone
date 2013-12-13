@@ -2,30 +2,28 @@ unsigned char status;
 
 
 void write43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
-  //select the TMC driver
-  digitalWrite(motor,LOW);
 
-  send43x(tmc43x_register | 0x80,datagram);
-
-  //deselect the TMC chip
-  digitalWrite(motor,HIGH); 
+  send43x(motor, tmc43x_register | 0x80,datagram);
 }
 
-void read43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
-  //select the TMC driver
-  digitalWrite(motor,LOW);
+unsigned long read43x(unsigned char cs_squirrel,unsigned char tmc43x_register, unsigned long datagram) {
 
-  send43x(tmc43x_register, datagram);
+  send43x(cs_squirrel,tmc43x_register, datagram);
+  unsigned long result =  send43x(cs_squirrel,tmc43x_register, datagram);
 
-  //deselect the TMC chip
-  digitalWrite(motor,HIGH); 
+  return result;
 }
 
-void send43x(unsigned char tmc43x_register, unsigned long datagram) {
+unsigned long send43x(unsigned char cs_squirrel,unsigned char tmc43x_register, unsigned long datagram) {
   unsigned long i_datagram;
 
+  //select the TMC driver
+  digitalWrite(cs_squirrel,LOW);
+
 #ifdef DEBUG_SPI
-  Serial.print("Sending ");
+  Serial.print("To ");
+  Serial.print(tmc43x_register,HEX);
+  Serial.print(" sending ");
   Serial.println(datagram,HEX);
 #endif
 
@@ -46,6 +44,11 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
   Serial.print("Received ");
   Serial.println(i_datagram,HEX);
 #endif
+
+  //deselect the TMC chip
+  digitalWrite(cs_squirrel,HIGH); 
+
+  return i_datagram;
 }
 
 void set260Register(unsigned char motor, unsigned long value) {
@@ -57,6 +60,7 @@ void set260Register(unsigned char motor, unsigned long value) {
   read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
   read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
 }
+
 
 
 
