@@ -15,7 +15,7 @@ long amax = vmax/100;
 long dmax = amax;
 //how far will we go 
 unsigned long random_range=1000000ul;
-#define HIT_RANGE 0.1
+#define HIT_RANGE 0.4
 //just some virtual endstops
 long es_left = random_range*HIT_RANGE;
 long es_right = random_range*(1.0-HIT_RANGE);
@@ -38,6 +38,9 @@ long es_right = random_range*(1.0-HIT_RANGE);
 #define X_TARGET_REGISTER 0x37
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
+
+#define VIRTUAL_STOP_LEFT 0x33
+#define VIRTUAL_STOP_RIGHT 0x34
 
 //values
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -91,6 +94,9 @@ void setup() {
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
+  write43x(squirrel_a, VIRTUAL_STOP_LEFT, es_left);
+  write43x(squirrel_a, VIRTUAL_STOP_RIGHT, es_right);
+
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
@@ -112,6 +118,10 @@ void setup() {
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
+  write43x(squirrel_b, VIRTUAL_STOP_LEFT, es_left);
+  write43x(squirrel_b, VIRTUAL_STOP_RIGHT, es_right);
+
+
 }
 
 unsigned long tmc43xx_write;
@@ -121,6 +131,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
+    Serial.println();
     unsigned char motor;
     if (random(2)) {
       Serial.println("Moving Motor A");
@@ -133,7 +144,6 @@ void loop() {
     target=random(random_range);
     Serial.print("Move to ");
     Serial.println(target);
-    Serial.println();
     unsigned long this_v = vmax+random(100)*vmax;
     if (target<es_left) {
       Serial.print("Target hits left endstop at");
@@ -143,6 +153,7 @@ void loop() {
       Serial.print("Target hits right endstop at");
       Serial.println(es_right);
     }
+    Serial.println();
     write43x(motor, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(motor, A_MAX_REGISTER,amax); //set maximum acceleration
     write43x(motor, D_MAX_REGISTER,dmax); //set maximum deceleration
