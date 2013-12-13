@@ -121,8 +121,6 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(random_range);
-    unsigned long this_v = vmax+random(100)*vmax;
     unsigned char motor;
     if (random(2)) {
       Serial.println("Moving Motor A");
@@ -132,19 +130,23 @@ void loop() {
       Serial.println("Moving Motor B");
       motor=squirrel_b;
     }
+    target=random(random_range);
+    Serial.print("Move to ");
+    Serial.println(target);
+    Serial.println();
+    unsigned long this_v = vmax+random(100)*vmax;
     if (target<es_left) {
-      Serial.println("Target hits left endstop");
+      Serial.print("Target hits left endstop at");
+      Serial.println(es_left);
     } 
     else if (target>es_right) {
-      Serial.println("Target hits right endstop");
+      Serial.print("Target hits right endstop at");
+      Serial.println(es_right);
     }
     write43x(motor, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
     write43x(motor, A_MAX_REGISTER,amax); //set maximum acceleration
     write43x(motor, D_MAX_REGISTER,dmax); //set maximum deceleration
     write43x(motor, X_TARGET_REGISTER,target);
-    Serial.print("Move to ");
-    Serial.println(target);
-    Serial.println();
   }
   if (checkMetro.check()) {
     // put your main code here, to run repeatedly: 
