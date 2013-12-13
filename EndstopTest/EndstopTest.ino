@@ -8,7 +8,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-long vmax = 100000000ul;
+unsigned long vmax = 1000000ul;
 long bow = 1000000;
 long end_bow = bow;
 long amax = vmax/100;
@@ -39,8 +39,9 @@ long es_right = random_range*(1.0-HIT_RANGE);
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
 
-#define VIRTUAL_STOP_LEFT 0x33
-#define VIRTUAL_STOP_RIGHT 0x34
+#define REFERENCE_CONFIG_REGISTER 0x01
+#define VIRTUAL_STOP_LEFT_REGISTER 0x33
+#define VIRTUAL_STOP_RIGHT_REGISTER 0x34
 
 //values
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -94,8 +95,15 @@ void setup() {
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
-  write43x(squirrel_a, VIRTUAL_STOP_LEFT, es_left);
-  write43x(squirrel_a, VIRTUAL_STOP_RIGHT, es_right);
+  write43x(squirrel_a, VIRTUAL_STOP_LEFT_REGISTER, es_left);
+  write43x(squirrel_a, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
+  write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
+    //  | _BV(0) //STOP_LEFT enable
+  //  | _BV(1)  //STOP_RIGHT enable
+  //  | _BV(5) //soft stop 
+  | _BV(6) //virtual left enable
+  | _BV(7) //virtual right enable
+  );
 
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
@@ -118,8 +126,15 @@ void setup() {
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
-  write43x(squirrel_b, VIRTUAL_STOP_LEFT, es_left);
-  write43x(squirrel_b, VIRTUAL_STOP_RIGHT, es_right);
+  write43x(squirrel_b, VIRTUAL_STOP_LEFT_REGISTER, es_left);
+  write43x(squirrel_b, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
+  write43x(squirrel_b, REFERENCE_CONFIG_REGISTER, 0 
+    // | _BV(0) //STOP_LEFT enable
+  // | _BV(1)  //STOP_RIGHT enable
+  // | _BV(5) //soft stop 
+  | _BV(6) //virtual left enable
+  | _BV(7) //virtual right enable
+  );
 
 
 }
@@ -132,19 +147,21 @@ unsigned long target=0;
 void loop() {
   if (target==0 | moveMetro.check()) {
     Serial.println();
-    unsigned char motor;
+    unsigned char motor = squirrel_a;
+    /*
     if (random(2)) {
-      Serial.println("Moving Motor A");
-      motor=squirrel_a;
-    } 
-    else {
-      Serial.println("Moving Motor B");
-      motor=squirrel_b;
-    }
+     Serial.println("Moving Motor A");
+     motor=squirrel_a;
+     } 
+     else {
+     Serial.println("Moving Motor B");
+     motor=squirrel_b;
+     }
+     */
     target=random(random_range);
     Serial.print("Move to ");
     Serial.println(target);
-    unsigned long this_v = vmax+random(100)*vmax;
+    unsigned long this_v = vmax+random(10)*vmax;
     if (target<es_left) {
       Serial.print("Target hits left endstop at");
       Serial.println(es_left);
@@ -160,13 +177,22 @@ void loop() {
     write43x(motor, X_TARGET_REGISTER,target);
   }
   if (checkMetro.check()) {
-    // put your main code here, to run repeatedly: 
-    read43x(squirrel_a, 0x21,0);
-    Serial.print("x actual: ");
+    Serial.print("x actual \tA=");
     unsigned long x_acutal = read43x(squirrel_a, 0x21,0);
+    Serial.print(x_acutal);
+    Serial.print("\tB=");
+    x_acutal = read43x(squirrel_b, 0x21,0);
     Serial.println(x_acutal);
+
+    Serial.print("status \t\tA=");
+    unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
+    Serial.print(status,BIN);
+    Serial.print("\tB=");
+    status = read43x(squirrel_b, STATUS_REGISTER,0);
+    Serial.println(status,BIN);
   }
 }
+
 
 
 
