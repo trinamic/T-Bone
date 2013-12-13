@@ -24,7 +24,7 @@ void read43x(unsigned char motor, unsigned char tmc43x_register, unsigned long d
 void send43x(unsigned char tmc43x_register, unsigned long datagram) {
   unsigned long i_datagram;
 
-#ifdef DEBUG
+#ifdef DEBUG_SPI
   Serial.print("Sending ");
   Serial.println(datagram,HEX);
 #endif
@@ -40,7 +40,7 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram) & 0xff);
 
-#ifdef DEBUG
+#ifdef DEBUG_SPI
   Serial.print("Status :");
   Serial.println(status,BIN);
   Serial.print("Received ");

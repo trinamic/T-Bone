@@ -2,6 +2,7 @@
 #include <TMC26XGenerator.h>
 #include <Metro.h>
 
+//#define DEBUG_SPI
 #define DEBUG
 
 //config
