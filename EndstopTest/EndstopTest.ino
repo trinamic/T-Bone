@@ -98,10 +98,10 @@ void setup() {
   write43x(squirrel_a, VIRTUAL_STOP_LEFT_REGISTER, es_left);
   write43x(squirrel_a, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
-    //  | _BV(0) //STOP_LEFT enable
+      | _BV(0) //STOP_LEFT enable
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
-  | _BV(6) //virtual left enable
+ // | _BV(6) //virtual left enable
   | _BV(7) //virtual right enable
   );
 
@@ -129,10 +129,10 @@ void setup() {
   write43x(squirrel_b, VIRTUAL_STOP_LEFT_REGISTER, es_left);
   write43x(squirrel_b, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
   write43x(squirrel_b, REFERENCE_CONFIG_REGISTER, 0 
-    // | _BV(0) //STOP_LEFT enable
+     | _BV(0) //STOP_LEFT enable
   // | _BV(1)  //STOP_RIGHT enable
   // | _BV(5) //soft stop 
-  | _BV(6) //virtual left enable
+  // | _BV(6) //virtual left enable
   | _BV(7) //virtual right enable
   );
 
