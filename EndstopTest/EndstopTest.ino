@@ -7,7 +7,7 @@
 
 //config
 unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 500;
+unsigned int current_in_ma = 200;
 unsigned long vmax = 10000000ul;
 long bow = 1000000;
 long end_bow = bow;
@@ -145,37 +145,37 @@ unsigned long tmc43xx_read;
 unsigned long target=0;
 
 void loop() {
+  /*
   if (target==0 | moveMetro.check()) {
-    Serial.println();
-    unsigned char motor = squirrel_a;
-    /*
-    if (random(2)) {
-     Serial.println("Moving Motor A");
-     motor=squirrel_a;
-     } 
-     else {
-     Serial.println("Moving Motor B");
-     motor=squirrel_b;
-     }
-     */
-    target=random(random_range);
-    Serial.print("Move to ");
-    Serial.println(target);
-    unsigned long this_v = vmax+random(10)*vmax;
-    if (target<es_left) {
-      Serial.print("Target hits left endstop at");
-      Serial.println(es_left);
-    } 
-    else if (target>es_right) {
-      Serial.print("Target hits right endstop at");
-      Serial.println(es_right);
-    }
-    Serial.println();
-    write43x(motor, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-    write43x(motor, A_MAX_REGISTER,amax); //set maximum acceleration
-    write43x(motor, D_MAX_REGISTER,dmax); //set maximum deceleration
-    write43x(motor, X_TARGET_REGISTER,target);
-  }
+   Serial.println();
+   unsigned char motor = squirrel_a;
+   if (random(2)) {
+   Serial.println("Moving Motor A");
+   motor=squirrel_a;
+   } 
+   else {
+   Serial.println("Moving Motor B");
+   motor=squirrel_b;
+   }
+   target=random(random_range);
+   Serial.print("Move to ");
+   Serial.println(target);
+   unsigned long this_v = vmax+random(10)*vmax;
+   if (target<es_left) {
+   Serial.print("Target hits left endstop at");
+   Serial.println(es_left);
+   } 
+   else if (target>es_right) {
+   Serial.print("Target hits right endstop at");
+   Serial.println(es_right);
+   }
+   Serial.println();
+   write43x(motor, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
+   write43x(motor, A_MAX_REGISTER,amax); //set maximum acceleration
+   write43x(motor, D_MAX_REGISTER,dmax); //set maximum deceleration
+   write43x(motor, X_TARGET_REGISTER,target);
+   }
+   */
   if (checkMetro.check()) {
     Serial.print("x actual \tA=");
     unsigned long x_acutal = read43x(squirrel_a, 0x21,0);
@@ -192,6 +192,7 @@ void loop() {
     Serial.println(status,BIN);
   }
 }
+
 
 
 
