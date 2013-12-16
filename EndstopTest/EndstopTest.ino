@@ -14,7 +14,7 @@ long end_bow = bow;
 long amax = vmax/100;
 long dmax = amax;
 //how far will we go 
-unsigned long random_range=1000000ul;
+unsigned long random_range=10000ul;
 #define HIT_RANGE 0.4
 //just some virtual endstops
 long es_left = random_range*HIT_RANGE;
