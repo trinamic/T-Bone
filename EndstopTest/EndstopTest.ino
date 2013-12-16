@@ -7,7 +7,7 @@
 
 //config
 unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 200;
+unsigned int current_in_ma = 300;
 unsigned long vmax = 10000000ul;
 long bow = 1000000;
 long end_bow = bow;
@@ -52,7 +52,7 @@ long es_right = random_range*(1.0-HIT_RANGE);
 TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_MO);
 
 //a metro to control the movement
-Metro moveMetro = Metro(20000ul);
+Metro moveMetro = Metro(1000ul);
 Metro checkMetro = Metro(1000ul);
 
 int squirrel_a = 12;
@@ -95,13 +95,13 @@ void setup() {
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
-  write43x(squirrel_a, VIRTUAL_STOP_LEFT_REGISTER, es_left);
-  write43x(squirrel_a, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
+//  write43x(squirrel_a, VIRTUAL_STOP_LEFT_REGISTER, es_left);
+//  write43x(squirrel_a, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
-      | _BV(0) //STOP_LEFT enable
+    | _BV(0) //STOP_LEFT enable
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
- // | _BV(6) //virtual left enable
+  // | _BV(6) //virtual left enable
   | _BV(7) //virtual right enable
   );
 
@@ -126,10 +126,10 @@ void setup() {
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
-  write43x(squirrel_b, VIRTUAL_STOP_LEFT_REGISTER, es_left);
-  write43x(squirrel_b, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
+//  write43x(squirrel_b, VIRTUAL_STOP_LEFT_REGISTER, es_left);
+//  write43x(squirrel_b, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
   write43x(squirrel_b, REFERENCE_CONFIG_REGISTER, 0 
-     | _BV(0) //STOP_LEFT enable
+    | _BV(0) //STOP_LEFT enable
   // | _BV(1)  //STOP_RIGHT enable
   // | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
@@ -142,9 +142,22 @@ void setup() {
 unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
-unsigned long target=0;
+long target=0;
 
 void loop() {
+
+  if (moveMetro.check()) {
+    unsigned long status = read43x(squirrel_b, STATUS_REGISTER,0);
+    if ((status & (_BV(7) | _BV(9)))==0) {
+      target -= 1000;
+      write43x(squirrel_a, V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+      write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
+      Serial.print("home at ");
+      Serial.println(target);
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
+    }
+  }
   /*
   if (target==0 | moveMetro.check()) {
    Serial.println();
@@ -180,18 +193,23 @@ void loop() {
     Serial.print("x actual \tA=");
     unsigned long x_acutal = read43x(squirrel_a, 0x21,0);
     Serial.print(x_acutal);
-    Serial.print("\tB=");
-    x_acutal = read43x(squirrel_b, 0x21,0);
-    Serial.println(x_acutal);
+    // Serial.print("\tB=");
+    // x_acutal = read43x(squirrel_b, 0x21,0);
+    //Serial.println(x_acutal);
+    Serial.println();
 
     Serial.print("status \t\tA=");
     unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
     Serial.print(status,BIN);
-    Serial.print("\tB=");
-    status = read43x(squirrel_b, STATUS_REGISTER,0);
-    Serial.println(status,BIN);
+    // Serial.print("\tB=");
+    // status = read43x(squirrel_b, STATUS_REGISTER,0);
+    //  Serial.println(status,BIN);
+    Serial.println();
   }
 }
+
+
+
 
 
 
