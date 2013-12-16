@@ -8,7 +8,7 @@
 //config
 unsigned char steps_per_revolution = 200;
 unsigned int current_in_ma = 500;
-unsigned long vmax = 1000000ul;
+unsigned long vmax = 10000000ul;
 long bow = 1000000;
 long end_bow = bow;
 long amax = vmax/100;
@@ -52,7 +52,7 @@ long es_right = random_range*(1.0-HIT_RANGE);
 TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_MO);
 
 //a metro to control the movement
-Metro moveMetro = Metro(5000ul);
+Metro moveMetro = Metro(20000ul);
 Metro checkMetro = Metro(1000ul);
 
 int squirrel_a = 12;
