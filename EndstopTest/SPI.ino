@@ -40,7 +40,7 @@ unsigned long send43x(unsigned char cs_squirrel,unsigned char tmc43x_register, u
 
 #ifdef DEBUG_SPI
   Serial.print("Status :");
-  Serial.println(status,BIN);
+  Serial.println(status,HEX);
   Serial.print("Received ");
   Serial.println(i_datagram,HEX);
 #endif

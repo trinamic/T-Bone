@@ -2,7 +2,7 @@
 #include <TMC26XGenerator.h>
 #include <Metro.h>
 
-//#define DEBUG_SPI
+#define DEBUG_SPI
 #define DEBUG
 
 //config
@@ -149,7 +149,7 @@ long target=0;
 void loop() {
 
   if (moveMetro.check()) {
-    unsigned long status = read43x(squirrel_b, STATUS_REGISTER,0);
+    unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
     if ((status & (_BV(7) | _BV(9)))==0) {
       target -= 1000;
       write43x(squirrel_a, V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
