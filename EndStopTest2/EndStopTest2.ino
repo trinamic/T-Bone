@@ -7,7 +7,7 @@
 
 //config
 unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 500;
+unsigned int current_in_ma = 100;
 long vmax = 100000000ul;
 long bow = 1000000;
 long end_bow = bow;
@@ -19,7 +19,6 @@ long dmax = amax;
 #define START_CONFIG_REGISTER 0x2
 #define SPIOUT_CONF_REGISTER 0x04
 #define STEP_CONF_REGISTER 0x0A
-#define STATUS_REGISTER 0x0e
 #define RAMP_MODE_REGISTER 0x20
 #define V_MAX_REGISTER 0x24
 #define A_MAX_REGISTER 0x28
@@ -37,6 +36,8 @@ long dmax = amax;
 #define REFERENCE_CONFIG_REGISTER 0x01
 #define VIRTUAL_STOP_LEFT_REGISTER 0x33
 #define VIRTUAL_STOP_RIGHT_REGISTER 0x34
+#define EVENTS_REGISTER 0x0e
+#define STATUS_REGISTER 0x0f
 
 //values
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -91,8 +92,9 @@ void setup() {
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
-    | _BV(0) //STOP_LEFT enable
+   // | _BV(0) //STOP_LEFT enable
     | _BV(2) //positive Stop Left stops motor
+  //  | _BV(3)
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
@@ -134,20 +136,29 @@ boolean homed = false;
 void loop() {
   if (!homed) {
     unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
-    if ((status & (_BV(11) | _BV(13)))==0) {
+    unsigned long events = read43x(squirrel_a, EVENTS_REGISTER,0);
+    if ((status & (_BV(7) | _BV(9)))==0) {
       target -= 1000;
       Serial.print("Homing to ");
       Serial.println(target);
-      write43x(squirrel_a, X_TARGET_REGISTER,target);
+      write43x(squirrel_a, X_TARGET_REGISTER,(unsigned long)target);
       Serial.print("Status ");
       Serial.println(status,HEX);
+      Serial.print("Events ");
+      Serial.println(events,HEX);
     } 
     else {
       Serial.println("homed");
       Serial.println(target);
   //    target=random(600000l);
   //    homed=true;
+      Serial.print("Status ");
+      Serial.println(status,HEX);
+      Serial.print("Events ");
+      Serial.println(events,HEX);
+     
     }
+    delay(50);
   } 
   else if (target==0 | moveMetro.check()) {
     unsigned char motor;
