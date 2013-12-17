@@ -92,7 +92,7 @@ void setup() {
 
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
     | _BV(0) //STOP_LEFT enable
-  //  | _BV(2) //positive Stop Left stops motor
+    | _BV(2) //positive Stop Left stops motor
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
@@ -120,17 +120,36 @@ void setup() {
   set260Register(squirrel_b, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_b, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
+  write43x(squirrel_a, V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
+  write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+  write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
 }
 
 unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
 long target=0;
+boolean homed = false;
 
 void loop() {
-  if (target==0 | moveMetro.check()) {
-    target -= 1000;
-    unsigned long this_v = vmax+random(100)*vmax;
+  if (!homed) {
+    unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
+    if ((status & (_BV(11) | _BV(13)))==0) {
+      target -= 1000;
+      Serial.print("Homing to ");
+      Serial.println(target);
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
+      Serial.print("Status ");
+      Serial.println(status,HEX);
+    } 
+    else {
+      Serial.println("homed");
+      Serial.println(target);
+  //    target=random(600000l);
+  //    homed=true;
+    }
+  } 
+  else if (target==0 | moveMetro.check()) {
     unsigned char motor;
     if (random(2)) {
       motor=squirrel_a;
@@ -138,24 +157,28 @@ void loop() {
     else {
       motor=squirrel_a;
     }
-      write43x(squirrel_a, V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
-      write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
-      write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
-      Serial.print("home at ");
-      Serial.println(target);
-      write43x(squirrel_a, X_TARGET_REGISTER,target);
-  }
-  if (checkMetro.check()) {
-    // put your main code here, to run repeatedly: 
-    read43x(squirrel_a, 0x21,0);
-    Serial.print("x actual:");
-    long actual = read43x(squirrel_a, 0x21,0);
-    Serial.println(actual);
-    Serial.print("Status ");
-    unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
-    Serial.println(status,HEX);
+    Serial.print("home at ");
+    Serial.println(target);
+    write43x(squirrel_a, X_TARGET_REGISTER,target);
+    if (checkMetro.check()) {
+      // put your main code here, to run repeatedly: 
+      read43x(squirrel_a, 0x21,0);
+      Serial.print("x actual:");
+      long actual = read43x(squirrel_a, 0x21,0);
+      Serial.println(actual);
+      Serial.print("Status ");
+      unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
+      Serial.println(status,HEX);
+    }
   }
 }
+
+
+
+
+
+
+
 
 
 
