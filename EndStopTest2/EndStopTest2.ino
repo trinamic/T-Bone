@@ -7,7 +7,7 @@
 
 //config
 unsigned char steps_per_revolution = 200;
-unsigned int current_in_ma = 100;
+unsigned int current_in_ma = 300;
 long vmax = 100000000ul;
 long bow = 1000000;
 long end_bow = bow;
@@ -92,7 +92,7 @@ void setup() {
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
 
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
-   // | _BV(0) //STOP_LEFT enable
+    | _BV(0) //STOP_LEFT enable
     | _BV(2) //positive Stop Left stops motor
   //  | _BV(3)
   //  | _BV(1)  //STOP_RIGHT enable
