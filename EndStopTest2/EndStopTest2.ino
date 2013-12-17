@@ -150,8 +150,8 @@ void loop() {
     else {
       Serial.println("homed");
       Serial.println(target);
-  //    target=random(600000l);
-  //    homed=true;
+      target=random(600000l);
+     homed=true;
       Serial.print("Status ");
       Serial.println(status,HEX);
       Serial.print("Events ");
