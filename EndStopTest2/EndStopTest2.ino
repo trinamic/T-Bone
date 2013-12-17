@@ -47,7 +47,7 @@ long dmax = amax;
 TMC26XGenerator tmc260 = TMC26XGenerator(current_in_ma,TMC260_SENSE_RESISTOR_IN_MO);
 
 //a metro to control the movement
-Metro moveMetro = Metro(5000ul);
+Metro moveMetro = Metro(2000ul);
 Metro checkMetro = Metro(1000ul);
 
 int squirrel_a = 12;
