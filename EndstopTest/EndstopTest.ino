@@ -99,6 +99,7 @@ void setup() {
 //  write43x(squirrel_a, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
     | _BV(0) //STOP_LEFT enable
+    | _BV(2) //positive Stop Left stops motor
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
@@ -130,6 +131,7 @@ void setup() {
 //  write43x(squirrel_b, VIRTUAL_STOP_RIGHT_REGISTER, es_right);
   write43x(squirrel_b, REFERENCE_CONFIG_REGISTER, 0 
     | _BV(0) //STOP_LEFT enable
+    | _BV(2) //positive Stop Left stops motor
   // | _BV(1)  //STOP_RIGHT enable
   // | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
