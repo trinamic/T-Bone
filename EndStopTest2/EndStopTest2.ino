@@ -89,16 +89,16 @@ void setup() {
   set260Register(squirrel_a, tmc260.getChopperConfigRegisterValue());
   set260Register(squirrel_a, tmc260.getStallGuard2RegisterValue());
   set260Register(squirrel_a, tmc260.getDriverConfigurationRegisterValue() | 0x80);
-/*
+
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
     | _BV(0) //STOP_LEFT enable
-    | _BV(2) //positive Stop Left stops motor
+  //  | _BV(2) //positive Stop Left stops motor
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
-  | _BV(7) //virtual right enable
+  //| _BV(7) //virtual right enable
   );
-*/
+
   //configure the TMC26x B
   write43x(squirrel_b, GENERAL_CONFIG_REGISTER,_BV(9)); //we use xtarget
   write43x(squirrel_b, CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
@@ -125,34 +125,38 @@ void setup() {
 unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
-unsigned long target=0;
+long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(60000ul);
+    target -= 1000;
     unsigned long this_v = vmax+random(100)*vmax;
     unsigned char motor;
     if (random(2)) {
       motor=squirrel_a;
-    } else {
-      motor=squirrel_b;
+    } 
+    else {
+      motor=squirrel_a;
     }
-    write43x(motor, V_MAX_REGISTER,this_v << 8); //set the velocity - TODO recalculate float numbers
-    write43x(motor, A_MAX_REGISTER,amax); //set maximum acceleration
-    write43x(motor, D_MAX_REGISTER,dmax); //set maximum deceleration
-    write43x(motor, X_TARGET_REGISTER,target);
-    Serial.print("Move to ");
-    Serial.println(target);
-    Serial.println();
+      write43x(squirrel_a, V_MAX_REGISTER,vmax << 8); //set the velocity - TODO recalculate float numbers
+      write43x(squirrel_a, A_MAX_REGISTER,amax); //set maximum acceleration
+      write43x(squirrel_a, D_MAX_REGISTER,dmax); //set maximum deceleration
+      Serial.print("home at ");
+      Serial.println(target);
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
   }
   if (checkMetro.check()) {
     // put your main code here, to run repeatedly: 
     read43x(squirrel_a, 0x21,0);
     Serial.print("x actual:");
-    read43x(squirrel_a, 0x21,0);
-    Serial.println();
+    long actual = read43x(squirrel_a, 0x21,0);
+    Serial.println(actual);
+    Serial.print("Status ");
+    unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
+    Serial.println(status,HEX);
   }
 }
+
 
 
 
