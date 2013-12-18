@@ -29,6 +29,17 @@ struct squirrel {
   int steps_per_revolution;
 };
 
+enum endstop_position {
+  left=1,
+  right=2,
+  both=3,
+  none=0
+};
 
-
+struct endstop_config {
+endstop_position position: 
+  2;
+unsigned char positive_edge:
+  1;
+};
 
