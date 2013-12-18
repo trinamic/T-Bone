@@ -44,6 +44,74 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigne
   return NULL;
 }
 
+const __FlashStringHelper* homeMotor(unsigned char motor_nr, unsigned long timeout, 
+double homing_fast_speed, double homing_low_speed, 
+unsigned long homming_accel, unsigned long homing_deccel,
+unsigned long homming_start_bow, unsigned long homing_end_bow)
+{
+  unsigned char cs_pin = motors[motor_nr].cs_pin;
+
+  //TODO obey the timeout!!
+  unsigned char homed = 0; //this is used to track where at homing we are 
+  unsigned long target = 0;
+  while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
+    if (homed==0 || homed==1) {
+      double homing_speed=500.0; //TODO this i config?!
+      if (homed==2) {
+        homing_speed /= 100.0;
+      }  
+      unsigned long status = read43x(cs_pin, STATUS_REGISTER,0);
+      unsigned long events = read43x(cs_pin, EVENTS_REGISTER,0);
+      if (!(status & (_BV(7) | _BV(9)))) {
+        if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) {
+#ifdef DEBUG_HOMING
+          Serial.print(F("Homing to "));
+          Serial.println(target);
+          Serial.print(F("Status "));
+          Serial.println(status,HEX);
+          Serial.print(F("Events "));
+          Serial.println(events,HEX);
+          Serial.println();
+#endif
+          target -= 1000;
+          write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
+          write43x(cs_pin, X_TARGET_REGISTER,target);
+        }
+      } 
+      else {
+        if (homed==0) {
+          long actual = read43x(cs_pin, X_ACTUAL_REGISTER,0);
+          target=actual;
+          Serial.println("home near ");
+          Serial.println(target);
+          long backuptarget = target + 100000ul;
+          write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_fast_speed));
+          write43x(cs_pin, X_TARGET_REGISTER,backuptarget);
+          delay(10ul);
+          status = read43x(cs_pin, STATUS_REGISTER,0);
+          while (!(status & _BV(0))) {
+            status = read43x(cs_pin, STATUS_REGISTER,0);
+          }
+          homed = 1;
+        } 
+        else {
+          long actual = read43x(cs_pin, X_LATCH_REGISTER,0);
+          Serial.println("homed at ");
+          Serial.println(actual);
+          write43x(cs_pin, X_TARGET_REGISTER,actual);
+          delay(10ul);
+          status = read43x(cs_pin, STATUS_REGISTER,0);
+          while (!(status & _BV(0))) {
+            status = read43x(cs_pin, STATUS_REGISTER,0);
+          }
+          write43x(cs_pin, X_ACTUAL_REGISTER,0);
+          homed=0xff;
+        }     
+      } 
+    } 
+  }
+}
+
 inline long getMotorPosition(unsigned char motor_nr) {
   return read43x(motors[motor_nr].cs_pin, X_TARGET_REGISTER ,0);
   //TODO do we have to take into account that the motor may never have reached the x_target??
@@ -153,6 +221,10 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
+
+
+
+
 
 
 
