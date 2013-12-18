@@ -331,6 +331,19 @@ void onPosition() {
 }
 
 void onConfigureEndStop() {
+  //TODO this is dummy config - we need specific settings for specific motors 
+  for (char i=0; i<nr_of_motors; i++) {
+    write43x(motors[i].cs_pin, REFERENCE_CONFIG_REGISTER, 0 
+      | _BV(0) //STOP_LEFT enable
+    | _BV(2) //positive Stop Left stops motor
+    //  | _BV(3)
+    //  | _BV(1)  //STOP_RIGHT enable
+    //  | _BV(5) //soft stop 
+    // | _BV(6) //virtual left enable
+    //| _BV(7) //virtual right enable
+    | _BV(11) //X_LATCH if stopl becomes active ..
+    );
+  }
 }
 
 void onHome() {
@@ -409,6 +422,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
