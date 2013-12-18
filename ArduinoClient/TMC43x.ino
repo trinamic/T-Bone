@@ -50,7 +50,7 @@ unsigned long homming_accel, unsigned long homing_deccel,
 unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
-  #todo shouldn't we check if there is a movement going??
+//todo shouldn't we check if there is a movement going??
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
@@ -75,7 +75,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
           Serial.println();
 #endif
           target -= 1000;
-          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+          write43x(cs_pin, START_CONFIG_REGISTER, 0
             | _BV(10)//immediate start        
           //since we just start 
           );   
@@ -84,31 +84,37 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
         }
       } 
       else {
+        long go_back_to;
         if (homed==0) {
           long actual = read43x(cs_pin, X_ACTUAL_REGISTER,0);
-          target=actual;
-          Serial.println("home near ");
-          Serial.println(target);
-          long backuptarget = target + 100000ul;
-          write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_fast_speed));
-          write43x(cs_pin, X_TARGET_REGISTER,backuptarget);
-          delay(10ul);
-          status = read43x(cs_pin, STATUS_REGISTER,0);
-          while (!(status & _BV(0))) {
-            status = read43x(cs_pin, STATUS_REGISTER,0);
-          }
-          homed = 1;
+          go_back_to = target + 100000ul; //TODO configure me!
+#ifdef DEBUG_HOMING
+          Serial.print(F("home near "));
+          Serial.print(target);
+          Serial.print(F(" - going back to "));
+          Serial.println(go_back_to);
+#endif
         } 
         else {
           long actual = read43x(cs_pin, X_LATCH_REGISTER,0);
-          Serial.println("homed at ");
+          go_back_to = actual;
+#ifdef DEBUG_HOMING
+          Serial.println(F("homed at "));
           Serial.println(actual);
-          write43x(cs_pin, X_TARGET_REGISTER,actual);
-          delay(10ul);
+#endif
+        }
+        write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_fast_speed));
+        write43x(cs_pin, X_TARGET_REGISTER,go_back_to);
+        delay(10ul);
+        status = read43x(cs_pin, STATUS_REGISTER,0);
+        while (!(status & _BV(0))) {
           status = read43x(cs_pin, STATUS_REGISTER,0);
-          while (!(status & _BV(0))) {
-            status = read43x(cs_pin, STATUS_REGISTER,0);
-          }
+        }
+        if (homed==0) {
+
+          homed = 1;
+        } 
+        else {
           write43x(cs_pin, X_ACTUAL_REGISTER,0);
           homed=0xff;
         }     
@@ -226,6 +232,8 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
+
+
 
 
 
