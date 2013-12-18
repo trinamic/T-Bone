@@ -50,6 +50,7 @@ unsigned long homming_accel, unsigned long homing_deccel,
 unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
+  #todo shouldn't we check if there is a movement going??
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
@@ -74,6 +75,10 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
           Serial.println();
 #endif
           target -= 1000;
+          write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+            | _BV(10)//immediate start        
+          //since we just start 
+          );   
           write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
           write43x(cs_pin, X_TARGET_REGISTER,target);
         }
@@ -221,6 +226,7 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
+
 
 
 
