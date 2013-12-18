@@ -14,7 +14,7 @@ from trinamic_3d_printer.gcode import read_gcode_to_printer
 _config_file = "testprint-config.json"
 _print_file = "../reference designs/test-model.gcode"
 _default_serial_port = "/dev/ttyO1"
-_reset_pin="P8_26"
+_reset_pin = "P8_26"
 _create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
 _logger = logging.getLogger(__name__)
 
@@ -25,7 +25,6 @@ class Usage(Exception):
 
 
 def main(argv=None):
-
     try:
         #configure the overall logging
         logging.basicConfig(filename='print.log', level=logging.INFO,
@@ -57,13 +56,15 @@ def main(argv=None):
         #configure the printer
         printer.configure(config)
         _logger.info("printing %s", _print_file)
-        test_file = open(_print_file)
-        printer.start_print()
-        read_gcode_to_printer(test_file, printer)
-        printer.stop_print()
+        printer.home(axis={'x', 'y'})
+        #test_file = open(_print_file)
+        #printer.start_print()
+        #read_gcode_to_printer(test_file, printer)
+        #printer.stop_print()
         _logger.info("finished printing")
     finally:
         GPIO.cleanup()
+
 
 def read_config():
     json_config_file = open(_config_file)
