@@ -38,6 +38,8 @@ long dmax = amax;
 #define VIRTUAL_STOP_RIGHT_REGISTER 0x34
 #define EVENTS_REGISTER 0x0e
 #define STATUS_REGISTER 0x0f
+#define X_ACTUAL_REGISTER 0x21
+#define X_LATCH_REGISTER 0x36
 
 //values
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -93,12 +95,13 @@ void setup() {
 
   write43x(squirrel_a, REFERENCE_CONFIG_REGISTER, 0 
     | _BV(0) //STOP_LEFT enable
-    | _BV(2) //positive Stop Left stops motor
+  | _BV(2) //positive Stop Left stops motor
   //  | _BV(3)
   //  | _BV(1)  //STOP_RIGHT enable
   //  | _BV(5) //soft stop 
   // | _BV(6) //virtual left enable
   //| _BV(7) //virtual right enable
+  | _BV(11) //X_LATCH if stopl becomes active ..
   );
 
   //configure the TMC26x B
@@ -131,45 +134,57 @@ unsigned long tmc43xx_write;
 unsigned long tmc43xx_read;
 
 long target=0;
-boolean homed = false;
+int homed = 0;
 
 void loop() {
-  if (!homed) {
+  if (homed<100) {
     unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
     unsigned long events = read43x(squirrel_a, EVENTS_REGISTER,0);
     if ((status & (_BV(7) | _BV(9)))==0) {
+      if (homed>50) {
+        write43x(squirrel_a, V_MAX_REGISTER,(vmax/100) << 8); //set the velocity - TODO recalculate float numbers
+      } 
+      else {
+        write43x(squirrel_a, V_MAX_REGISTER,(vmax) << 8); //set the velocity - TODO recalculate float numbers
+      }
       target -= 1000;
       Serial.print("Homing to ");
       Serial.println(target);
-      write43x(squirrel_a, X_TARGET_REGISTER,(unsigned long)target);
+      write43x(squirrel_a, X_TARGET_REGISTER,target);
       Serial.print("Status ");
       Serial.println(status,HEX);
       Serial.print("Events ");
       Serial.println(events,HEX);
     } 
     else {
-      Serial.println("homed");
-      Serial.println(target);
-      target=random(600000l);
-     homed=true;
-      Serial.print("Status ");
-      Serial.println(status,HEX);
-      Serial.print("Events ");
-      Serial.println(events,HEX);
-     
+      if (homed<50) {
+        long actual = read43x(squirrel_a, X_ACTUAL_REGISTER,0);
+        target=actual;
+        Serial.println("home near ");
+        Serial.println(target);
+        long backuptarget = target + 100000ul;
+        write43x(squirrel_a, V_MAX_REGISTER,(vmax) << 8); //set the velocity - TODO recalculate float numbers
+        write43x(squirrel_a, X_TARGET_REGISTER,backuptarget);
+        delay(5000ul);
+        homed = 51;
+      } 
+      else {
+        long actual = read43x(squirrel_a, X_LATCH_REGISTER,0);
+        Serial.println("homed at ");
+        Serial.println(actual);
+        write43x(squirrel_a, X_TARGET_REGISTER,actual);
+        delay(5000ul);
+        write43x(squirrel_a, X_ACTUAL_REGISTER,0);
+        homed=101;
+        target = 100000ul+random(500000ul);
+      }
     }
-    delay(50);
+    delay(10);
   } 
   else if (target==0 | moveMetro.check()) {
-    unsigned char motor;
-    if (random(2)) {
-      motor=squirrel_a;
-    } 
-    else {
-      motor=squirrel_a;
-    }
-    Serial.print("home at ");
+    Serial.print("going to ");
     Serial.println(target);
+    write43x(squirrel_a, V_MAX_REGISTER,(vmax) << 8); //set the velocity - TODO recalculate float numbers
     write43x(squirrel_a, X_TARGET_REGISTER,target);
     if (checkMetro.check()) {
       // put your main code here, to run repeatedly: 
@@ -180,9 +195,23 @@ void loop() {
       Serial.print("Status ");
       unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
       Serial.println(status,HEX);
+      write43x(squirrel_a, X_ACTUAL_REGISTER,0);
+      homed=0;
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
