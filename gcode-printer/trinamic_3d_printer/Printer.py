@@ -44,6 +44,8 @@ class Printer(Thread):
 
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
+        #todo ths is far more complex and done per axis
+        self.machine.configure_enstops()
 
         if "printer" in config:
             printer_config = config['printer']
@@ -184,6 +186,12 @@ class Printer(Thread):
                     x_move_config,
                     y_move_config
                 ])
+
+    def home(self, axis):
+        for home_axis in axis:
+            motor = self.config[home_axis]['motor']
+            self.machine.home(motor)
+
 
 
 class PrintQueue():

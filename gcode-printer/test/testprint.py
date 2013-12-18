@@ -56,7 +56,7 @@ def main(argv=None):
         #configure the printer
         printer.configure(config)
         _logger.info("printing %s", _print_file)
-        printer.home(axis={'x', 'y'})
+        printer.home(axis={'x-axis', 'y-axis'})
         #test_file = open(_print_file)
         #printer.start_print()
         #read_gcode_to_printer(test_file, printer)

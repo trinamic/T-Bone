@@ -344,6 +344,7 @@ void onConfigureEndStop() {
     | _BV(11) //X_LATCH if stopl becomes active ..
     );
   }
+  messenger.sendCmd(kOK,F("endstops configured"));
 }
 
 void onHome() {
@@ -493,6 +494,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

@@ -60,6 +60,23 @@ class Machine():
         if not reply or reply.command_number != 0:
             raise MachineError("Unable to set motor current", reply)
 
+    def configure_enstops(self):
+        command = MachineCommand()
+        command.command_number = 3
+        reply=self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+                raise MachineError("Unable to configure end stops", reply)
+
+    def home(self, motor):
+        command = MachineCommand()
+        command.command_number = 12
+        command.arguments = (
+            int(motor)
+        )
+        reply=self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+                raise MachineError("Unable to home axis "+str(motor), reply)
+
     def move_to(self, motors):
         if not motors:
             logging.warn("no motor to move??")
