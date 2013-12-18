@@ -347,6 +347,16 @@ void onConfigureEndStop() {
 }
 
 void onHome() {
+  //TODO wew will need a timeout afte which we have to stop homing 
+  char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
+  messenger.sendCmdStart(kOK);
+  messenger.sendCmdArg(motor,DEC);
+  messenger.sendCmdArg(F("motor number too small"));
+  messenger.sendCmdEnd();
+
 }
 
 void onCommands() {
@@ -422,6 +432,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 
