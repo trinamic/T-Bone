@@ -121,6 +121,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
       } 
     } 
   }
+  return NULL;
 }
 
 inline long getMotorPosition(unsigned char motor_nr) {

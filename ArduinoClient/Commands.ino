@@ -352,10 +352,71 @@ void onHome() {
   if (motor<0) {
     return;
   }
-  messenger.sendCmdStart(kOK);
-  messenger.sendCmdArg(motor,DEC);
-  messenger.sendCmdArg(F("motor number too small"));
-  messenger.sendCmdEnd();
+  double homeFastSpeed = messenger.readFloatArg();
+  if (homeFastSpeed<=0) {
+    messenger.sendCmd (kError,F("cannot home with no or negative speed"));
+    return;
+  }
+  double homeSlowSpeed = messenger.readFloatArg();
+  if (homeSlowSpeed<=0) {
+    messenger.sendCmd (kError,F("cannot home with no or negative speed"));
+    return;
+  }
+  long aMax = messenger.readLongArg();
+  if (aMax<=0) {
+    messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
+    return;
+  }
+  long dMax = messenger.readLongArg();
+  if (dMax<=0) {
+    messenger.sendCmd(kError,F("cannot home with no or negative deceleration"));
+    return;
+  }
+  long startBow = messenger.readLongArg();
+  if (startBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return;
+  }
+  long endBow = messenger.readLongArg();
+  if (endBow<0) {
+    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+    return;
+  }
+#ifdef DEBUG_HOMING
+  Serial.print(F("Homing for motor "));
+  Serial.print(motor,DEC);
+  Serial.print(F(", fast="));
+  Serial.print(homeFastSpeed);
+  Serial.print(F(", slow="));
+  Serial.print(homeSlowSpeed);
+  Serial.print(F(", aMax="));
+  Serial.print(aMax);
+  Serial.print(F(", dMax="));
+  Serial.print(dMax);
+  Serial.print(F(": startBow="));
+  Serial.print(startBow);
+  Serial.print(F(", endBow="));
+  Serial.print(endBow);
+#endif
+  const __FlashStringHelper* error =  homeMotor(
+  motor,0,
+  homeFastSpeed, homeSlowSpeed,
+  aMax,dMax,
+  startBow,endBow
+    );
+  if (error==NULL) {
+    messenger.sendCmdStart(kOK);
+    messenger.sendCmdArg(F("homed"));
+    messenger.sendCmdArg(motor,DEC);
+    messenger.sendCmdEnd();
+  } 
+  else {
+    messenger.sendCmd(kError,error);
+    messenger.sendCmdStart(kError);
+    messenger.sendCmdArg(error);
+    messenger.sendCmdArg(motor,DEC);
+    messenger.sendCmdEnd();
+  }
 
 }
 
@@ -432,6 +493,9 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
+
 
 
 
