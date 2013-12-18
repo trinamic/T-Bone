@@ -140,21 +140,24 @@ void loop() {
   if (homed<100) {
     unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
     unsigned long events = read43x(squirrel_a, EVENTS_REGISTER,0);
-    if ((status & (_BV(7) | _BV(9)))==0) {
-      if (homed>50) {
-        write43x(squirrel_a, V_MAX_REGISTER,(vmax/100) << 8); //set the velocity - TODO recalculate float numbers
-      } 
-      else {
-        write43x(squirrel_a, V_MAX_REGISTER,(vmax) << 8); //set the velocity - TODO recalculate float numbers
+    if (!(status & (_BV(7) | _BV(9)))) {
+      if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) {
+        if (homed>50) {
+          write43x(squirrel_a, V_MAX_REGISTER,vmax << 2); //set the velocity - TODO recalculate float numbers
+        } 
+        else {
+          write43x(squirrel_a, V_MAX_REGISTER,(vmax) << 8); //set the velocity - TODO recalculate float numbers
+        }
+        target -= 1000;
+        Serial.print("Homing to ");
+        Serial.println(target);
+        write43x(squirrel_a, X_TARGET_REGISTER,target);
+        Serial.print("Status ");
+        Serial.println(status,HEX);
+        Serial.print("Events ");
+        Serial.println(events,HEX);
+        Serial.println();
       }
-      target -= 1000;
-      Serial.print("Homing to ");
-      Serial.println(target);
-      write43x(squirrel_a, X_TARGET_REGISTER,target);
-      Serial.print("Status ");
-      Serial.println(status,HEX);
-      Serial.print("Events ");
-      Serial.println(events,HEX);
     } 
     else {
       if (homed<50) {
@@ -165,7 +168,11 @@ void loop() {
         long backuptarget = target + 100000ul;
         write43x(squirrel_a, V_MAX_REGISTER,(vmax) << 8); //set the velocity - TODO recalculate float numbers
         write43x(squirrel_a, X_TARGET_REGISTER,backuptarget);
-        delay(5000ul);
+        delay(10ul);
+        unsigned long status = read43x(squirrel_a, STATUS_REGISTER,0);
+        while (!(status & _BV(0))) {
+          status = read43x(squirrel_a, STATUS_REGISTER,0);
+        }
         homed = 51;
       } 
       else {
@@ -200,6 +207,9 @@ void loop() {
     }
   }
 }
+
+
+
 
 
 
