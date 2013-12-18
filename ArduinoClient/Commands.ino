@@ -10,6 +10,7 @@ enum {
   //Kommandos die Aktionen auslösen
   kMove = 10,
   kMovement = 11, //controls if a new movement is started or a running one ist stopped
+  kHome=12, //Home one axis
   //Kommandos zur Information
   kPos = 30,
   kCommands = 31,
@@ -31,6 +32,7 @@ void attachCommandCallbacks() {
   messenger.attach(kMove, onMove);
   messenger.attach(kMovement, onMovement);
   messenger.attach(kPos, onPosition);
+  messenger.attach(kHome, onHome);
   messenger.attach(kCommands, onCommands);
 }
 
@@ -324,6 +326,9 @@ void onPosition() {
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
+}
+
+void onHome() {
 }
 
 void onCommands() {

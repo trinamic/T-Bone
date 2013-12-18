@@ -184,6 +184,8 @@ void loop() {
         write43x(squirrel_a, X_ACTUAL_REGISTER,0);
         homed=101;
         target = 100000ul+random(500000ul);
+        Serial.print("backing up to ");
+        Serial.println(target);
       }
     }
     delay(10);
