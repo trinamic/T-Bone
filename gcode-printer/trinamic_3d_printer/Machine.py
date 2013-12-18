@@ -77,8 +77,8 @@ class Machine():
             float(home_config['home_slow_speed']),
             float(home_config['acceleration']),
             float(home_config['deceleration']),
-            int(home_config['startBow']),
-            int(home_config['endBow'])
+            int(home_config['start_bow']),
+            int(home_config['end_bow'])
 
         )
         reply=self.machine_connection.send_command(command)

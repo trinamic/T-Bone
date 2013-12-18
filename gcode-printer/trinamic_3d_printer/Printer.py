@@ -92,6 +92,7 @@ class Printer(Thread):
         axis['motor'] = config['motor']
         axis['scale'] = config['steps-per-mm']
         axis['max_speed'] = config['max-speed']
+        axis['max_speed_step'] = _convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
         axis['max_acceleration'] = config['max-acceleration']
         axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         axis['bow'] = config['bow-acceleration']
@@ -189,14 +190,14 @@ class Printer(Thread):
     def home(self, axis):
         for home_axis in axis:
             homing_config = {
-                'motor': self.config[home_axis]['motor'],
+                'motor': self.axis[home_axis]['motor'],
                 'timeout': 0,
-                'home_speed':self.config[home_axis]['step_speed'],
-                'home_slow_speed':self.config[home_axis]['step_speed']/10,#todo isn't this a bit arbirtary
-                'acceleration':self.config[home_axis]['max_step_acceleration'],
-                'deceleration':self.config[home_axis]['max_step_acceleration'],
-                'start_bow':self.config[home_axis]['bow_step'],
-                'end_bow':self.config[home_axis]['bow_step'],
+                'home_speed':self.axis[home_axis]['max_speed_step'],
+                'home_slow_speed':self.axis[home_axis]['max_speed_step']/10,#todo isn't this a bit arbirtary
+                'acceleration':self.axis[home_axis]['max_step_acceleration'],
+                'deceleration':self.axis[home_axis]['max_step_acceleration'],
+                'start_bow':self.axis[home_axis]['bow_step'],
+                'end_bow':self.axis[home_axis]['bow_step'],
             }
 
             self.machine.home(homing_config)
