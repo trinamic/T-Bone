@@ -5,6 +5,7 @@ enum {
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
   kStepsPerRev = 2,
+  kEndStops = 3,
   //intitalize all drivers with default values - TODO or preconfigured??
   kInit=9,
   //Kommandos die Aktionen auslösen
@@ -28,6 +29,7 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kInit, onInit);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
+  messenger.attach(kEndStops,onConfigureEndStop);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
   messenger.attach(kMove, onMove);
   messenger.attach(kMovement, onMovement);
@@ -326,6 +328,9 @@ void onPosition() {
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
+}
+
+void onConfigureEndStop() {
 }
 
 void onHome() {
