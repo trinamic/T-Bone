@@ -353,14 +353,18 @@ void onHome() {
   if (motor<0) {
     return;
   }
+  long timeout = messenger.readLongArg();
+  if (timeout<=0) {
+    timeout=0;
+  }
   double homeFastSpeed = messenger.readFloatArg();
   if (homeFastSpeed<=0) {
-    messenger.sendCmd (kError,F("cannot home with no or negative speed"));
+    messenger.sendCmd (kError,F("cannot home with no or negative homing speed"));
     return;
   }
   double homeSlowSpeed = messenger.readFloatArg();
   if (homeSlowSpeed<=0) {
-    messenger.sendCmd (kError,F("cannot home with no or negative speed"));
+    messenger.sendCmd (kError,F("cannot home with no or negative precision homing speed"));
     return;
   }
   long aMax = messenger.readLongArg();
@@ -386,6 +390,8 @@ void onHome() {
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for motor "));
   Serial.print(motor,DEC);
+  Serial.print(F(", timeout="));
+  Serial.print(timeout);
   Serial.print(F(", fast="));
   Serial.print(homeFastSpeed);
   Serial.print(F(", slow="));
@@ -400,7 +406,7 @@ void onHome() {
   Serial.print(endBow);
 #endif
   const __FlashStringHelper* error =  homeMotor(
-  motor,0,
+  motor,timeout,
   homeFastSpeed, homeSlowSpeed,
   aMax,dMax,
   startBow,endBow

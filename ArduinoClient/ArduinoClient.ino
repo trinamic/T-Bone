@@ -13,6 +13,7 @@
 //##################
 
 //#define DEBUG_MOTOR_CONTFIG
+#define DEBUG_HOMING
 
 #define DEBUG_MOTION
 //#define DEBUG_MOTION_TRACE
