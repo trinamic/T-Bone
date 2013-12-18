@@ -67,15 +67,23 @@ class Machine():
         if not reply or reply.command_number != 0:
                 raise MachineError("Unable to configure end stops", reply)
 
-    def home(self, motor):
+    def home(self, home_config):
         command = MachineCommand()
         command.command_number = 12
         command.arguments = (
-            int(motor)
+            int(home_config['motor']),
+            int(home_config['timeout']),
+            float(home_config['home_speed']),
+            float(home_config['home_slow_speed']),
+            float(home_config['acceleration']),
+            float(home_config['deceleration']),
+            int(home_config['startBow']),
+            int(home_config['endBow'])
+
         )
         reply=self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-                raise MachineError("Unable to home axis "+str(motor), reply)
+                raise MachineError("Unable to home axis "+str(home_config), reply)
 
     def move_to(self, motors):
         if not motors:

@@ -86,7 +86,6 @@ class Printer(Thread):
 
             x_move_config, y_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
 
-
             self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
 
     def _configure_axis(self, axis, config):
@@ -189,9 +188,18 @@ class Printer(Thread):
 
     def home(self, axis):
         for home_axis in axis:
-            motor = self.config[home_axis]['motor']
-            self.machine.home(motor)
+            homing_config = {
+                'motor': self.config[home_axis]['motor'],
+                'timeout': 0,
+                'home_speed':self.config[home_axis]['step_speed'],
+                'home_slow_speed':self.config[home_axis]['step_speed']/10,#todo isn't this a bit arbirtary
+                'acceleration':self.config[home_axis]['max_step_acceleration'],
+                'deceleration':self.config[home_axis]['max_step_acceleration'],
+                'start_bow':self.config[home_axis]['bow_step'],
+                'end_bow':self.config[home_axis]['bow_step'],
+            }
 
+            self.machine.home(homing_config)
 
 
 class PrintQueue():
