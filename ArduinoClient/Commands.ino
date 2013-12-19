@@ -331,6 +331,37 @@ void onPosition() {
 }
 
 void onConfigureEndStop() {
+  char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
+  int position = messenger.readIntArg();
+  if (position==0) {
+    messenger.sendCmd(kError,F("Use position smaller or bigger 0 for left or right position"));
+  }
+  int type = messenger.readIntArg();
+  if (type!=0 && type!=1) {
+    messenger.sendCmd(kError,F("Use type 0 for virtual and 1 for real endstops"));
+  }
+  switch(type) {
+  case 0: //virtual endstops
+    {
+      long virtual_pos = messenger.readLongArg();
+      if (type!=0 && type!=1) {
+        messenger.sendCmd(kError,F("Use type 0 for virtual and 1 for real endstops"));
+      }
+      break;
+    }
+  case 1: //real endstop
+    {
+      int polarity = messenger.readIntArg();
+      if (polarity==0) {
+        messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
+      }
+      break;
+    }
+  }
+
   //TODO this is dummy config - we need specific settings for specific motors 
   for (char i=0; i<nr_of_motors; i++) {
     write43x(motors[i].cs_pin, REFERENCE_CONFIG_REGISTER, 0 
@@ -501,6 +532,11 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
+
+
+
 
 
 

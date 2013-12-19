@@ -242,6 +242,16 @@ inline void signal_start() {
 #endif
 }
 
+const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean polarity) {
+  return NULL;
+}
+
+
+const __FlashStringHelper* configureVirtualEndstop(unsigned char motor_nr, boolean left, long positions) {
+  return NULL;
+}
+
+
 
 
 
