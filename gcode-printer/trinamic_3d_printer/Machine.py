@@ -76,7 +76,7 @@ class Machine():
         if position == 'left':
             position_number = -1
         else:
-        position_number = 1
+            position_number = 1
 
         if type == 'real':
             polarity = end_stop_config['polarity']
