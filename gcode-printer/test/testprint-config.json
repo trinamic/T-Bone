@@ -5,7 +5,16 @@
         "steps-per-mm":1420.8984,
         "max-speed":900,
         "max-acceleration":9000,
-        "bow-acceleration":3000
+        "bow-acceleration":3000,
+        "end-stop": {
+            "left": {
+                "polarity":"positive"
+            },
+            "right": {
+                "polarity":"virtual",
+                "position":20.2
+            }
+        }
     },
     "y-axis":{
         "motor":2 ,
@@ -14,6 +23,15 @@
         "max-speed":900,
         "max-acceleration":9000,
         "bow-acceleration":3000
+        "end-stop": {
+            "left": {
+                "polarity":"positive"
+            },
+            "right": {
+                "polarity":"virtual",
+                "position":20.2
+            }
+        }
     },
     "printer": {
         "print-queue":{
