@@ -27,6 +27,7 @@ class Machine():
         self.machine_connection = None
         self.command_queue = Queue()
         self.batch_mode = False
+        self._homing_timeout=10 #todo this is printer config
 
     def connect(self):
         _logger.info("resetting arduino at %s", self.serial_port)
@@ -81,7 +82,7 @@ class Machine():
             int(home_config['end_bow'])
 
         )
-        reply=self.machine_connection.send_command(command)
+        reply=self.machine_connection.send_command(command, self._homing_timeout)
         if not reply or reply.command_number != 0:
                 raise MachineError("Unable to home axis "+str(home_config), reply)
 
@@ -162,8 +163,10 @@ class _MachineConnection:
         self.internal_queue_length = 0
         self.internal_queue_max_length = 1
 
-    def send_command(self, command):
+    def send_command(self, command, timeout=None):
         _logger.debug("sending command %s", command)
+        if not timeout:
+            timeout = _default_timeout
         #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
@@ -176,7 +179,7 @@ class _MachineConnection:
         self.machine_serial.write(";\n")
         self.machine_serial.flush()
         try:
-            response = self.response_queue.get(timeout=_default_timeout)
+            response = self.response_queue.get(timeout=timeout)
             #TODO logging
             return response
         except Empty:
