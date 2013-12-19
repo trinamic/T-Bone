@@ -11,7 +11,6 @@ __author__ = 'marcus'
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
 _max_command_buffer = 3 # how much arduino buffer to preserve
-#todo come up with better names!
 
 _logger = logging.getLogger(__name__)
 
@@ -179,7 +178,7 @@ class _MachineConnection:
         self.machine_serial.flush()
         try:
             response = self.response_queue.get(timeout=timeout)
-            #TODO logging
+            _logger.debug("Received %s as response to %s", response, command)
             return response
         except Empty:
             #disconnect in panic
