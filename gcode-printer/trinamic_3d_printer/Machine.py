@@ -85,19 +85,24 @@ class Machine():
             else:
                 polarity_token = 1
 
-            command.arguments = {
+            command.arguments = (
                 int(motor),
                 position_number,
                 1, #1 is a real endstop
                 polarity_token
-            }
+            )
         else:
-            command.arguments = {
+            command.arguments = (
                 int(motor),
                 position_number,
                 0, #1 is a virtual endstop
                 int(end_stop_config['position'])
-            }
+            )
+
+        #send the command
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+            raise MachineError("Unable to configure end stops", reply)
 
     def home(self, home_config, timeout):
         command = MachineCommand()
