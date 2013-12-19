@@ -6,7 +6,7 @@
         "max-speed":900,
         "max-acceleration":9000,
         "bow-acceleration":3000,
-        "end-stop": {
+        "end-stops": {
             "left": {
                 "polarity":"positive"
             },
@@ -22,8 +22,8 @@
         "steps-per-mm":1420.8984,
         "max-speed":900,
         "max-acceleration":9000,
-        "bow-acceleration":3000
-        "end-stop": {
+        "bow-acceleration":3000,
+        "end-stops": {
             "left": {
                 "polarity":"positive"
             },

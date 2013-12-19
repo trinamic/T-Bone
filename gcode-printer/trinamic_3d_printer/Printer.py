@@ -34,7 +34,7 @@ class Printer(Thread):
         self.print_queue_min_length = print_min_length
         self.print_queue_max_length = print_max_length
 
-        self._homing_timeout=10
+        self._homing_timeout = 10
 
         #finally create and conect the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
@@ -56,7 +56,7 @@ class Printer(Thread):
                 self.print_queue_min_length = print_queue_config['min-length']
                 self.print_queue_max_length = print_queue_config['max-length']
             if "homing-timeout" in printer_config:
-                self._homing_timeout=printer_config['homing-timeout']
+                self._homing_timeout = printer_config['homing-timeout']
 
         self.config = config
 
@@ -98,6 +98,26 @@ class Printer(Thread):
         axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         axis['bow'] = config['bow-acceleration']
         axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
+
+        axis['end-stops'] = {}
+        end_stops_config = config['end-stops']
+        for end_stop_pos in ('left', 'right'):
+            if end_stop_pos in end_stops_config:
+                end_stop_config = end_stops_config[end_stop_pos]
+                polarity = end_stop_config['polarity']
+                if 'virtual' == polarity:
+                    position = float(end_stop_config['position'])
+                    axis['end-stops'][end_stop_pos] = {
+                        'type': 'virtual',
+                        'position': position
+                    }
+                elif polarity in ('positive', 'negative'):
+                    axis['end-stops'][end_stop_pos] = {
+                        'type': 'real',
+                        'polarity': polarity
+                    }
+                else:
+                    raise PrinterError("Unknown end stop type " + polarity)
 
         motor = config["motor"]
         current = config["current"]
@@ -193,19 +213,18 @@ class Printer(Thread):
             homing_config = {
                 'motor': self.axis[home_axis]['motor'],
                 'timeout': 0,
-                'home_speed':self.axis[home_axis]['max_speed_step'],
-                'home_slow_speed':self.axis[home_axis]['max_speed_step']/10,#todo isn't this a bit arbirtary
-                'acceleration':self.axis[home_axis]['max_step_acceleration'],
-                'deceleration':self.axis[home_axis]['max_step_acceleration'],
-                'start_bow':self.axis[home_axis]['bow_step'],
-                'end_bow':self.axis[home_axis]['bow_step'],
+                'home_speed': self.axis[home_axis]['max_speed_step'],
+                'home_slow_speed': self.axis[home_axis]['max_speed_step'] / 10, #todo isn't this a bit arbirtary
+                'acceleration': self.axis[home_axis]['max_step_acceleration'],
+                'deceleration': self.axis[home_axis]['max_step_acceleration'],
+                'start_bow': self.axis[home_axis]['bow_step'],
+                'end_bow': self.axis[home_axis]['bow_step'],
             }
 
             self.machine.home(homing_config, timeout=self._homing_timeout)
-        #better but still not good - we should have a better concept of 'axis'
+            #better but still not good - we should have a better concept of 'axis'
         self.x_pos = 0
         self.y_pos = 0
-
 
 
 class PrintQueue():
