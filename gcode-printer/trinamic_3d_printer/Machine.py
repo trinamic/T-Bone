@@ -27,7 +27,6 @@ class Machine():
         self.machine_connection = None
         self.command_queue = Queue()
         self.batch_mode = False
-        self._homing_timeout=10 #todo this is printer config
 
     def connect(self):
         _logger.info("resetting arduino at %s", self.serial_port)
@@ -68,7 +67,7 @@ class Machine():
         if not reply or reply.command_number != 0:
                 raise MachineError("Unable to configure end stops", reply)
 
-    def home(self, home_config):
+    def home(self, home_config, timeout):
         command = MachineCommand()
         command.command_number = 12
         command.arguments = (
@@ -82,7 +81,7 @@ class Machine():
             int(home_config['end_bow'])
 
         )
-        reply=self.machine_connection.send_command(command, self._homing_timeout)
+        reply=self.machine_connection.send_command(command, timeout)
         if not reply or reply.command_number != 0:
                 raise MachineError("Unable to home axis "+str(home_config), reply)
 

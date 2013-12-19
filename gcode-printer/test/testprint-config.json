@@ -16,9 +16,10 @@
         "bow-acceleration":3000
     },
     "printer": {
-        "print_queue":{
-            "min_length":20,
-            "max_length":30
-        }
+        "print-queue":{
+            "min-length":20,
+            "max-length":30
+        },
+        "homing-timeout":15
     }
 }

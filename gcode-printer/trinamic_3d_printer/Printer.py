@@ -34,6 +34,8 @@ class Printer(Thread):
         self.print_queue_min_length = print_min_length
         self.print_queue_max_length = print_max_length
 
+        self._homing_timeout=10
+
         #finally create and conect the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
         self.machine.connect()
@@ -50,15 +52,14 @@ class Printer(Thread):
         if "printer" in config:
             printer_config = config['printer']
             if "print_queue" in printer_config:
-                print_queue_config = printer_config["print_queue"]
-                self.print_queue_min_length = print_queue_config['min_length']
-                self.print_queue_max_length = print_queue_config['max_length']
+                print_queue_config = printer_config["print-queue"]
+                self.print_queue_min_length = print_queue_config['min-length']
+                self.print_queue_max_length = print_queue_config['max-length']
+            if "homing-timeout" in printer_config:
+                self._homing_timeout=printer_config['homing-timeout']
 
         self.config = config
 
-        #todo in thery we should have homed here
-        self.x_pos = 0
-        self.y_pos = 0
         self.ready = True
 
     def start_print(self):
@@ -200,7 +201,11 @@ class Printer(Thread):
                 'end_bow':self.axis[home_axis]['bow_step'],
             }
 
-            self.machine.home(homing_config)
+            self.machine.home(homing_config, timeout=self._homing_timeout)
+        #better but still not good - we should have a better concept of 'axis'
+        self.x_pos = 0
+        self.y_pos = 0
+
 
 
 class PrintQueue():
