@@ -27,7 +27,7 @@ long send43x(unsigned char cs_squirrel, unsigned char tmc43x_register, unsigned 
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;
-  i_datagram = SPI.transfer((datagram >> 16) & 0xff);
+  i_datagram |= SPI.transfer((datagram >> 16) & 0xff);
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram >>  8) & 0xff);
   i_datagram <<= 8;
