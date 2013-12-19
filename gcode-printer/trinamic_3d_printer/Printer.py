@@ -1,5 +1,6 @@
 # coding=utf-8
 from Queue import Queue
+from copy import deepcopy
 import logging
 from math import sqrt, copysign
 from numpy import sign
@@ -118,6 +119,10 @@ class Printer(Thread):
                     }
                 else:
                     raise PrinterError("Unknown end stop type " + polarity)
+                end_stop = deepcopy(axis['end-stops'][end_stop_pos])
+                if 'position' in end_stop:
+                    end_stop['position'] = _convert_mm_to_steps(end_stop['position'], axis['scale'])
+                self.machine.configure_endstop(motor=axis['motor'], position=position, end_stop_config=end_stop)
 
         motor = config["motor"]
         current = config["current"]

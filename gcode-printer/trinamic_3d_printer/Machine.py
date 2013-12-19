@@ -60,11 +60,44 @@ class Machine():
             raise MachineError("Unable to set motor current", reply)
 
     def configure_enstops(self):
+        #todo obselete if 2nd routine is ready
         command = MachineCommand()
         command.command_number = 3
-        reply=self.machine_connection.send_command(command)
+        reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-                raise MachineError("Unable to configure end stops", reply)
+            raise MachineError("Unable to configure end stops", reply)
+
+    def configure_endstop(self, motor, position, end_stop_config):
+        command = MachineCommand()
+        command.command_number = 3
+
+        type = end_stop_config['type']
+        position = position
+        if position == 'left':
+            position_number = -1
+        else:
+        position_number = 1
+
+        if type == 'real':
+            polarity = end_stop_config['polarity']
+            if polarity in ('negative', '-', 'neg'):
+                polarity_token = -1
+            else:
+                polarity_token = 1
+
+            command.arguments = {
+                int(motor),
+                position_number,
+                1, #1 is a real endstop
+                polarity_token
+            }
+        else:
+            command.arguments = {
+                int(motor),
+                position_number,
+                0, #1 is a virtual endstop
+                int(end_stop_config['position'])
+            }
 
     def home(self, home_config, timeout):
         command = MachineCommand()
@@ -80,9 +113,10 @@ class Machine():
             int(home_config['end_bow'])
 
         )
-        reply=self.machine_connection.send_command(command, timeout)
+        reply = self.machine_connection.send_command(command, timeout)
         if not reply or reply.command_number != 0:
-                raise MachineError("Unable to home axis "+str(home_config), reply)
+            raise MachineError("Unable to home axis " + str(home_config), reply)
+
 
     def move_to(self, motors):
         if not motors:
@@ -165,7 +199,7 @@ class _MachineConnection:
         _logger.debug("sending command %s", command)
         if not timeout:
             timeout = _default_timeout
-        #empty the queue?? shouldn't it be empty??
+            #empty the queue?? shouldn't it be empty??
         self.response_queue.empty()
         self.machine_serial.write(str(command.command_number))
         if command.arguments:
@@ -212,7 +246,7 @@ class _MachineConnection:
         if not line or not line.strip():
             return None
         line = line.strip()
-        _logger.debug("machine said:\'%s\'",line)
+        _logger.debug("machine said:\'%s\'", line)
         command = MachineCommand(line)
         return command
 
