@@ -50,16 +50,27 @@ unsigned long homming_accel, unsigned long homing_deccel,
 unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
-//todo shouldn't we check if there is a movement going??
+  //todo shouldn't we check if there is a movement going??
+  
+  write43x(cs_pin, A_MAX_REGISTER,homming_accel); //set maximum acceleration
+  write43x(cs_pin, D_MAX_REGISTER,homing_deccel); //set maximum deceleration
+  write43x(cs_pin,BOW_1_REGISTER,homming_start_bow);
+  write43x(cs_pin,BOW_2_REGISTER,homing_end_bow);
+  write43x(cs_pin,BOW_3_REGISTER,homing_end_bow);
+  write43x(cs_pin,BOW_4_REGISTER,homming_start_bow);
+  write43x(cs_pin, START_CONFIG_REGISTER, 0
+    | _BV(10)//immediate start        
+  //since we just start 
+  );   
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
-  unsigned long target = 0;
+  long target = 0;
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
     if (homed==0 || homed==1) {
-      double homing_speed=500.0; //TODO this i config?!
+      double homing_speed=homing_fast_speed; 
       if (homed==2) {
-        homing_speed /= 100.0;
+        homing_speed /= homing_low_speed;
       }  
       unsigned long status = read43x(cs_pin, STATUS_REGISTER,0);
       unsigned long events = read43x(cs_pin, EVENTS_REGISTER,0);
@@ -67,18 +78,15 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
         if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) {
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
-          Serial.println(target);
+          Serial.print(target);
+          Serial.print(F(" @ "));
+          Serial.println(homing_speed);
           Serial.print(F("Status "));
           Serial.println(status,HEX);
           Serial.print(F("Events "));
           Serial.println(events,HEX);
-          Serial.println();
 #endif
-          target -= 1000;
-          write43x(cs_pin, START_CONFIG_REGISTER, 0
-            | _BV(10)//immediate start        
-          //since we just start 
-          );   
+          target -= 1000l;
           write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
           write43x(cs_pin, X_TARGET_REGISTER,target);
         }
@@ -90,7 +98,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
           go_back_to = target + 100000ul; //TODO configure me!
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
-          Serial.print(target);
+          Serial.print(actual);
           Serial.print(F(" - going back to "));
           Serial.println(go_back_to);
 #endif
@@ -233,6 +241,9 @@ inline void signal_start() {
   Serial.println(F("Sent start signal"));
 #endif
 }
+
+
+
 
 
 
