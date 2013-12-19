@@ -122,7 +122,7 @@ class Printer(Thread):
                 end_stop = deepcopy(axis['end-stops'][end_stop_pos])
                 if 'position' in end_stop:
                     end_stop['position'] = _convert_mm_to_steps(end_stop['position'], axis['scale'])
-                self.machine.configure_endstop(motor=axis['motor'], position=position, end_stop_config=end_stop)
+                self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
 
         motor = config["motor"]
         current = config["current"]
