@@ -311,7 +311,6 @@ void onMovement() {
       messenger.sendCmd(kError,F("There is already a motion running"));
     } 
     else {
-      Serial.println(F("motion started"));
       messenger.sendCmd(kOK,F("motion started"));
       startMotion();
     }
@@ -343,13 +342,12 @@ void onConfigureEndStop() {
   if (type!=0 && type!=1) {
     messenger.sendCmd(kError,F("Use type 0 for virtual and 1 for real endstops"));
   }
+  const __FlashStringHelper* error = F("Unkown error occurred");
   switch(type) {
   case 0: //virtual endstops
     {
       long virtual_pos = messenger.readLongArg();
-      if (type!=0 && type!=1) {
-        messenger.sendCmd(kError,F("Use type 0 for virtual and 1 for real endstops"));
-      }
+      configureVirtualEndstop(motor, position<0, virtual_pos);
       break;
     }
   case 1: //real endstop
@@ -358,8 +356,15 @@ void onConfigureEndStop() {
       if (polarity==0) {
         messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
       }
+      error= configureEndstop(motor, position<0, polarity>0);
       break;
     }
+  }
+  if (error!=NULL) {
+    messenger.sendCmd(kError,error);
+  } 
+  else {
+    messenger.sendCmd(kOK,F("endstop configured"));
   }
 
   //TODO this is dummy config - we need specific settings for specific motors 
@@ -532,6 +537,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

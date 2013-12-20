@@ -243,6 +243,7 @@ inline void signal_start() {
 }
 
 const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean polarity) {
+  
   return NULL;
 }
 
