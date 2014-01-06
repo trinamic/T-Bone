@@ -77,6 +77,7 @@ class Printer(Thread):
 
     def home(self, axis):
         for home_axis in axis:
+            _logger.info("Homing axis \'%s\' to zero",home_axis)
             homing_config = {
                 'motor': self.axis[home_axis]['motor'],
                 'timeout': 0,
