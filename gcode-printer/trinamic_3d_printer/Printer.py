@@ -75,6 +75,25 @@ class Printer(Thread):
         self.printing = False
         pass
 
+    def home(self, axis):
+        for home_axis in axis:
+            homing_config = {
+                'motor': self.axis[home_axis]['motor'],
+                'timeout': 0,
+                'home_speed': self.axis[home_axis]['max_speed_step'],
+                'home_slow_speed': self.axis[home_axis]['max_speed_step'] / 10, #todo isn't this a bit arbirtary
+                'acceleration': self.axis[home_axis]['max_step_acceleration'],
+                'deceleration': self.axis[home_axis]['max_step_acceleration'],
+                'start_bow': self.axis[home_axis]['bow_step'],
+                'end_bow': self.axis[home_axis]['bow_step'],
+            }
+
+            self.machine.home(homing_config, timeout=self._homing_timeout)
+            #better but still not good - we should have a better concept of 'axis'
+        self.x_pos = 0
+        self.y_pos = 0
+
+
     # tuple with x/y/e coordinates - if left out no change is intended
     def move_to(self, position):
         self._print_queue.add_movement(position)
@@ -212,24 +231,6 @@ class Printer(Thread):
                     x_move_config,
                     y_move_config
                 ])
-
-    def home(self, axis):
-        for home_axis in axis:
-            homing_config = {
-                'motor': self.axis[home_axis]['motor'],
-                'timeout': 0,
-                'home_speed': self.axis[home_axis]['max_speed_step'],
-                'home_slow_speed': self.axis[home_axis]['max_speed_step'] / 10, #todo isn't this a bit arbirtary
-                'acceleration': self.axis[home_axis]['max_step_acceleration'],
-                'deceleration': self.axis[home_axis]['max_step_acceleration'],
-                'start_bow': self.axis[home_axis]['bow_step'],
-                'end_bow': self.axis[home_axis]['bow_step'],
-            }
-
-            self.machine.home(homing_config, timeout=self._homing_timeout)
-            #better but still not good - we should have a better concept of 'axis'
-        self.x_pos = 0
-        self.y_pos = 0
 
 
 class PrintQueue():
