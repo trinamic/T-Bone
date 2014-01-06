@@ -51,7 +51,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
   unsigned char cs_pin = motors[motor_nr].cs_pin;
   //todo shouldn't we check if there is a movement going??
-  
+
   write43x(cs_pin, A_MAX_REGISTER,homming_accel); //set maximum acceleration
   write43x(cs_pin, D_MAX_REGISTER,homing_deccel); //set maximum deceleration
   write43x(cs_pin,BOW_1_REGISTER,homming_start_bow);
@@ -242,15 +242,59 @@ inline void signal_start() {
 #endif
 }
 
-const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean polarity) {
-  
-  return NULL;
+const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean active_high) {
+  unsigned long endstop_config = getClearedEndStopConfig(left);
+  if (left) {
+    if (active_high) {
+      clearing_pattern |= 0 
+        | _BV(0) //STOP_LEFT enable
+        | _BV(2) //positive Stop Left stops motor
+          | _BV(11) //X_LATCH if stopl becomes active ..
+          } 
+    else {
+      clearing_pattern |= 0 
+        | _BV(0) //STOP_LEFT enable
+        | _BV(10) //X_LATCH if stopl becomes inactive ..
+        }
+      } 
+  else {
+    if (active_high) {
+      clearing_pattern |= 0 
+        | _BV(1) //STOP_RIGHT enable
+        | _BV(3) //positive Stop right stops motor
+          | _BV(13) //X_LATCH if storl becomes active ..
+          } 
+    else {
+      clearing_pattern |= 0 
+        | _BV(0) //STOP_LEFT enable
+        | _BV(12) //X_LATCH if stopr becomes inactive ..
+        }
+      }
+      return NULL;
+    
 }
 
 
 const __FlashStringHelper* configureVirtualEndstop(unsigned char motor_nr, boolean left, long positions) {
   return NULL;
 }
+
+inline unsigned long getClearedEndstopPattern(boolean left) {
+  unsigned long endstop_config = read43x(motors[motor_nr].cs_pin, REFERENCE_CONFIG_REGISTER, 0);
+  //clear everything
+  unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
+  if (left) {
+    clearing_pattern = LEFT_ENDSTOP_REGISTER_PATTERN;
+  } 
+  else {
+    clearing_pattern = RIGHT_ENDSTOP_REGISTER_PATTERN;
+  }
+  clearing_pattern = ~clearing_pattern;
+  endstop_config |= clearing_pattern;
+  return endstop_config
+}  
+
+
 
 
 
