@@ -39,6 +39,7 @@ class Printer(Thread):
 
         #finally create and conect the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
+        _logger.debug("Connecting printer");
         self.machine.connect()
 
     def configure(self, config):

@@ -19,6 +19,7 @@ class Machine():
     def __init__(self, serial_port, reset_pin):
         #preapre the reset pin
         self.reset_pin = reset_pin
+        _logger.debug("Defining ports & pins")
         GPIO.setup(self.reset_pin, GPIO.OUT)
         GPIO.output(self.reset_pin, GPIO.HIGH)
         self.serial_port = serial_port
