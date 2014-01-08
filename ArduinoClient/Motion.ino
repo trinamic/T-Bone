@@ -22,6 +22,17 @@ void stopMotion() {
 }
 
 void checkMotion() {
+
+  if ((motor_status & target_motor_status) == target_motor_status) {
+    //TODO we need some kind of 'At least here'??
+#ifdef DEBUG_MOTION_TRACE
+    Serial.println(F("all motors reached target!"));
+#endif
+    signal_start();
+    motor_status=0;
+    next_move_prepared=false;
+  }
+
   if (in_motion && !next_move_prepared) {
 
 #ifdef CALCULATE_OUTPUT
@@ -120,31 +131,25 @@ void motor_2_target_reached() {
   motor_target_reached(1);
 }
 
-void motor_target_reached(char motor_nr) {
+inline void motor_target_reached(char motor_nr) {
   if (in_motion) {
-      //clear the event register
-     //read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
-     //and write down which motor touched the target
-     motor_status |= _BV(motor_nr);
-     #ifdef DEBUG_MOTION_TRACE
-     Serial.print(F("Motor "));
-     Serial.print(motor_nr,DEC);
-     Serial.print(F(" reached target! At "));
-     Serial.print(motor_status,BIN);
-     Serial.print(F(" of "));
-     Serial.println(target_motor_status,BIN);
-     #endif
-     if ((motor_status & target_motor_status) == target_motor_status) {
-     //TODO we need some kind of 'At least here'??
-     #ifdef DEBUG_MOTION_TRACE
-     Serial.println(F("all motors reached target!"));
-     #endif
-    signal_start();
-    motor_status=0;
-    next_move_prepared=false;
-      }
+    //clear the event register
+    //read43x(motors[motor_nr].cs_pin,EVENTS_REGISTER,0);
+    //and write down which motor touched the target
+    motor_status |= _BV(motor_nr);
+#ifdef DEBUG_MOTION_TRACE
+    Serial.print(F("Motor "));
+    Serial.print(motor_nr,DEC);
+    Serial.print(F(" reached target! At "));
+    Serial.print(motor_status,BIN);
+    Serial.print(F(" of "));
+    Serial.println(target_motor_status,BIN);
+#endif
   }
 }
+
+
+
 
 
 
