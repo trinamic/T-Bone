@@ -42,12 +42,12 @@ squirrel motors[2] = {
   {
     8,3,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION    }
+    DEFAULT_STEPS_PER_REVOLUTION      }
   ,
   {
     12,2,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION     }
+    DEFAULT_STEPS_PER_REVOLUTION       }
 };
 const char reset_squirrel = 4;
 const char start_signal_pin = 7;
@@ -104,6 +104,7 @@ void loop() {
     watchDogPing();
   }
 }
+
 
 
 
