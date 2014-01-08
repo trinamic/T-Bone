@@ -243,18 +243,21 @@ inline void signal_start() {
 }
 
 const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean active_high) {
-  unsigned long endstop_config = getClearedEndStopConfig(left);
+  unsigned long endstop_config = getClearedEndStopConfig(motor_nr, left);
+  unsigned long clearing_pattern;
   if (left) {
     if (active_high) {
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(2) //positive Stop Left stops motor
           | _BV(11) //X_LATCH if stopl becomes active ..
+          ;
           } 
     else {
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(10) //X_LATCH if stopl becomes inactive ..
+        ;
         }
       } 
   else {
@@ -263,15 +266,16 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
         | _BV(1) //STOP_RIGHT enable
         | _BV(3) //positive Stop right stops motor
           | _BV(13) //X_LATCH if storl becomes active ..
+          ;
           } 
     else {
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(12) //X_LATCH if stopr becomes inactive ..
+        ;
         }
       }
       return NULL;
-    
 }
 
 
@@ -279,7 +283,7 @@ const __FlashStringHelper* configureVirtualEndstop(unsigned char motor_nr, boole
   return NULL;
 }
 
-inline unsigned long getClearedEndstopPattern(boolean left) {
+inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean left) {
   unsigned long endstop_config = read43x(motors[motor_nr].cs_pin, REFERENCE_CONFIG_REGISTER, 0);
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
@@ -291,8 +295,9 @@ inline unsigned long getClearedEndstopPattern(boolean left) {
   }
   clearing_pattern = ~clearing_pattern;
   endstop_config |= clearing_pattern;
-  return endstop_config
+  return endstop_config;
 }  
+
 
 
 
