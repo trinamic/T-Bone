@@ -212,7 +212,7 @@ class Printer(Thread):
             if abs(delta_x) > abs(delta_y):
                 y_factor = abs(move_vector['y'] / move_vector['x'])
                 _logger.debug(
-                    "Moving X axis to %(s gearing Y by %s to %s"
+                    "Moving X axis to %s gearing Y by %s to %s"
                     , step_pos['x'], y_factor, step_pos['y'])
 
                 y_move_config['acceleration'] *= y_factor

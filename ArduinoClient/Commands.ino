@@ -347,7 +347,7 @@ void onConfigureEndStop() {
   case 0: //virtual endstops
     {
       long virtual_pos = messenger.readLongArg();
-      configureVirtualEndstop(motor, position<0, virtual_pos);
+      error = configureVirtualEndstop(motor, position<0, virtual_pos);
       break;
     }
   case 1: //real endstop
