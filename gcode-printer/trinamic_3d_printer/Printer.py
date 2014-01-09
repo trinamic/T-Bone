@@ -243,12 +243,6 @@ class PrintQueue():
         #we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
 
-    def _push_from_planning_to_execution(self, timeout):
-        executed_move = self.planning_list.pop(0)
-        self.queue.put(executed_move, timeout=timeout)
-        #todo this is just debug - but easier to debug so - you know what I mean
-        _logger.info("adding to execution queue, now at %s/%s entries", len(self.planning_list), self.queue.qsize())
-
     def add_movement(self, target_position, timeout=None):
         move = {}
         #calculate the target
@@ -276,6 +270,11 @@ class PrintQueue():
         while not self.queue.empty():
             pass
 
+    def _push_from_planning_to_execution(self, timeout):
+        executed_move = self.planning_list.pop(0)
+        self.queue.put(executed_move, timeout=timeout)
+        #todo this is just debug - but easier to debug so - you know what I mean
+        _logger.info("adding to execution queue, now at %s/%s entries", len(self.planning_list), self.queue.qsize())
 
     def _extract_movement_values(self, move, target_position):
         #extract values
