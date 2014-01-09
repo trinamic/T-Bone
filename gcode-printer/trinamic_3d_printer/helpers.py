@@ -27,10 +27,14 @@ def find_shortest_vector(vector_list):
     find_list = list(vector_list)
     #ensure it is a list
     shortest_vector = 0
+    x_square = find_list[shortest_vector]['x'] ** 2
+    y_square = find_list[shortest_vector]['y'] ** 2
     #and wildly guess the shortest vector
     for number, vector in enumerate(find_list):
         if (vector['x'] ** 2 + vector['y'] ** 2) < (
-                    find_list[shortest_vector]['x'] ** 2 + find_list[shortest_vector]['y'] ** 2):
+                    x_square + y_square):
             shortest_vector = number
+            x_square = find_list[shortest_vector]['x'] ** 2
+            y_square = find_list[shortest_vector]['y'] ** 2
     return find_list[shortest_vector]
 

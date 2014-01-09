@@ -339,10 +339,11 @@ class PrintQueue():
             }
         ]
         if delta_x != 0:
+            scaled_y = move_vector['y'] / move_vector['x']
             speed_vectors.append({
                 #what would the speed vector for max x speed look like
                 'x': copysign(self.axis['x']['max_speed'], move_vector['x']),
-                'y': self.axis['x']['max_speed'] * copysign(move_vector['y'] / move_vector['x'], move_vector['y'])
+                'y': self.axis['x']['max_speed'] * copysign(scaled_y, move_vector['y'])
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
@@ -351,7 +352,7 @@ class PrintQueue():
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
                     'x': max_speed_x,
-                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                    'y': max_speed_x * scaled_y
                 })
             else:
                 #we HAVE to turn around!
@@ -362,7 +363,7 @@ class PrintQueue():
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
                     'x': max_speed_x,
-                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                    'y': max_speed_x * scaled_y
                 })
         else:
             #we HAVE to turn around!
@@ -370,9 +371,10 @@ class PrintQueue():
                 self.previous_movement['x_stop'] = True
 
         if delta_y != 0:
+            scaled_y = move_vector['x'] / move_vector['y']
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
-                'x': self.axis['y']['max_speed'] * move_vector['x'] / move_vector['y'],
+                'x': self.axis['y']['max_speed'] * scaled_y,
                 'y': copysign(self.axis['y']['max_speed'], move_vector['y'])
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
@@ -381,7 +383,7 @@ class PrintQueue():
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
-                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'x': max_speed_y * scaled_y,
                     'y': max_speed_y
                 })
             else:
@@ -392,7 +394,7 @@ class PrintQueue():
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
-                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'x': max_speed_y * scaled_y,
                     'y': max_speed_y
                 })
         else:
@@ -409,7 +411,7 @@ class PrintQueue():
     def _recalculate_move_speeds(self, move):
         max_speed = move['speed']
         for movement in reversed(self.planning_list):
-            #tosdo in theory we can stop somewhere …
+            #todo in theory we can stop somewhere …
             delta_x = movement['delta_x']
             if sign(delta_x) == sign(max_speed['x']):
                 max_speed_x = max_speed['x'] ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
