@@ -48,8 +48,6 @@ class Printer(Thread):
 
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
-        #todo ths is far more complex and done per axis
-        self.machine.configure_enstops()
 
         if "printer" in config:
             printer_config = config['printer']
