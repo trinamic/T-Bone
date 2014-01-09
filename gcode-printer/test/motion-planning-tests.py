@@ -38,13 +38,13 @@ class VectorTests(unittest.TestCase):
         assert_that(exception_thrown, equal_to(True))
         for i in range(3):
             try:
-                queue.next_movment(timeout=default_timeout)
+                queue.next_movement(timeout=default_timeout)
                 exception_thrown = False
             except Empty:
                 exception_thrown = True
             assert_that(exception_thrown, equal_to(False))
         try:
-            queue.next_movment(timeout=default_timeout)
+            queue.next_movement(timeout=default_timeout)
             exception_thrown = False
         except Empty:
             exception_thrown = True
@@ -72,7 +72,7 @@ class VectorTests(unittest.TestCase):
 
             def run(self):
                 while self.running:
-                    self.queue.next_movment()
+                    self.queue.next_movement()
                     #and throw away
 
         emptyerThread = QueueEmptyThread(queue=queue, )

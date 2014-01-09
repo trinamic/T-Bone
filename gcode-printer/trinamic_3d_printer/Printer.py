@@ -101,7 +101,7 @@ class Printer(Thread):
     def run(self):
         while self.printing:
             #get the next movement from stack
-            movement = self._print_queue.next_movment()
+            movement = self._print_queue.next_movement()
 
             delta_x, delta_y, move_vector, step_pos, step_speed_vector = self._add_movement_calculations(movement)
 
@@ -246,6 +246,7 @@ class PrintQueue():
     def _push_from_planning_to_execution(self, timeout):
         executed_move = self.planning_list.pop(0)
         self.queue.put(executed_move, timeout=timeout)
+        _logger.info("adding to execution queue, now at %s/%s entries",len(self.planning_list))
 
     def add_movement(self, target_position, timeout=None):
         move = {}
@@ -265,7 +266,7 @@ class PrintQueue():
         #and recalculate the maximum allowed speed
         self._recalculate_move_speeds(move)
 
-    def next_movment(self, timeout=None):
+    def next_movement(self, timeout=None):
         return self.queue.get(timeout=timeout)
 
     def finish(self, timeout=None):
