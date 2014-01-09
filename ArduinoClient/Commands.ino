@@ -10,7 +10,7 @@ enum {
   kInit=9,
   //Kommandos die Aktionen auslösen
   kMove = 10,
-  kMovement = 11, //controls if a new movement is started or a running one ist stopped
+  kMovement = 11, //controls if a new movement is started or a running one is stopped
   kHome=12, //Home one axis
   //Kommandos zur Information
   kPos = 30,

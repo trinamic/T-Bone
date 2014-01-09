@@ -10,7 +10,7 @@ __author__ = 'marcus'
 
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
-_max_command_buffer = 3 # how much arduino buffer to preserve
+_max_command_buffer = 5 # how much arduino buffer to preserve
 
 _logger = logging.getLogger(__name__)
 
@@ -147,12 +147,14 @@ class Machine():
             command_queue_running = int(reply.arguments[2]) > 0
             _logger.info("Arduino command Buffer at %s of %s", command_buffer_length, command_max_buffer_length)
             if not command_queue_running and command_buffer_free <= _max_command_buffer:
+                _logger.info("Starting movement")
                 start_command = MachineCommand()
                 start_command.command_number = 11
                 start_command.arguments = [1]
                 reply = self.machine_connection.send_command(start_command)
                 #TODO and did that work??
             if command_queue_running and command_buffer_free <= _max_command_buffer:
+                _logger.info("Waiting for free arduino command buffer")
                 buffer_free = False
                 while not buffer_free:
                     #sleep a bit
