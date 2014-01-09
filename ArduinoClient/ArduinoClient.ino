@@ -12,15 +12,17 @@
 //# Debug Settings #
 //##################
 
-//#define DEBUG_MOTOR_CONTFIG
+#define DEBUG_MOTOR_CONTFIG
 #define DEBUG_HOMING
+#define DEBUG_ENDSTOPS
 
 #define DEBUG_MOTION
-//#define DEBUG_MOTION_TRACE
-//#define DEBUG_MOTOR_QUEUE
+#define DEBUG_MOTION_TRACE
+#define DEBUG_MOTOR_QUEUE
 
-#define DEBUG_STATUS
+//#define DEBUG_STATUS
 
+//how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 40
 //how many otors can be theoretically geared together
 #define MAX_FOLLOWING_MOTORS 6

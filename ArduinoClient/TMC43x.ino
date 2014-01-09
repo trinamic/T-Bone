@@ -247,6 +247,9 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
   unsigned long clearing_pattern;
   if (left) {
     if (active_high) {
+  #ifdef DEBUG_ENDSTOPS
+    Serial.println(F("Configuring left end stop as active high"));
+  #endif
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(2) //positive Stop Left stops motor
@@ -254,6 +257,9 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
           ;
           } 
     else {
+  #ifdef DEBUG_ENDSTOPS
+    Serial.println(F("Configuring left end stop as active low"));
+  #endif
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(10) //X_LATCH if stopl becomes inactive ..
@@ -262,6 +268,9 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
       } 
   else {
     if (active_high) {
+  #ifdef DEBUG_ENDSTOPS
+    Serial.println(F("Configuring right end stop as active high"));
+  #endif
       clearing_pattern |= 0 
         | _BV(1) //STOP_RIGHT enable
         | _BV(3) //positive Stop right stops motor
@@ -269,6 +278,9 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
           ;
           } 
     else {
+  #ifdef DEBUG_ENDSTOPS
+    Serial.println(F("Configuring right end stop as active low"));
+  #endif
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(12) //X_LATCH if stopr becomes inactive ..
