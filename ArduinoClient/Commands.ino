@@ -341,6 +341,7 @@ void onConfigureEndStop() {
   int type = messenger.readIntArg();
   if (type!=0 && type!=1) {
     messenger.sendCmd(kError,F("Use type 0 for virtual and 1 for real endstops"));
+    return;
   }
   const __FlashStringHelper* error = F("Unkown error occurred");
   switch(type) {
@@ -355,6 +356,7 @@ void onConfigureEndStop() {
       int polarity = messenger.readIntArg();
       if (polarity==0) {
         messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
+        return;
       }
       error= configureEndstop(motor, position<0, polarity>0);
       break;
@@ -380,7 +382,6 @@ void onConfigureEndStop() {
     | _BV(11) //X_LATCH if stopl becomes active ..
     );
   }
-  messenger.sendCmd(kOK,F("endstops configured"));
 }
 
 void onHome() {
