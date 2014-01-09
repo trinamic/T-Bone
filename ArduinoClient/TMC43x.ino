@@ -160,7 +160,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
     aim_target=pos;
   }
 
-#ifdef DEBUG_MOTION_TRACE  
+#ifdef DEBUG_MOTION  
   if (!configure_shadow) {
     Serial.print(F("Moving motor "));
   } 

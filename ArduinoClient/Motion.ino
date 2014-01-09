@@ -42,6 +42,7 @@ void checkMotion() {
 #endif
 
       if (moveQueue.count()>0) {
+        Serial.println(moveQueue.count());
 
         for (char i; i<nr_of_motors;i++) {
           //give all motors a nice start config
