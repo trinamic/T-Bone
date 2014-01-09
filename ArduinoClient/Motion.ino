@@ -2,6 +2,7 @@ volatile boolean next_move_prepared = false;
 volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
+volatile long next_pos_comp[nr_of_motors];
 
 void startMotion() {
   //TODO initialize drivers??
@@ -123,6 +124,26 @@ void checkMotion() {
       }
     }
   }
+}
+
+
+inline void signal_start() {
+  //prepare the pos compr registers
+  for (char i=0; i< nr_of_motors; i++) {
+
+    //clear the event register
+    read43x(motors[i].cs_pin,EVENTS_REGISTER,0);
+    write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
+    next_pos_comp[i] = 0;
+  }    
+  //carefully trigger the start pin 
+  digitalWrite(start_signal_pin,HIGH);
+  pinMode(start_signal_pin,OUTPUT);
+  digitalWrite(start_signal_pin,LOW);
+  pinMode(start_signal_pin,INPUT);
+#ifdef DEBUG_MOTION_TRACE
+  Serial.println(F("Sent start signal"));
+#endif
 }
 
 void motor_1_target_reached() {
