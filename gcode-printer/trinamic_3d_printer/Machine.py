@@ -154,11 +154,11 @@ class Machine():
                 reply = self.machine_connection.send_command(start_command)
                 #TODO and did that work??
             if command_queue_running and command_buffer_free <= _max_command_buffer:
-                _logger.info("Waiting for free arduino command buffer")
                 buffer_free = False
                 while not buffer_free:
                     #sleep a bit
                     time.sleep(0.1)
+                    _logger.info("Waiting for free arduino command buffer")
                     info_command = MachineCommand()
                     info_command.command_number = 31
                     reply = self.machine_connection.send_command(info_command)

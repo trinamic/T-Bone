@@ -59,7 +59,7 @@ void onInit() {
     moveQueue.pop();
   }
   //and we are done here
-  messenger.sendCmd(kOK,F("All systems initialized"));
+  messenger.sendCmd(kOK,F("initialized"));
 }
 
 //Motor Strom einstellen
@@ -77,7 +77,7 @@ void onConfigMotorCurrent() {
     return;
   }
   if (newCurrent<0) {
-    messenger.sendCmd (kError,F("Current too low")); 
+    messenger.sendCmd (kError,F("too low")); 
     return;
   }
   const __FlashStringHelper* error = setCurrent(motor,newCurrent);
