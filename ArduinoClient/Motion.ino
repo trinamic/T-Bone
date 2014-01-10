@@ -9,9 +9,9 @@ void startMotion() {
   //TODO initialize drivers??
   for (char i; i<nr_of_motors;i++) {
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
-    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
+    digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
-    write43x(motors[i].cs_pin, INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
+    write43x(i, INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
     last_target[i]=0;//TODO isn't this more or less a homing 
   }
   next_move_prepared=false; //TODO in theory this is not needed  
@@ -39,7 +39,7 @@ void checkMotion() {
     if (!next_move_prepared) {
 
 #ifdef CALCULATE_OUTPUT
-      digitalWrite(CALCULATE_OUTPUT,HIGH);
+      digitalWriteFast(CALCULATE_OUTPUT,HIGH);
 #endif
 
       //we leave a rest in the move queue since it could be a partial movement
@@ -50,7 +50,7 @@ void checkMotion() {
         for (char i; i<nr_of_motors;i++) {
           //give all motors a nice start config
           if (!prepare_shaddow_registers) {
-            write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+            write43x(i, START_CONFIG_REGISTER, 0
               | _BV(0) //xtarget requires start
             | _BV(1) //vmax requires start
             | _BV(5) //external start is an start
@@ -59,7 +59,7 @@ void checkMotion() {
             );   
           } 
           else {
-            write43x(motors[i].cs_pin, START_CONFIG_REGISTER, 0
+            write43x(i, START_CONFIG_REGISTER, 0
               | _BV(0) //x_target requires start
             | _BV(4)  //use shaddow motion profiles
             | _BV(5) //external start is an start
@@ -120,7 +120,7 @@ void checkMotion() {
         Serial.println();
 #endif
 #ifdef CALCULATE_OUTPUT
-        digitalWrite(CALCULATE_OUTPUT,LOW);
+        digitalWriteFast(CALCULATE_OUTPUT,LOW);
 #endif
       } 
       else {

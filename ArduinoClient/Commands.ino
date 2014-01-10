@@ -322,8 +322,7 @@ void onPosition() {
   if (motor<0) {
     return;
   }
-  unsigned char cs_pin = motors[motor-1].cs_pin;
-  unsigned long position = read43x(cs_pin,X_ACTUAL_REGISTER,0);
+  unsigned long position = read43x(motor,X_ACTUAL_REGISTER,0);
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
@@ -371,7 +370,7 @@ void onConfigureEndStop() {
 
   //TODO this is dummy config - we need specific settings for specific motors 
   for (char i=0; i<nr_of_motors; i++) {
-    write43x(motors[i].cs_pin, REFERENCE_CONFIG_REGISTER, 0 
+    write43x(i, REFERENCE_CONFIG_REGISTER, 0 
       | _BV(0) //STOP_LEFT enable
     | _BV(2) //positive Stop Left stops motor
     //  | _BV(3)

@@ -2,44 +2,46 @@ volatile long next_pos_comp[nr_of_motors];
 
 void initialzeTMC43x() {
   //reset the quirrel
-  digitalWrite(reset_squirrel, LOW);
+  digitalWriteFast(reset_squirrel, LOW);
 
-  pinMode(start_signal_pin,INPUT);
-  digitalWrite(start_signal_pin,LOW);
+  pinModeFast(start_signal_pin,INPUT);
+  digitalWriteFast(start_signal_pin,LOW);
+
+    //initialize CS pin
+    digitalWriteFast(SQUIRREL_0_PIN,HIGH);
+    pinModeFast(SQUIRREL_0_PIN,OUTPUT);
+    //initialize CS pin
+    digitalWriteFast(SQUIRREL_1_PIN,HIGH);
+    pinModeFast(SQUIRREL_1_PIN,OUTPUT);
 
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {
-    //initialize CS pin
-    digitalWrite(motors[i].cs_pin,HIGH);
-    pinMode(motors[i].cs_pin,OUTPUT);
-    pinMode(motors[i].target_reached_interrupt_pin,INPUT);
-    digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
+    pinModeFast(motors[i].target_reached_interrupt_pin,INPUT);
+    digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
   }
   //enable the reset again
   delay(1);
-  digitalWrite(reset_squirrel, HIGH);
+  digitalWriteFast(reset_squirrel, HIGH);
   delay(10);
   //initialize SPI
   SPI.begin();
   //preconfigure the TMC43x
   for (char i=0; i<nr_of_motors;i++) {
-    write43x(motors[i].cs_pin, GENERAL_CONFIG_REGISTER, 0); //we use direct values
-    write43x(motors[i].cs_pin, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
-    write43x(motors[i].cs_pin, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
-    write43x(motors[i].cs_pin,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-    write43x(motors[i].cs_pin,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
+    write43x(i, GENERAL_CONFIG_REGISTER, 0); //we use direct values
+    write43x(i, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+    write43x(i, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+    write43x(i,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
+    write43x(i,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
-    setStepsPerRevolution(motors[i].cs_pin,motors[i].steps_per_revolution);
+    setStepsPerRevolution(i,motors[i].steps_per_revolution);
   }
 }
 
 const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigned int steps) {
-  //get the motor number
-  unsigned char cs_pin = motors[motor_nr].cs_pin;
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps<<4;
-  write43x(cs_pin,STEP_CONF_REGISTER,motorconfig);
+  write43x(motor_nr,STEP_CONF_REGISTER,motorconfig);
   motors[motor_nr].steps_per_revolution = steps;
   return NULL;
 }
@@ -49,16 +51,15 @@ double homing_fast_speed, double homing_low_speed,
 unsigned long homming_accel, unsigned long homing_deccel,
 unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
-  unsigned char cs_pin = motors[motor_nr].cs_pin;
   //todo shouldn't we check if there is a movement going??
 
-  write43x(cs_pin, A_MAX_REGISTER,homming_accel); //set maximum acceleration
-  write43x(cs_pin, D_MAX_REGISTER,homing_deccel); //set maximum deceleration
-  write43x(cs_pin,BOW_1_REGISTER,homming_start_bow);
-  write43x(cs_pin,BOW_2_REGISTER,homing_end_bow);
-  write43x(cs_pin,BOW_3_REGISTER,homing_end_bow);
-  write43x(cs_pin,BOW_4_REGISTER,homming_start_bow);
-  write43x(cs_pin, START_CONFIG_REGISTER, 0
+  write43x(motor_nr, A_MAX_REGISTER,homming_accel); //set maximum acceleration
+  write43x(motor_nr, D_MAX_REGISTER,homing_deccel); //set maximum deceleration
+  write43x(motor_nr,BOW_1_REGISTER,homming_start_bow);
+  write43x(motor_nr,BOW_2_REGISTER,homing_end_bow);
+  write43x(motor_nr,BOW_3_REGISTER,homing_end_bow);
+  write43x(motor_nr,BOW_4_REGISTER,homming_start_bow);
+  write43x(motor_nr, START_CONFIG_REGISTER, 0
     | _BV(10)//immediate start        
   //since we just start 
   );   
@@ -72,8 +73,8 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
       if (homed==2) {
         homing_speed /= homing_low_speed;
       }  
-      unsigned long status = read43x(cs_pin, STATUS_REGISTER,0);
-      unsigned long events = read43x(cs_pin, EVENTS_REGISTER,0);
+      unsigned long status = read43x(motor_nr, STATUS_REGISTER,0);
+      unsigned long events = read43x(motor_nr, EVENTS_REGISTER,0);
       if (!(status & (_BV(7) | _BV(9)))) {
         if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) {
 #ifdef DEBUG_HOMING
@@ -87,14 +88,14 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
           Serial.println(events,HEX);
 #endif
           target -= 1000l;
-          write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
-          write43x(cs_pin, X_TARGET_REGISTER,target);
+          write43x(motor_nr,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
+          write43x(motor_nr, X_TARGET_REGISTER,target);
         }
       } 
       else {
         long go_back_to;
         if (homed==0) {
-          long actual = read43x(cs_pin, X_ACTUAL_REGISTER,0);
+          long actual = read43x(motor_nr, X_ACTUAL_REGISTER,0);
           go_back_to = target + 100000ul; //TODO configure me!
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
@@ -104,26 +105,26 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
 #endif
         } 
         else {
-          long actual = read43x(cs_pin, X_LATCH_REGISTER,0);
+          long actual = read43x(motor_nr, X_LATCH_REGISTER,0);
           go_back_to = actual;
 #ifdef DEBUG_HOMING
           Serial.println(F("homed at "));
           Serial.println(actual);
 #endif
         }
-        write43x(cs_pin,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_fast_speed));
-        write43x(cs_pin, X_TARGET_REGISTER,go_back_to);
+        write43x(motor_nr,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_fast_speed));
+        write43x(motor_nr, X_TARGET_REGISTER,go_back_to);
         delay(10ul);
-        status = read43x(cs_pin, STATUS_REGISTER,0);
+        status = read43x(motor_nr, STATUS_REGISTER,0);
         while (!(status & _BV(0))) {
-          status = read43x(cs_pin, STATUS_REGISTER,0);
+          status = read43x(motor_nr, STATUS_REGISTER,0);
         }
         if (homed==0) {
 
           homed = 1;
         } 
         else {
-          write43x(cs_pin, X_ACTUAL_REGISTER,0);
+          write43x(motor_nr, X_ACTUAL_REGISTER,0);
           homed=0xff;
         }     
       } 
@@ -133,13 +134,13 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
 }
 
 inline long getMotorPosition(unsigned char motor_nr) {
-  return read43x(motors[motor_nr].cs_pin, X_TARGET_REGISTER ,0);
+  return read43x(motor_nr, X_TARGET_REGISTER ,0);
   //TODO do we have to take into account that the motor may never have reached the x_target??
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
 void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dMax, long startBow, long endBow, boolean configure_shadow, boolean isWaypoint) {
-  unsigned char cs_pin = motors[motor_nr].cs_pin;
+  unsigned char cs_pin = motor_nr;
 
   if (pos==0) {
     Serial.println("ZERO");
@@ -230,23 +231,23 @@ inline void signal_start() {
   for (char i=0; i< nr_of_motors; i++) {
 
     //clear the event register
-    read43x(motors[i].cs_pin,EVENTS_REGISTER,0);
-    write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
+    read43x(i,EVENTS_REGISTER,0);
+    write43x(i,POS_COMP_REGISTER,next_pos_comp[i]);
     pos_comp[i] = next_pos_comp[i];
     next_pos_comp[i] = 0;
   }    
   //carefully trigger the start pin 
-  digitalWrite(start_signal_pin,HIGH);
-  pinMode(start_signal_pin,OUTPUT);
-  digitalWrite(start_signal_pin,LOW);
-  pinMode(start_signal_pin,INPUT);
+  digitalWriteFast(start_signal_pin,HIGH);
+  pinModeFast(start_signal_pin,OUTPUT);
+  digitalWriteFast(start_signal_pin,LOW);
+  pinModeFast(start_signal_pin,INPUT);
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif
   //and in case the dirver is already past the next position and we do not check this manualyy read it
   for (char i=0; i< nr_of_motors; i++) {
     if (pos_comp[i]!=0) {
-      unsigned long motor_pos = read43x(motors[i].cs_pin, X_ACTUAL_REGISTER,0);
+      unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
       if ((direction[i]==1 && motor_pos>pos_comp[i])
         || (direction[i]==-1 && motor_pos<pos_comp[i])) {
         motor_target_reached(i);
@@ -311,7 +312,7 @@ const __FlashStringHelper* configureVirtualEndstop(unsigned char motor_nr, boole
 }
 
 inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean left) {
-  unsigned long endstop_config = read43x(motors[motor_nr].cs_pin, REFERENCE_CONFIG_REGISTER, 0);
+  unsigned long endstop_config = read43x(motor_nr, REFERENCE_CONFIG_REGISTER, 0);
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
   if (left) {

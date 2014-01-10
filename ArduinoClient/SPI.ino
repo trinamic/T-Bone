@@ -11,11 +11,16 @@ unsigned long read43x(unsigned char cs_squirrel,unsigned char tmc43x_register, u
   return result;
 }
 
-long send43x(unsigned char cs_squirrel, unsigned char tmc43x_register, unsigned long datagram) {
+long send43x(unsigned char motor_nr, unsigned char tmc43x_register, unsigned long datagram) {
   unsigned long i_datagram;
 
   //select the TMC driver
-  digitalWrite(cs_squirrel,LOW);
+  if (motor_nr==0) {
+    digitalWriteFast(SQUIRREL_0_PIN,LOW);
+  } else if (motor_nr==1) {
+    digitalWriteFast(SQUIRREL_1_PIN,LOW);
+  }
+  //TODO this won't work  but will be the nost successfuly optimization come up with an idea
 
 #ifdef DEBUG_SPI
   Serial.print("Sending ");
@@ -41,7 +46,11 @@ long send43x(unsigned char cs_squirrel, unsigned char tmc43x_register, unsigned 
 #endif
 
   //deselect the TMC chip
-  digitalWrite(cs_squirrel,HIGH); 
+  if (motor_nr==0) {
+    digitalWriteFast(SQUIRREL_0_PIN,HIGH);
+  } else if (motor_nr==1) {
+    digitalWriteFast(SQUIRREL_1_PIN,HIGH);
+  }
 
   return i_datagram;
 }

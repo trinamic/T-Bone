@@ -1,6 +1,6 @@
-#include <QueueArray.h>
-
+#include <digitalIOPerformance.h>
 #include <SPI.h>
+#include <QueueArray.h>
 #include <TMC26XGenerator.h>
 #include <Metro.h>
 #include <CmdMessenger.h>
@@ -26,6 +26,9 @@
 #define COMMAND_QUEUE_LENGTH 40
 
 #define CALCULATE_OUTPUT 13
+//the CS pins have to be defines for digitalWriteFast 
+#define SQUIRREL_0_PIN 8
+#define SQUIRREL_1_PIN 12
 
 //standards
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -45,12 +48,12 @@ const char nr_of_motors = 2;
 
 squirrel motors[nr_of_motors] = {
   {
-    8,3,0, motor_1_target_reached, 
+    3,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
     DEFAULT_STEPS_PER_REVOLUTION      }
   ,
   {
-    12,2,1, motor_2_target_reached, 
+    2,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
     DEFAULT_STEPS_PER_REVOLUTION       }
 };
@@ -71,8 +74,8 @@ Metro watchDogMetro = Metro(1000);
 
 void setup() {
   //at least we should try deactivate the squirrels
-  pinMode(reset_squirrel,OUTPUT);
-  digitalWrite(reset_squirrel, LOW);
+  pinModeFast(reset_squirrel,OUTPUT);
+  digitalWriteFast(reset_squirrel, LOW);
 
   //initialize the serial port for commands
   Serial1.begin(115200);
@@ -81,8 +84,8 @@ void setup() {
   moveQueue.setStream(Serial);
 
 #ifdef CALCULATE_OUTPUT
-  pinMode(CALCULATE_OUTPUT, OUTPUT);
-  digitalWrite(CALCULATE_OUTPUT,LOW);
+  pinModeFast(CALCULATE_OUTPUT, OUTPUT);
+  digitalWriteFast(CALCULATE_OUTPUT,LOW);
 #endif
 
   // Adds newline to every command

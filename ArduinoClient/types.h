@@ -20,7 +20,6 @@ struct movement {
 };
 
 struct squirrel {
-  char cs_pin;
   char target_reached_interrupt_pin;
   char target_reached_interrupt_nr;
   void (*target_reached_interrupt_routine)();
