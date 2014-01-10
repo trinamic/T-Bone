@@ -1,3 +1,4 @@
+volatile long next_pos_comp[nr_of_motors];
 
 void initialzeTMC43x() {
   //reset the quirrel
@@ -221,6 +222,37 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   }
   write43x(cs_pin,X_TARGET_REGISTER,aim_target);
 }
+
+inline void signal_start() {
+  long pos_comp[nr_of_motors];
+  //prepare the pos compr registers
+  for (char i=0; i< nr_of_motors; i++) {
+
+    //clear the event register
+    read43x(motors[i].cs_pin,EVENTS_REGISTER,0);
+    write43x(motors[i].cs_pin,POS_COMP_REGISTER,next_pos_comp[i]);
+    pos_comp[i] = next_pos_comp[i];
+    next_pos_comp[i] = 0;
+  }    
+  //carefully trigger the start pin 
+  digitalWrite(start_signal_pin,HIGH);
+  pinMode(start_signal_pin,OUTPUT);
+  digitalWrite(start_signal_pin,LOW);
+  pinMode(start_signal_pin,INPUT);
+#ifdef DEBUG_MOTION_TRACE
+  Serial.println(F("Sent start signal"));
+#endif
+  //and in case the dirver is already past the next position and we do not check this manualyy read it
+  for (char i=0; i< nr_of_motors; i++) {
+    unsigned long motor_pos = read43x(motors[i].cs_pin, X_ACTUAL_REGISTER,0);
+    //Todo caompar - TODO but which direction - so just debug for starters
+    Serial.print(motor_pos);
+    Serial.print(" ->");
+    Serial.println(pos_comp[i]);
+  }
+  Serial.println();
+}
+
 
 const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean active_high) {
   unsigned long endstop_config = getClearedEndStopConfig(motor_nr, left);
