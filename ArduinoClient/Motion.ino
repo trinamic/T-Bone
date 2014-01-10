@@ -41,7 +41,9 @@ void checkMotion() {
       digitalWrite(CALCULATE_OUTPUT,HIGH);
 #endif
 
-      if (moveQueue.count()>0) {
+      //we leave a rest in the move queue since it could be a partial movement
+      if (moveQueue.count()>nr_of_motors) {
+        //TODO but how we empty the queue? - in motion is more than true&false ...
         Serial.println(moveQueue.count());
 
         for (char i; i<nr_of_motors;i++) {
