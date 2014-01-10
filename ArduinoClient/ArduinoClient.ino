@@ -59,8 +59,6 @@ const char start_signal_pin = 7;
 
 boolean in_motion = false;
 
-long last_target[nr_of_motors];
-
 //config
 
 QueueArray<movement> moveQueue = QueueArray<movement>(COMMAND_QUEUE_LENGTH);

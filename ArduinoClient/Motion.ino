@@ -2,6 +2,7 @@ volatile boolean next_move_prepared = false;
 volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
+long last_target[nr_of_motors];
 
 void startMotion() {
   //TODO initialize drivers??
@@ -84,9 +85,6 @@ void checkMotion() {
 
         movement follower;
         do {
-          if (moveQueue.isEmpty()) {
-            break;
-          }
           follower = moveQueue.peek();
           if (follower.type==follow_over || follower.type==follow_to) {  
             moveQueue.pop();
