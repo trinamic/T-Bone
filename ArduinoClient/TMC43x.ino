@@ -142,9 +142,10 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   unsigned char cs_pin = motors[motor_nr].cs_pin;
 
   if (pos==0) {
+    Serial.println("ZERO");
     //We avoid 0 since it is a marker 
     //TODO silly hack!
-    pos=1;
+    // pos=1;
   }
 
 
@@ -244,17 +245,12 @@ inline void signal_start() {
 #endif
   //and in case the dirver is already past the next position and we do not check this manualyy read it
   for (char i=0; i< nr_of_motors; i++) {
-    unsigned long motor_pos = read43x(motors[i].cs_pin, X_ACTUAL_REGISTER,0);
-    if ((direction[i]==1 && motor_pos>pos_comp[i])
-      || (direction[i]==-1 && motor_pos<pos_comp[i])) {
-      motor_target_reached(i);
-    }
-    if (pos_comp[i]==0) {
-      Serial.print(direction[i], DEC);
-      Serial.print(": ");
-      Serial.print(motor_pos);
-      Serial.print(" -> ");
-      Serial.println(pos_comp[i]);
+    if (pos_comp[i]!=0) {
+      unsigned long motor_pos = read43x(motors[i].cs_pin, X_ACTUAL_REGISTER,0);
+      if ((direction[i]==1 && motor_pos>pos_comp[i])
+        || (direction[i]==-1 && motor_pos<pos_comp[i])) {
+        motor_target_reached(i);
+      }
     }
   }
   Serial.println();
@@ -328,6 +324,7 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 
