@@ -24,8 +24,6 @@
 
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 40
-//how many otors can be theoretically geared together
-#define MAX_FOLLOWING_MOTORS 6
 
 #define CALCULATE_OUTPUT 13
 
@@ -39,8 +37,13 @@
 #define DEFAULT_ACCELERATION 1
 #define DEFAULT_BOW 1
 
+//how many motors do we know?
 const char nr_of_motors = 2;
-squirrel motors[2] = {
+
+//how many otors can be theoretically geared together
+#define MAX_FOLLOWING_MOTORS (nr_of_motors-1)
+
+squirrel motors[nr_of_motors] = {
   {
     8,3,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
