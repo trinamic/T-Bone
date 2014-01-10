@@ -246,6 +246,8 @@ inline void signal_start() {
   for (char i=0; i< nr_of_motors; i++) {
     unsigned long motor_pos = read43x(motors[i].cs_pin, X_ACTUAL_REGISTER,0);
     //Todo caompar - TODO but which direction - so just debug for starters
+    Serial.print(last_target[i]);
+    Serial.print(" ->");
     Serial.print(motor_pos);
     Serial.print(" ->");
     Serial.println(pos_comp[i]);
