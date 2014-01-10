@@ -125,6 +125,7 @@ void checkMotion() {
 #endif
       } 
       else {
+        Serial.println(F("Move Queue emptied!"));
         //we are finished here
         stopMotion();
       }
