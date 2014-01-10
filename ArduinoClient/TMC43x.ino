@@ -151,8 +151,9 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   long aim_target;
   long comp_pos;
   //calculate the value for x_target so taht we go over pos_comp
+  long last_pos = last_target[motor_nr]; //this was our last position
+  direction[motor_nr]=pos>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
   if (isWaypoint) {
-    long last_pos = last_target[motor_nr];
     comp_pos = pos;
     aim_target = 2*(pos-last_pos)+last_pos;
   } 
@@ -245,12 +246,10 @@ inline void signal_start() {
   //and in case the dirver is already past the next position and we do not check this manualyy read it
   for (char i=0; i< nr_of_motors; i++) {
     unsigned long motor_pos = read43x(motors[i].cs_pin, X_ACTUAL_REGISTER,0);
-    //Todo caompar - TODO but which direction - so just debug for starters
-    Serial.print(last_target[i]);
-    Serial.print(" ->");
-    Serial.print(motor_pos);
-    Serial.print(" ->");
-    Serial.println(pos_comp[i]);
+    if ((direction[i]==1 && motor_pos>pos_comp[i])
+      || (direction[i]==-1 && motor_pos<pos_comp[i])) {
+      motor_target_reached(i);
+    }
   }
   Serial.println();
 }
@@ -261,47 +260,47 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
   unsigned long clearing_pattern;
   if (left) {
     if (active_high) {
-  #ifdef DEBUG_ENDSTOPS
-    Serial.println(F("Configuring left end stop as active high"));
-  #endif
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring left end stop as active high"));
+#endif
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(2) //positive Stop Left stops motor
           | _BV(11) //X_LATCH if stopl becomes active ..
-          ;
-          } 
+            ;
+    } 
     else {
-  #ifdef DEBUG_ENDSTOPS
-    Serial.println(F("Configuring left end stop as active low"));
-  #endif
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring left end stop as active low"));
+#endif
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(10) //X_LATCH if stopl becomes inactive ..
-        ;
-        }
-      } 
+          ;
+    }
+  } 
   else {
     if (active_high) {
-  #ifdef DEBUG_ENDSTOPS
-    Serial.println(F("Configuring right end stop as active high"));
-  #endif
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring right end stop as active high"));
+#endif
       clearing_pattern |= 0 
         | _BV(1) //STOP_RIGHT enable
         | _BV(3) //positive Stop right stops motor
           | _BV(13) //X_LATCH if storl becomes active ..
-          ;
-          } 
+            ;
+    } 
     else {
-  #ifdef DEBUG_ENDSTOPS
-    Serial.println(F("Configuring right end stop as active low"));
-  #endif
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring right end stop as active low"));
+#endif
       clearing_pattern |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(12) //X_LATCH if stopr becomes inactive ..
-        ;
-        }
-      }
-      return NULL;
+          ;
+    }
+  }
+  return NULL;
 }
 
 
@@ -323,6 +322,8 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
+
 
 
 

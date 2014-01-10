@@ -3,6 +3,7 @@ volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
 long last_target[nr_of_motors];
+char direction[nr_of_motors];
 
 void startMotion() {
   //TODO initialize drivers??
@@ -53,7 +54,8 @@ void checkMotion() {
               | _BV(0) //xtarget requires start
             | _BV(1) //vmax requires start
             | _BV(5) //external start is an start
-            | _BV(10)//immediate start         
+            //TODO is that correct?
+            //| _BV(10)//immediate start         
             );   
           } 
           else {
