@@ -46,8 +46,7 @@ class Printer(Thread):
         if not config:
             raise PrinterError("No printer config given!")
 
-        self._configure_axis(self.axis['x'], config["x-axis"])
-        self._configure_axis(self.axis['y'], config["y-axis"])
+        self.config = config
 
         printer_config = config['printer']
         if "print_queue" in printer_config:
@@ -57,7 +56,8 @@ class Printer(Thread):
         if "homing-timeout" in printer_config:
             self._homing_timeout = printer_config['homing-timeout']
 
-        self.config = config
+        self._configure_axis(self.axis['x'], config["x-axis"])
+        self._configure_axis(self.axis['y'], config["y-axis"])
 
         self.ready = True
 
