@@ -252,8 +252,8 @@ inline void signal_start() {
       Serial.print(motor_pos);
       if (direction[i]==1) Serial.print('>');
       if (direction[i]==-1) Serial.print('<');
-      if (direction[i]==0) Serial.print('0');
-      Serial.print(pos_comp[i]);
+      if (direction[i]==0) Serial.print('=');
+      Serial.println(pos_comp[i]);
 #endif
       if ((direction[i]==1 && motor_pos>=pos_comp[i])
         || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
@@ -261,7 +261,12 @@ inline void signal_start() {
       }
     }
   }
+#ifdef DEBUG_MOTION_TRACE
   Serial.println();
+#endif
+#ifdef DEBUG_X_POS
+  Serial.println();
+#endif
 }
 
 
