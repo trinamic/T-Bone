@@ -248,8 +248,8 @@ inline void signal_start() {
   for (char i=0; i< nr_of_motors; i++) {
     if (pos_comp[i]!=0) {
       unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
-      if ((direction[i]==1 && motor_pos>pos_comp[i])
-        || (direction[i]==-1 && motor_pos<pos_comp[i])) {
+      if ((direction[i]==1 && motor_pos>=pos_comp[i])
+        || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
         motor_target_reached(i);
       }
     }
