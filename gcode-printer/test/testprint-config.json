@@ -15,9 +15,9 @@
                 "position": 20.2
             }
         },
-        "home-speed": 2000,
+        "home-speed": 100,
         "home-acceleration": 20000,
-        "home-precision-speed": 100
+        "home-precision-speed": 5
     },
     "y-axis": {
         "motor": 2,
@@ -34,7 +34,11 @@
                 "polarity": "virtual",
                 "position": 20.2
             }
-        }
+        },
+        "home-speed": 100,
+        "home-acceleration": 20000,
+        "home-precision-speed": 5
+
     },
     "printer": {
         "print-queue": {
@@ -42,6 +46,6 @@
             "max-length": 30
         },
         "homing-timeout": 15,
-        "home-retract": 30
+        "home-retract": 5
     }
 }

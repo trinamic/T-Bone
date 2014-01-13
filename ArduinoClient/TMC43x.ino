@@ -53,16 +53,16 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
   //todo shouldn't we check if there is a movement going??
 
+  write43x(motor_nr, START_CONFIG_REGISTER, 0
+    | _BV(10)//immediate start        
+  //since we just start 
+  );   
   write43x(motor_nr, A_MAX_REGISTER,homming_accel); //set maximum acceleration
   write43x(motor_nr, D_MAX_REGISTER,homing_deccel); //set maximum deceleration
   write43x(motor_nr,BOW_1_REGISTER,homming_start_bow);
   write43x(motor_nr,BOW_2_REGISTER,homing_end_bow);
   write43x(motor_nr,BOW_3_REGISTER,homing_end_bow);
   write43x(motor_nr,BOW_4_REGISTER,homming_start_bow);
-  write43x(motor_nr, START_CONFIG_REGISTER, 0
-    | _BV(10)//immediate start        
-  //since we just start 
-  );   
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
@@ -70,7 +70,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
     if (homed==0 || homed==1) {
       double homing_speed=homing_fast_speed; 
-      if (homed==2) {
+      if (homed==1) {
         homing_speed = homing_low_speed;
       }  
       unsigned long status = read43x(motor_nr, STATUS_REGISTER,0);
@@ -98,7 +98,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
         long go_back_to;
         if (homed==0) {
           long actual = read43x(motor_nr, X_ACTUAL_REGISTER,0);
-          go_back_to = target + homing_retraction;
+          go_back_to = actual + homing_retraction;
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
           Serial.print(actual);
