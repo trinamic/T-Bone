@@ -7,12 +7,12 @@ void initialzeTMC43x() {
   pinModeFast(start_signal_pin,INPUT);
   digitalWriteFast(start_signal_pin,LOW);
 
-    //initialize CS pin
-    digitalWriteFast(SQUIRREL_0_PIN,HIGH);
-    pinModeFast(SQUIRREL_0_PIN,OUTPUT);
-    //initialize CS pin
-    digitalWriteFast(SQUIRREL_1_PIN,HIGH);
-    pinModeFast(SQUIRREL_1_PIN,OUTPUT);
+  //initialize CS pin
+  digitalWriteFast(SQUIRREL_0_PIN,HIGH);
+  pinModeFast(SQUIRREL_0_PIN,OUTPUT);
+  //initialize CS pin
+  digitalWriteFast(SQUIRREL_1_PIN,HIGH);
+  pinModeFast(SQUIRREL_1_PIN,OUTPUT);
 
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {
@@ -248,6 +248,13 @@ inline void signal_start() {
   for (char i=0; i< nr_of_motors; i++) {
     if (pos_comp[i]!=0) {
       unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
+#ifdef DEBUG_X_POS
+      Serial.print(motor_pos);
+      if (direction[i]==1) Serial.print('>');
+      if (direction[i]==-1) Serial.print('<');
+      if (direction[i]==0) Serial.print('0');
+      Serial.print(pos_comp[i]);
+#endif
       if ((direction[i]==1 && motor_pos>=pos_comp[i])
         || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
         motor_target_reached(i);
@@ -325,6 +332,10 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
+
+
+
 
 
 
