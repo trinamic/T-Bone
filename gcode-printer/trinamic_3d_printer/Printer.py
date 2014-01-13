@@ -91,6 +91,7 @@ class Printer(Thread):
                 'timeout': 0,
                 'home_speed': home_speed,
                 'home_slow_speed': home_precision_speed,
+                'home_retract' : retract,
                 'acceleration': home_acceleration,
                 'deceleration': home_acceleration,
                 'start_bow': self.axis[home_axis]['bow_step'],

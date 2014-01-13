@@ -1,46 +1,48 @@
 {
-    "x-axis":{
-        "motor":1,
-        "current":0.5,
-        "steps-per-mm":1420.8984,
-        "max-speed":900,
-        "max-acceleration":9000,
-        "bow-acceleration":3000,
+    "x-axis": {
+        "motor": 1,
+        "current": 0.5,
+        "steps-per-mm": 1420.8984,
+        "max-speed": 900,
+        "max-acceleration": 9000,
+        "bow-acceleration": 3000,
         "end-stops": {
             "left": {
-                "polarity":"positive"
+                "polarity": "positive"
             },
             "right": {
-                "polarity":"virtual",
-                "position":20.2
+                "polarity": "virtual",
+                "position": 20.2
             }
         },
-        "home-speed":2000,
-        "home-acceleration":9000,
-        "home-precision-speed":2000
+        "home-speed": 2000,
+        "home-acceleration": 9000,
+        "home-precision-speed": 2000,
+        "home-retract": 30
     },
-    "y-axis":{
-        "motor":2 ,
-        "current":0.5,
-        "steps-per-mm":1420.8984,
-        "max-speed":900,
-        "max-acceleration":9000,
-        "bow-acceleration":3000,
+    "y-axis": {
+        "motor": 2,
+        "current": 0.5,
+        "steps-per-mm": 1420.8984,
+        "max-speed": 900,
+        "max-acceleration": 9000,
+        "bow-acceleration": 3000,
         "end-stops": {
             "left": {
-                "polarity":"positive"
+                "polarity": "positive"
             },
             "right": {
-                "polarity":"virtual",
-                "position":20.2
+                "polarity": "virtual",
+                "position": 20.2
             }
         }
     },
     "printer": {
-        "print-queue":{
-            "min-length":20,
-            "max-length":30
+        "print-queue": {
+            "min-length": 20,
+            "max-length": 30
         },
-        "homing-timeout":15
+        "homing-timeout": 15,
+        "home-retract": 3
     }
 }

@@ -105,6 +105,7 @@ class Machine():
             int(home_config['timeout']),
             float(home_config['home_speed']),
             float(home_config['home_slow_speed']),
+            int(home_config['home_retract']),
             float(home_config['acceleration']),
             float(home_config['deceleration']),
             int(home_config['start_bow']),

@@ -47,7 +47,7 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigne
 }
 
 const __FlashStringHelper* homeMotor(unsigned char motor_nr, unsigned long timeout, 
-double homing_fast_speed, double homing_low_speed, 
+double homing_fast_speed, double homing_low_speed, long homing_retraction,
 unsigned long homming_accel, unsigned long homing_deccel,
 unsigned long homming_start_bow, unsigned long homing_end_bow)
 {
@@ -98,7 +98,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
         long go_back_to;
         if (homed==0) {
           long actual = read43x(motor_nr, X_ACTUAL_REGISTER,0);
-          go_back_to = target + 100000ul; //TODO configure me!
+          go_back_to = target + homing_retraction;
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
           Serial.print(actual);

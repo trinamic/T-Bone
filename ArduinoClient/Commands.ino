@@ -403,6 +403,11 @@ void onHome() {
     messenger.sendCmd (kError,F("cannot home with no or negative precision homing speed"));
     return;
   }
+  long homeRetract = messenger.readLongArg();
+  if (homeRetract<=0) {
+    messenger.sendCmd(kError,F("cannot retract beyond home point after homing."));
+    return;
+  }
   long aMax = messenger.readLongArg();
   if (aMax<=0) {
     messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
@@ -432,6 +437,8 @@ void onHome() {
   Serial.print(homeFastSpeed);
   Serial.print(F(", slow="));
   Serial.print(homeSlowSpeed);
+  Serial.print(F(", retract="));
+  Serial.print(homeRetract);
   Serial.print(F(", aMax="));
   Serial.print(aMax);
   Serial.print(F(", dMax="));
@@ -444,7 +451,7 @@ void onHome() {
 #endif
   const __FlashStringHelper* error =  homeMotor(
   motor,timeout,
-  homeFastSpeed, homeSlowSpeed,
+  homeFastSpeed, homeSlowSpeed,homeRetract,
   aMax,dMax,
   startBow,endBow
     );
