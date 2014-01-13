@@ -20,7 +20,7 @@
 //#define DEBUG_MOTION_TRACE
 //#define DEBUG_MOTION_TRACE_SHORT
 //#define DEBUG_MOTOR_QUEUE
-#define DEBUG_X_POS
+//#define DEBUG_X_POS
 
 //#define DEBUG_STATUS
 

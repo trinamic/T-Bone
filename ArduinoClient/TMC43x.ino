@@ -253,12 +253,18 @@ inline void signal_start() {
       if (direction[i]==1) Serial.print('>');
       if (direction[i]==-1) Serial.print('<');
       if (direction[i]==0) Serial.print('=');
-      Serial.println(pos_comp[i]);
+      Serial.print(pos_comp[i]);
 #endif
       if ((direction[i]==1 && motor_pos>=pos_comp[i])
         || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
         motor_target_reached(i);
+#ifdef DEBUG_X_POS
+        Serial.print('*');
+#endif
       }
+#ifdef DEBUG_X_POS
+      Serial.println();
+#endif
     }
   }
 #ifdef DEBUG_MOTION_TRACE
@@ -337,6 +343,7 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 
