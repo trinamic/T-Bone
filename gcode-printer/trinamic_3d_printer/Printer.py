@@ -303,8 +303,7 @@ class PrintQueue():
     def _push_from_planning_to_execution(self, timeout):
         executed_move = self.planning_list.pop(0)
         self.queue.put(executed_move, timeout=timeout)
-        #todo this is just debug - but easier to debug so - you know what I mean
-        _logger.info("adding to execution queue, now at %s/%s entries", len(self.planning_list), self.queue.qsize())
+        _logger.debug("adding to execution queue, now at %s/%s entries", len(self.planning_list), self.queue.qsize())
 
     def _extract_movement_values(self, move, target_position):
         #extract values
