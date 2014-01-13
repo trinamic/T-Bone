@@ -71,7 +71,7 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
     if (homed==0 || homed==1) {
       double homing_speed=homing_fast_speed; 
       if (homed==2) {
-        homing_speed /= homing_low_speed;
+        homing_speed = homing_low_speed;
       }  
       unsigned long status = read43x(motor_nr, STATUS_REGISTER,0);
       unsigned long events = read43x(motor_nr, EVENTS_REGISTER,0);
@@ -85,7 +85,9 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
           Serial.print(F("Status "));
           Serial.println(status,HEX);
           Serial.print(F("Events "));
-          Serial.println(events,HEX);
+          Serial.print(events,HEX);
+          Serial.print(F(" phase "));
+          Serial.println(homed,DEC);
 #endif
           target -= 1000l;
           write43x(motor_nr,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
@@ -120,7 +122,6 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
           status = read43x(motor_nr, STATUS_REGISTER,0);
         }
         if (homed==0) {
-
           homed = 1;
         } 
         else {
@@ -343,6 +344,7 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 

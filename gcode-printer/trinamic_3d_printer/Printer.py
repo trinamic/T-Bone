@@ -39,7 +39,7 @@ class Printer(Thread):
 
         #finally create and conect the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
-        _logger.debug("Connecting printer");
+        _logger.debug("Connecting printer")
         self.machine.connect()
 
     def configure(self, config):
@@ -76,18 +76,27 @@ class Printer(Thread):
 
     def home(self, axis):
         for home_axis in axis:
-            _logger.info("Homing axis \'%s\' to zero",home_axis)
+            _logger.info("Homing axis \'%s\' to zero", home_axis)
+            #read the homing config for the axis
+            home_speed = self.axis[home_axis]['home_speed']
+            home_precision_speed = self.axis[home_axis]['home_precision_speed']
+            home_acceleration = self.axis[home_axis]['home_acceleration']
+            #convert everything from mm to steps
+            home_speed = _convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
+            home_precision_speed = _convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
+            home_acceleration = _convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
+            #make a config out of it
             homing_config = {
                 'motor': self.axis[home_axis]['motor'],
                 'timeout': 0,
-                'home_speed': self.axis[home_axis]['max_speed_step'],
-                'home_slow_speed': self.axis[home_axis]['max_speed_step'] / 10, #todo isn't this a bit arbirtary
-                'acceleration': self.axis[home_axis]['max_step_acceleration'],
-                'deceleration': self.axis[home_axis]['max_step_acceleration'],
+                'home_speed': home_speed,
+                'home_slow_speed': home_precision_speed,
+                'acceleration': home_acceleration,
+                'deceleration': home_acceleration,
                 'start_bow': self.axis[home_axis]['bow_step'],
                 'end_bow': self.axis[home_axis]['bow_step'],
             }
-
+            #and do the homing
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'
         self.x_pos = 0
@@ -110,6 +119,8 @@ class Printer(Thread):
             self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
 
     def _configure_axis(self, axis, config):
+        axis['steps_per_mm'] = config['steps-per-mm']
+
         axis['motor'] = config['motor']
         axis['scale'] = config['steps-per-mm']
         axis['max_speed'] = config['max-speed']
@@ -118,6 +129,20 @@ class Printer(Thread):
         axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         axis['bow'] = config['bow-acceleration']
         axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
+
+        if 'home-speed' in config:
+            axis['home_speed'] = config['home-speed']
+        else:
+            axis['home_speed'] = config['max-speed']
+        if 'home-precision-speed' in config:
+            axis['home_precision_speed'] = config['home-precision-speed']
+        else:
+            axis['home_precision_speed'] = config['max-speed']/10
+        if 'home_acceleration' in config:
+            axis['home_acceleration'] = config['home-acceleration']
+        else:
+            axis['home_acceleration'] = config['max-acceleration']
+
 
         axis['end-stops'] = {}
         end_stops_config = config['end-stops']

@@ -14,7 +14,10 @@
                 "polarity":"virtual",
                 "position":20.2
             }
-        }
+        },
+        "home-speed":2000,
+        "home-acceleration":9000,
+        "home-precision-speed":2000
     },
     "y-axis":{
         "motor":2 ,
