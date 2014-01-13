@@ -10,7 +10,7 @@ __author__ = 'marcus'
 
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
-_max_command_buffer = 5 # how much arduino buffer to preserve
+_min_command_buffer_free_space = 5 # how much arduino buffer to preserve
 
 _logger = logging.getLogger(__name__)
 
@@ -146,26 +146,27 @@ class Machine():
             command_buffer_free = command_max_buffer_length - command_buffer_length
             command_queue_running = int(reply.arguments[2]) > 0
             _logger.info("Arduino command Buffer at %s of %s", command_buffer_length, command_max_buffer_length)
-            if not command_queue_running and command_buffer_free <= _max_command_buffer:
+            if not command_queue_running and command_buffer_free <= _min_command_buffer_free_space:
                 _logger.info("Starting movement")
                 start_command = MachineCommand()
                 start_command.command_number = 11
                 start_command.arguments = [1]
                 reply = self.machine_connection.send_command(start_command)
                 #TODO and did that work??
-            if command_queue_running and command_buffer_free <= _max_command_buffer:
+            if command_queue_running and command_buffer_free <= _min_command_buffer_free_space:
                 buffer_free = False
                 while not buffer_free:
                     #sleep a bit
                     time.sleep(0.1)
-                    _logger.info("Waiting for free arduino command buffer")
                     info_command = MachineCommand()
                     info_command.command_number = 31
                     reply = self.machine_connection.send_command(info_command)
                     command_buffer_length = int(reply.arguments[0])
                     command_max_buffer_length = int(reply.arguments[1])
                     command_buffer_free = command_max_buffer_length - command_buffer_length
-                    buffer_free = (command_buffer_free > _max_command_buffer)
+                    buffer_free = (command_buffer_free > _min_command_buffer_free_space)
+                    _logger.info("Waiting for free arduino command buffer: %s free of % s total, waiting for %s free",
+                                 command_buffer_free, command_buffer_length, _min_command_buffer_free_space)
                     _logger.debug("waiting for free buffer")
         else:
         #while self.machine_connection.internal_queue_length > 0:
