@@ -49,14 +49,13 @@ class Printer(Thread):
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
 
-        if "printer" in config:
-            printer_config = config['printer']
-            if "print_queue" in printer_config:
-                print_queue_config = printer_config["print-queue"]
-                self.print_queue_min_length = print_queue_config['min-length']
-                self.print_queue_max_length = print_queue_config['max-length']
-            if "homing-timeout" in printer_config:
-                self._homing_timeout = printer_config['homing-timeout']
+        printer_config = config['printer']
+        if "print_queue" in printer_config:
+            print_queue_config = printer_config["print-queue"]
+            self.print_queue_min_length = print_queue_config['min-length']
+            self.print_queue_max_length = print_queue_config['max-length']
+        if "homing-timeout" in printer_config:
+            self._homing_timeout = printer_config['homing-timeout']
 
         self.config = config
 
