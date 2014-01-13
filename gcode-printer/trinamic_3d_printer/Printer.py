@@ -34,6 +34,7 @@ class Printer(Thread):
         self._print_queue = None
         self.print_queue_min_length = print_min_length
         self.print_queue_max_length = print_max_length
+        self._default_homing_retraction = None
 
         self._homing_timeout = 10
 
@@ -49,12 +50,11 @@ class Printer(Thread):
         self.config = config
 
         printer_config = config['printer']
-        if "print_queue" in printer_config:
-            print_queue_config = printer_config["print-queue"]
-            self.print_queue_min_length = print_queue_config['min-length']
-            self.print_queue_max_length = print_queue_config['max-length']
-        if "homing-timeout" in printer_config:
-            self._homing_timeout = printer_config['homing-timeout']
+        print_queue_config = printer_config["print-queue"]
+        self.print_queue_min_length = print_queue_config['min-length']
+        self.print_queue_max_length = print_queue_config['max-length']
+        self._homing_timeout = printer_config['homing-timeout']
+        self._default_homing_retraction = printer_config['home-retract']
 
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
@@ -80,17 +80,19 @@ class Printer(Thread):
             home_speed = self.axis[home_axis]['home_speed']
             home_precision_speed = self.axis[home_axis]['home_precision_speed']
             home_acceleration = self.axis[home_axis]['home_acceleration']
+            home_retract = self.axis[home_axis]['home_retract']
             #convert everything from mm to steps
             home_speed = _convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
             home_precision_speed = _convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
             home_acceleration = _convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
+            home_retract = _convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
             #make a config out of it
             homing_config = {
                 'motor': self.axis[home_axis]['motor'],
                 'timeout': 0,
                 'home_speed': home_speed,
                 'home_slow_speed': home_precision_speed,
-                'home_retract' : retract,
+                'home_retract': home_retract,
                 'acceleration': home_acceleration,
                 'deceleration': home_acceleration,
                 'start_bow': self.axis[home_axis]['bow_step'],
@@ -137,12 +139,15 @@ class Printer(Thread):
         if 'home-precision-speed' in config:
             axis['home_precision_speed'] = config['home-precision-speed']
         else:
-            axis['home_precision_speed'] = config['max-speed']/10
+            axis['home_precision_speed'] = config['max-speed'] / 10
         if 'home_acceleration' in config:
             axis['home_acceleration'] = config['home-acceleration']
         else:
             axis['home_acceleration'] = config['max-acceleration']
-
+        if 'home-retract' in config:
+            axis['home_retract']  = config['home-retract']
+        else:
+            axis['home_retract'] = self._default_homing_retraction
 
         axis['end-stops'] = {}
         end_stops_config = config['end-stops']

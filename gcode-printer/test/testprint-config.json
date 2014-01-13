@@ -16,9 +16,8 @@
             }
         },
         "home-speed": 2000,
-        "home-acceleration": 9000,
-        "home-precision-speed": 2000,
-        "home-retract": 30
+        "home-acceleration": 20000,
+        "home-precision-speed": 100
     },
     "y-axis": {
         "motor": 2,
@@ -43,6 +42,6 @@
             "max-length": 30
         },
         "homing-timeout": 15,
-        "home-retract": 3
+        "home-retract": 30
     }
 }
