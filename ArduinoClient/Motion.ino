@@ -33,7 +33,7 @@ void resetMotion() {
 
 void checkMotion() {
 
-  if (current_motion_state==in_motion) {
+  if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
     if ((motor_status & target_motor_status) == target_motor_status) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
@@ -132,6 +132,9 @@ void checkMotion() {
         digitalWriteFast(CALCULATE_OUTPUT,LOW);
 #endif
       } 
+      else if (current_motion_state==finishing_motion) {
+        current_motion_state=no_motion;
+      } 
       else {
         Serial.println(F("Move Queue emptied!"));
         //TODO should we react in any way to it?
@@ -171,6 +174,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 
