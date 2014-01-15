@@ -68,6 +68,9 @@ void checkMotion() {
       //we leave a rest in the move queue since it could be a partial movement
       if (moveQueue.count()>min_buffer_depth) {
         if (min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
+#ifdef DEBUG_MOTION_STATUS
+       Serial.println(F("Inital motion buffer full."));
+#endif
           min_buffer_depth=DEFAULT_COMMAND_BUFFER_DEPTH;
         }
         //TODO but how we empty the queue? - in motion is more than true&false ...
@@ -152,7 +155,8 @@ void checkMotion() {
       } 
       else {
 #ifdef DEBUG_MOTION_STATUS
-        Serial.println(F("Move Queue emptied!"));
+       //TODO come up with a sensbilde warning
+       // Serial.println(F("Move Queue emptied!"));
 #endif
         //TODO should we react in any way to it?
       }
