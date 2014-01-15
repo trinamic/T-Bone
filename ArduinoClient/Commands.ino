@@ -284,7 +284,7 @@ void onMovement() {
   if (movement==0) {
     messenger.sendCmdStart(kMovement);
     //just give out the current state of movement
-    if (in_motion) {
+    if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
       messenger.sendCmdArg(1);
       messenger.sendCmdArg(F("running"));
     } 
@@ -296,10 +296,11 @@ void onMovement() {
   } 
   else if (movement<0) {
     //below zero means nostop the motion
-    if (!in_motion) {
+    if (!current_motion_state==in_motion) {
       messenger.sendCmd(kError,F("there is currently no motion to stop"));
     } 
     else {
+      //TODO should we handle double finishing ??
       Serial.println(F("motion will finish"));
       messenger.sendCmd(kOK,F("motion finishing"));
       finishMotion();
@@ -307,7 +308,7 @@ void onMovement() {
   } 
   else {
     //a new movement is started
-    if (in_motion) {
+    if (current_motion_state!=no_motion) {
       messenger.sendCmd(kError,F("There is already a motion running"));
     } 
     else {
