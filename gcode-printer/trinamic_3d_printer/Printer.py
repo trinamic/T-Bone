@@ -71,6 +71,7 @@ class Printer(Thread):
     def finish_print(self):
         self._print_queue.finish()
         self.printing = False
+        self.machine.finish_motion()
         pass
 
     def home(self, axis):
