@@ -124,7 +124,10 @@ class Machine():
         start_command.command_number = 11
         start_command.arguments = [1]
         reply = self.machine_connection.send_command(start_command)
-        #TODO and did that work??
+        if not reply or not reply.command_number == 0:
+            raise MachineError("Unable to start motion")
+        self.batch_mode = True
+
 
     def finish_motion(self):
         _logger.info("Starting movement")
@@ -132,7 +135,9 @@ class Machine():
         start_command.command_number = 11
         start_command.arguments = [-1]
         reply = self.machine_connection.send_command(start_command)
-        #TODO and did that work??
+        if not reply or not reply.command_number == 0:
+            raise MachineError("Unable to start motion")
+        self.batch_mode = False
 
 
     def move_to(self, motors):

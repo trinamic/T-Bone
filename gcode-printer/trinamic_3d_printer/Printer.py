@@ -62,9 +62,9 @@ class Printer(Thread):
         self.ready = True
 
     def start_print(self):
-        self.machine.batch_mode = True
         self._print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
                                        max_length=self.print_queue_max_length)
+        self.machine.start_motion()
         self.printing = True
         self.start()
 
