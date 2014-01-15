@@ -68,7 +68,7 @@ class Printer(Thread):
         self.printing = True
         self.start()
 
-    def stop_print(self):
+    def finish_print(self):
         self._print_queue.finish()
         self.printing = False
         pass
