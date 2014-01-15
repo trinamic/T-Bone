@@ -151,7 +151,9 @@ void checkMotion() {
         current_motion_state=no_motion;
       } 
       else {
+#ifdef DEBUG_MOTION_STATUS
         Serial.println(F("Move Queue emptied!"));
+#endif
         //TODO should we react in any way to it?
       }
     }
