@@ -1,10 +1,16 @@
 //what kind of information is in the queue
-
 enum movement_type {
   move_to,
   follow_to,
   move_over,
   follow_over
+};
+
+//there is more to motion than ture and false
+enum motion_state {
+  no_motion,
+  in_motion,
+  finishing_motion
 };
 
 //general datatypes we use, conveniently in an header file 

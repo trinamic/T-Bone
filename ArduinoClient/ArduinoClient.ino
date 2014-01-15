@@ -62,7 +62,7 @@ squirrel motors[nr_of_motors] = {
 const char reset_squirrel = 4;
 const char start_signal_pin = 7;
 
-boolean in_motion = false;
+motion_state current_motion_state = no_motion;
 
 //config
 

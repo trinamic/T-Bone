@@ -16,16 +16,16 @@ void startMotion() {
   }
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
-  in_motion = true;
+  current_motion_state = in_motion;
 }
 
 void stopMotion() {
-  in_motion = false;
+  current_motion_state = finishing_motion;
 }
 
 void checkMotion() {
 
-  if (in_motion) {
+  if (current_motion_state==in_motion) {
     if ((motor_status & target_motor_status) == target_motor_status) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
