@@ -53,7 +53,7 @@ void onInit() {
   //start the tmc260 driver
   intializeTMC260();
   //we stop the motion anyway
-  stopMotion();
+  resetMotion();
   //finally clear the command queue if there migth be some entries left
   while(!moveQueue.isEmpty()) {
     moveQueue.pop();
@@ -300,9 +300,9 @@ void onMovement() {
       messenger.sendCmd(kError,F("there is currently no motion to stop"));
     } 
     else {
-      Serial.println(F("motion stoped"));
-      messenger.sendCmd(kOK,F("motion stoped"));
-      stopMotion();
+      Serial.println(F("motion will finish"));
+      messenger.sendCmd(kOK,F("motion finishing"));
+      finishMotion();
     }
   } 
   else {

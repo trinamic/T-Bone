@@ -19,8 +19,16 @@ void startMotion() {
   current_motion_state = in_motion;
 }
 
-void stopMotion() {
+void finishMotion() {
   current_motion_state = finishing_motion;
+}
+
+void resetMotion() {
+  current_motion_state = no_motion;
+  //empt hte queue
+  while (!moveQueue.isEmpty()) {
+    moveQueue.pop();
+  }
 }
 
 void checkMotion() {
@@ -126,8 +134,7 @@ void checkMotion() {
       } 
       else {
         Serial.println(F("Move Queue emptied!"));
-        //we are finished here
-        stopMotion();
+        //TODO should we react in any way to it?
       }
     }
   }
