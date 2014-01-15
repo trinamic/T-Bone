@@ -43,6 +43,8 @@
 #define DEFAULT_ACCELERATION 1
 #define DEFAULT_BOW 1
 
+#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_motors)
+
 //how many motors do we know?
 const char nr_of_motors = 2;
 

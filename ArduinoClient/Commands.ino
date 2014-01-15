@@ -307,13 +307,14 @@ void onMovement() {
     }
   } 
   else {
+    char initial_command_buffer_depth = messenger.readIntArg(); //defaults to zero and is optionnal
     //a new movement is started
     if (current_motion_state!=no_motion) {
       messenger.sendCmd(kError,F("There is already a motion running"));
     } 
     else {
       messenger.sendCmd(kOK,F("motion started"));
-      startMotion();
+      startMotion(initial_command_buffer_depth);
     }
   }
 }

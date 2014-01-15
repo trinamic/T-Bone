@@ -11,6 +11,7 @@ __author__ = 'marcus'
 _default_timeout = 5
 _commandEndMatcher = re.compile(";")    #needed to search for command ends
 _min_command_buffer_free_space = 5 # how much arduino buffer to preserve
+_initial_buffer_length = 20 #how much buffer do we need befoer starting to print
 _buffer_empyting_wait_time = 0.1
 _buffer_warn_waittime = 10
 
@@ -122,7 +123,7 @@ class Machine():
         _logger.info("Starting movement")
         start_command = MachineCommand()
         start_command.command_number = 11
-        start_command.arguments = [1]
+        start_command.arguments = [1, _initial_buffer_length]
         reply = self.machine_connection.send_command(start_command)
         if not reply or not reply.command_number == 0:
             raise MachineError("Unable to start motion")

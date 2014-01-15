@@ -4,8 +4,14 @@ volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
 long last_target[nr_of_motors];
 char direction[nr_of_motors];
+unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 
-void startMotion() {
+void startMotion(char initial_min_buffer_depth) {
+  if (initial_min_buffer_depth > DEFAULT_COMMAND_BUFFER_DEPTH) {
+    min_buffer_depth = initial_min_buffer_depth;
+  } else {
+    min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
+  }
 #ifdef DEBUG_MOTION_STATUS
   Serial.println(F("starting motion"));
 #endif
@@ -27,6 +33,7 @@ void finishMotion() {
   Serial.println(F("finishing motion"));
 #endif
   current_motion_state = finishing_motion;
+  min_buffer_depth = 0;
 }
 
 void resetMotion() {
@@ -35,6 +42,7 @@ void resetMotion() {
   while (!moveQueue.isEmpty()) {
     moveQueue.pop();
   }
+  min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 }
 
 void checkMotion() {
@@ -58,7 +66,10 @@ void checkMotion() {
 #endif
 
       //we leave a rest in the move queue since it could be a partial movement
-      if (moveQueue.count()>nr_of_motors) {
+      if (moveQueue.count()>min_buffer_depth) {
+        if (min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
+          min_buffer_depth=DEFAULT_COMMAND_BUFFER_DEPTH;
+        }
         //TODO but how we empty the queue? - in motion is more than true&false ...
         for (char i; i<nr_of_motors;i++) {
           //give all motors a nice start config
