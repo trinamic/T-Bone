@@ -6,6 +6,9 @@ long last_target[nr_of_motors];
 char direction[nr_of_motors];
 
 void startMotion() {
+#ifdef DEBUG_MOTION_STATUS
+  Serial.println(F("starting motion"));
+#endif
   //TODO initialize drivers??
   for (char i; i<nr_of_motors;i++) {
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
@@ -20,6 +23,9 @@ void startMotion() {
 }
 
 void finishMotion() {
+#ifdef DEBUG_MOTION_STATUS
+  Serial.println(F("finishing motion"));
+#endif
   current_motion_state = finishing_motion;
 }
 
@@ -32,7 +38,6 @@ void resetMotion() {
 }
 
 void checkMotion() {
-
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
     if ((motor_status & target_motor_status) == target_motor_status) {
       //TODO we need some kind of 'At least here'??
@@ -48,7 +53,6 @@ void checkMotion() {
     }
 
     if (!next_move_prepared) {
-
 #ifdef CALCULATE_OUTPUT
       digitalWriteFast(CALCULATE_OUTPUT,HIGH);
 #endif
@@ -174,6 +178,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 
