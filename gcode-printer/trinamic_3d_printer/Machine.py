@@ -118,6 +118,22 @@ class Machine():
         if not reply or reply.command_number != 0:
             raise MachineError("Unable to home axis " + str(home_config), reply)
 
+    def start_motion(self):
+        _logger.info("Starting movement")
+        start_command = MachineCommand()
+        start_command.command_number = 11
+        start_command.arguments = [1]
+        reply = self.machine_connection.send_command(start_command)
+        #TODO and did that work??
+
+    def finish_motion(self):
+        _logger.info("Starting movement")
+        start_command = MachineCommand()
+        start_command.command_number = 11
+        start_command.arguments = [-1]
+        reply = self.machine_connection.send_command(start_command)
+        #TODO and did that work??
+
 
     def move_to(self, motors):
         if not motors:
@@ -149,13 +165,6 @@ class Machine():
             command_buffer_free = command_max_buffer_length - command_buffer_length
             command_queue_running = int(reply.arguments[2]) > 0
             _logger.debug("Arduino command Buffer at %s of %s", command_buffer_length, command_max_buffer_length)
-            if not command_queue_running and command_buffer_free <= _min_command_buffer_free_space:
-                _logger.info("Starting movement")
-                start_command = MachineCommand()
-                start_command.command_number = 11
-                start_command.arguments = [1]
-                reply = self.machine_connection.send_command(start_command)
-                #TODO and did that work??
             if command_queue_running and command_buffer_free <= _min_command_buffer_free_space:
                 buffer_free = False
                 wait_time = 0
