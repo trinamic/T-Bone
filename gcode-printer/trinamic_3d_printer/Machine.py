@@ -3,6 +3,7 @@ import logging
 import re
 from threading import Thread
 import serial
+import threading
 import time
 import Adafruit_BBIO.GPIO as GPIO
 
@@ -131,13 +132,13 @@ class Machine():
 
 
     def finish_motion(self):
-        _logger.info("Starting movement")
-        start_command = MachineCommand()
-        start_command.command_number = 11
-        start_command.arguments = [-1]
-        reply = self.machine_connection.send_command(start_command)
+        _logger.info("Finishing movement")
+        stop_command = MachineCommand()
+        stop_command.command_number = 11
+        stop_command.arguments = [-1]
+        reply = self.machine_connection.send_command(stop_command)
         if not reply or not reply.command_number == 0:
-            raise MachineError("Unable to start motion")
+            raise MachineError("Unable to stop motion")
         self.batch_mode = False
 
 
@@ -177,7 +178,7 @@ class Machine():
                 while not buffer_free:
                     #sleep a bit
                     time.sleep(_buffer_empyting_wait_time)
-                    wait_time+=_buffer_empyting_wait_time
+                    wait_time += _buffer_empyting_wait_time
                     info_command = MachineCommand()
                     info_command.command_number = 31
                     reply = self.machine_connection.send_command(info_command)
@@ -185,10 +186,11 @@ class Machine():
                     command_max_buffer_length = int(reply.arguments[1])
                     command_buffer_free = command_max_buffer_length - command_buffer_length
                     buffer_free = (command_buffer_free > _min_command_buffer_free_space)
-                    if (wait_time>_buffer_warn_waittime):
-                        _logger.warning("Waiting for free arduino command buffer: %s free of % s total, waiting for %s free",
-                                     command_buffer_free, command_buffer_length, _min_command_buffer_free_space)
-                        wait_time=0
+                    if (wait_time > _buffer_warn_waittime):
+                        _logger.warning(
+                            "Waiting for free arduino command buffer: %s free of % s total, waiting for %s free",
+                            command_buffer_free, command_buffer_length, _min_command_buffer_free_space)
+                        wait_time = 0
                     else:
                         _logger.debug("waiting for free buffer")
         else:
@@ -219,30 +221,32 @@ class _MachineConnection:
         self.listening_thread.start()
         self.internal_queue_length = 0
         self.internal_queue_max_length = 1
+        self.serial_lock = threading.Lock()
 
     def send_command(self, command, timeout=None):
-        _logger.debug("sending command %s", command)
-        if not timeout:
-            timeout = _default_timeout
-            #empty the queue?? shouldn't it be empty??
-        self.response_queue.empty()
-        self.machine_serial.write(str(command.command_number))
-        if command.arguments:
-            self.machine_serial.write(",")
-            for param in command.arguments[:-1]:
-                self.machine_serial.write(repr(param))
+        with self.serial_lock:
+            _logger.debug("sending command %s", command)
+            if not timeout:
+                timeout = _default_timeout
+                #empty the queue?? shouldn't it be empty??
+            self.response_queue.empty()
+            self.machine_serial.write(str(command.command_number))
+            if command.arguments:
                 self.machine_serial.write(",")
-            self.machine_serial.write(repr(command.arguments[-1]))
-        self.machine_serial.write(";\n")
-        self.machine_serial.flush()
-        try:
-            response = self.response_queue.get(timeout=timeout)
-            _logger.debug("Received %s as response to %s", response, command)
-            return response
-        except Empty:
-            #disconnect in panic
-            self.run_on = False
-            raise MachineError("Machine does not listen!")
+                for param in command.arguments[:-1]:
+                    self.machine_serial.write(repr(param))
+                    self.machine_serial.write(",")
+                self.machine_serial.write(repr(command.arguments[-1]))
+            self.machine_serial.write(";\n")
+            self.machine_serial.flush()
+            try:
+                response = self.response_queue.get(timeout=timeout)
+                _logger.debug("Received %s as response to %s", response, command)
+                return response
+            except Empty:
+                #disconnect in panic
+                self.run_on = False
+                raise MachineError("Machine does not listen!")
 
 
     def last_heart_beat(self):

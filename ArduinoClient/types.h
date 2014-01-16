@@ -3,7 +3,8 @@ enum movement_type {
   move_to,
   follow_to,
   move_over,
-  follow_over
+  follow_over, 
+  uninitialized
 };
 
 //there is more to motion than ture and false

@@ -12,7 +12,7 @@ from trinamic_3d_printer.Printer import Printer
 from trinamic_3d_printer.gcode import read_gcode_to_printer
 
 _config_file = "testprint-config.json"
-_print_file = "../reference designs/test-model.gcode"
+_print_file = "../reference designs/test-model-reduced.gcode"
 _default_serial_port = "/dev/ttyO1"
 _reset_pin = "P8_26"
 _create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"

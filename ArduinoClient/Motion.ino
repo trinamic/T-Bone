@@ -9,7 +9,8 @@ unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 void startMotion(char initial_min_buffer_depth) {
   if (initial_min_buffer_depth > DEFAULT_COMMAND_BUFFER_DEPTH) {
     min_buffer_depth = initial_min_buffer_depth;
-  } else {
+  } 
+  else {
     min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
   }
 #ifdef DEBUG_MOTION_STATUS
@@ -69,7 +70,7 @@ void checkMotion() {
       if (moveQueue.count()>min_buffer_depth) {
         if (min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
 #ifdef DEBUG_MOTION_STATUS
-       Serial.println(F("Inital motion buffer full."));
+          Serial.println(F("Inital motion buffer full."));
 #endif
           min_buffer_depth=DEFAULT_COMMAND_BUFFER_DEPTH;
         }
@@ -114,18 +115,21 @@ void checkMotion() {
 
         movement follower;
         do {
-          follower = moveQueue.peek();
-          if (follower.type==follow_over || follower.type==follow_to) {  
-            moveQueue.pop();
+          follower.type=uninitialized;
+          if (!moveQueue.isEmpty()) {
+            follower = moveQueue.peek();
+            if (follower.type==follow_over || follower.type==follow_to) {  
+              moveQueue.pop();
 #ifdef DEBUG_MOTION
-            Serial.print(F("Following motor "));
-            Serial.print(follower.motor,DEC);
-            Serial.print(F(" to "));
-            Serial.println(follower.target,DEC);
+              Serial.print(F("Following motor "));
+              Serial.print(follower.motor,DEC);
+              Serial.print(F(" to "));
+              Serial.println(follower.target,DEC);
 #endif
-            moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers, follower.type==follow_over);
-            moving_motors |= _BV(follower.motor);
-            last_target[follower.motor]=follower.target;
+              moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers, follower.type==follow_over);
+              moving_motors |= _BV(follower.motor);
+              last_target[follower.motor]=follower.target;
+            }
           }
         } 
         while (follower.type == follow_over || follower.type == follow_to);
@@ -155,8 +159,8 @@ void checkMotion() {
       } 
       else {
 #ifdef DEBUG_MOTION_STATUS
-       //TODO come up with a sensbilde warning
-       // Serial.println(F("Move Queue emptied!"));
+        //TODO come up with a sensbilde warning
+        // Serial.println(F("Move Queue emptied!"));
 #endif
         //TODO should we react in any way to it?
       }
@@ -195,6 +199,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 
