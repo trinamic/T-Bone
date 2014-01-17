@@ -13,14 +13,14 @@
 //##################
 
 //#define DEBUG_MOTOR_CONTFIG
-//#define DEBUG_HOMING
+#define DEBUG_HOMING
 //#define DEBUG_ENDSTOPS
 
 //#define DEBUG_MOTION
 //#define DEBUG_MOTION_TRACE
 //#define DEBUG_MOTION_TRACE_SHORT
 //#define DEBUG_MOTOR_QUEUE
-#define DEBUG_MOTION_STATUS
+//#define DEBUG_MOTION_STATUS
 //#define DEBUG_X_POS
 
 //#define DEBUG_STATUS
@@ -32,6 +32,7 @@
 //the CS pins have to be defines for digitalWriteFast 
 #define SQUIRREL_0_PIN 8
 #define SQUIRREL_1_PIN 12
+#define TMC5041_PIN 11
 
 //standards
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -81,6 +82,10 @@ void setup() {
   //at least we should try deactivate the squirrels
   pinModeFast(reset_squirrel,OUTPUT);
   digitalWriteFast(reset_squirrel, LOW);
+
+  pinModeFast(TMC5041_PIN,OUTPUT);
+  digitalWriteFast(TMC5041_PIN,HIGH);
+
 
   //initialize the serial port for commands
   Serial1.begin(115200);
