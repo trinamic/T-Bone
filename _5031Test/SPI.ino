@@ -1,27 +1,27 @@
 unsigned char status;
 
 
-void write45031(unsigned char tmc_register, unsigned long datagram) {
+void write5031(unsigned char tmc_register, unsigned long datagram) {
   //select the TMC driver
   digitalWrite(tmc_5031,LOW);
 
-  send43x(tmc_register | 0x80,datagram);
+  send5031(tmc_register | 0x80,datagram);
 
   //deselect the TMC chip
   digitalWrite(tmc_5031,HIGH); 
 }
 
-void read43x(unsigned char tmc_register, unsigned long datagram) {
+void read5031x(unsigned char tmc_register, unsigned long datagram) {
   //select the TMC driver
   digitalWrite(tmc_5031,LOW);
 
-  send43x(tmc_register, datagram);
+  send5031(tmc_register, datagram);
 
   //deselect the TMC chip
   digitalWrite(tmc_5031,HIGH); 
 }
 
-void send43x(unsigned char tmc_register, unsigned long datagram) {
+void send5031(unsigned char tmc_register, unsigned long datagram) {
   unsigned long i_datagram;
 
 #ifdef DEBUG

@@ -9,6 +9,12 @@ unsigned int current_in_ma = 500;
 long vmax = 100000000ul;
 
 //register
+#define TMC5031_GENERAL_CONFIG_REGISTER 0x00
+#define TMC5031_RAMP_MODE_REGISTER_1 0x20
+#define TMC5031_HOLD_RUN_CURRENT_REGISTER_1 0x30
+
+#define TMC5031_RAMP_MODE_REGISTER_2 0x40
+#define TMC5031_HOLD_RUN_CURRENT_REGISTER_1 0x50
 
 //values
 
@@ -38,6 +44,10 @@ void setup() {
   digitalWrite(squirrel_b,HIGH);
   //initialize SPI
   SPI.begin();
+  //initialize the genereal configuration of the tmc 5031
+  write5031(TMC5031_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
+  write5031(TMC5031_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
+  //TODOD write 1s to the TMC5031_HOLD_RUN_CURRENT_REGISTER_1??
 }
 
 unsigned long target=0;
