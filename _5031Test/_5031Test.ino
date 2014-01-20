@@ -5,8 +5,8 @@
 #define DEBUG
 
 //config
-unsigned int run_current_in_ma = 500;
-unsigned int hold_current_in_ma = 100;
+unsigned int run_current_in_ma = 800;
+unsigned int hold_current_in_ma = 600;
 long vmax = 100000000ul;
 
 #define TMC_5031_R_SENSE 0.27
@@ -16,14 +16,26 @@ long vmax = 100000000ul;
 #define TMC5031_GENERAL_CONFIG_REGISTER 0x00
 #define TMC5031_RAMP_MODE_REGISTER_1 0x20
 #define TMC5031_X_ACTUAL_REGISTER_1 0x21
-#define TMC5031_X_TARGET_REGISTER_1 0x2d
+#define TMC5031_A_1_REGISTER_1 0x24
+#define TMC5031_V_1_REGISTER_1 0x25
+#define TMC5031_A_MAX_REGISTER_1 0x26
 #define TMC5031_V_MAX_REGISTER_2 0x27
+#define TMC5031_D_MAX_REGISTER_1 0x28
+#define TMC5031_D_1_REGISTER_1 0x29a
+#define TMC5031_V_STOP_REGISTER_1 0x29b
+#define TMC5031_X_TARGET_REGISTER_1 0x2d
 #define TMC5031_HOLD_RUN_CURRENT_REGISTER_1 0x30
 #define TMC5031_CHOPPER_CONFIGURATION_REGISTER_1 0x6c
 
 #define TMC5031_RAMP_MODE_REGISTER_2 0x40
 #define TMC5031_X_ACTUAL_REGISTER_2 0x41
+#define TMC5031_A_1_REGISTER_2 0x44
+#define TMC5031_V_1_REGISTER_2 0x45
+#define TMC5031_A_MAX_REGISTER_2 0x46
 #define TMC5031_V_MAX_REGISTER_2 0x47
+#define TMC5031_D_MAX_REGISTER_2 0x48
+#define TMC5031_D_1_REGISTER_2 0x4a
+#define TMC5031_V_STOP_REGISTER_2 0x49b
 #define TMC5031_X_TARGET_REGISTER_2 0x4d
 #define TMC5031_HOLD_RUN_CURRENT_REGISTER_2 0x50
 #define TMC5031_CHOPPER_CONFIGURATION_REGISTER_2 0x7c
@@ -88,6 +100,11 @@ void setup() {
     chopper_config|= _BV(17); //lower v_sense
    } 
    write5031(TMC5031_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
+   //Set the basic config parameters 
+   write5031(TMC5031_A_MAX_REGISTER_2,vmax);
+   write5031(TMC5031_D_MAX_REGISTER_2,vmax);
+   write5031(TMC5031_A_1_REGISTER_2,vmax);
+   write5031(TMC5031_V_STOP_REGISTER_2,1); //the datahseet says it is needed
 }
 
 unsigned long target=0;
