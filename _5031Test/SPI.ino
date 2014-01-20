@@ -1,27 +1,27 @@
 unsigned char status;
 
 
-void write43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
+void write45031(unsigned char tmc_register, unsigned long datagram) {
   //select the TMC driver
-  digitalWrite(motor,LOW);
+  digitalWrite(tmc_5031,LOW);
 
-  send43x(tmc43x_register | 0x80,datagram);
+  send43x(tmc_register | 0x80,datagram);
 
   //deselect the TMC chip
-  digitalWrite(motor,HIGH); 
+  digitalWrite(tmc_5031,HIGH); 
 }
 
-void read43x(unsigned char motor, unsigned char tmc43x_register, unsigned long datagram) {
+void read43x(unsigned char tmc_register, unsigned long datagram) {
   //select the TMC driver
-  digitalWrite(motor,LOW);
+  digitalWrite(tmc_5031,LOW);
 
-  send43x(tmc43x_register, datagram);
+  send43x(tmc_register, datagram);
 
   //deselect the TMC chip
-  digitalWrite(motor,HIGH); 
+  digitalWrite(tmc_5031,HIGH); 
 }
 
-void send43x(unsigned char tmc43x_register, unsigned long datagram) {
+void send43x(unsigned char tmc_register, unsigned long datagram) {
   unsigned long i_datagram;
 
 #ifdef DEBUG
@@ -30,7 +30,7 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
 #endif
 
   //the first value is irgnored
-  status = SPI.transfer(tmc43x_register);
+  status = SPI.transfer(tmc_register);
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;
@@ -47,16 +47,4 @@ void send43x(unsigned char tmc43x_register, unsigned long datagram) {
   Serial.println(i_datagram,HEX);
 #endif
 }
-
-void set260Register(unsigned char motor, unsigned long value) {
-  //santitize to 20 bits 
-  value &= 0xFFFFF;
-  write43x(motor, COVER_LOW_REGISTER,value);  //Cover-Register: Einstellung des SMARTEN=aus
-
-  read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  read43x(motor, STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-}
-
-
 
