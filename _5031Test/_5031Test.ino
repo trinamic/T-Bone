@@ -15,10 +15,16 @@ long vmax = 100000000ul;
 //register
 #define TMC5031_GENERAL_CONFIG_REGISTER 0x00
 #define TMC5031_RAMP_MODE_REGISTER_1 0x20
+#define TMC5031_X_ACTUAL_REGISTER_1 0x21
+#define TMC5031_X_TARGET_REGISTER_1 0x2d
+#define TMC5031_V_MAX_REGISTER_2 0x27
 #define TMC5031_HOLD_RUN_CURRENT_REGISTER_1 0x30
 #define TMC5031_CHOPPER_CONFIGURATION_REGISTER_1 0x6c
 
 #define TMC5031_RAMP_MODE_REGISTER_2 0x40
+#define TMC5031_X_ACTUAL_REGISTER_2 0x41
+#define TMC5031_V_MAX_REGISTER_2 0x47
+#define TMC5031_X_TARGET_REGISTER_2 0x4d
 #define TMC5031_HOLD_RUN_CURRENT_REGISTER_2 0x50
 #define TMC5031_CHOPPER_CONFIGURATION_REGISTER_2 0x7c
 
@@ -72,7 +78,6 @@ void setup() {
   current_register |= hold_current <<4;
   write5031(TMC5031_HOLD_RUN_CURRENT_REGISTER_2,current_register);
   chopper_config = 0
-    | 0x20000000ul //just testing 32bit
     | (2<<15) // comparator blank time
     | _BV(13) //random t_off
     | (4<<7) //hysteresis end time
@@ -94,12 +99,13 @@ void loop() {
     Serial.print("Move to ");
     Serial.println(target);
     Serial.println();
+    write5031(TMC5031_X_TARGET_REGISTER_2, target);
+    write5031(TMC5031_V_MAX_REGISTER_2, this_v);
   }
   if (checkMetro.check()) {
-    unsigned long readChopperconfig = read5031(TMC5031_CHOPPER_CONFIGURATION_REGISTER_2,0);
-    Serial.print(chopper_config);
-    Serial.print(" -> ");
-    Serial.println(readChopperconfig);
+    unsigned long x_actual = read5031(TMC5031_X_ACTUAL_REGISTER_2,0);
+    Serial.print("X: ");
+    Serial.println(x_actual);
     // put your main code here, to run repeatedly: 
   }
 }
