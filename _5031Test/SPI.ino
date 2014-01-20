@@ -48,3 +48,31 @@ void send5031(unsigned char tmc_register, unsigned long datagram) {
 #endif
 }
 
+#define V_LOW_SENSE 0.325
+#define V_HIGH_SENSE 0.18
+#define SQRT_2 (1.414213562373095)
+
+unsigned char calculateCurrent(int current) {
+  int high_sense_current = calculateCurrentHighSense(current);
+  if (high_sense_current<32) {
+    return high_sense_current;
+  }
+  int low_sense_current = calculateCurrentLowSense(current);
+  if (low_sense_current>31) {
+    low_sense_current=31;
+  }
+  return low_sense_current | 0x80;
+}
+
+int calculateCurrentHighSense(int current) {
+  float real_current = (float)current/1000.0;
+  int high_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5031_R_SENSE/V_HIGH_SENSE)-1;
+  return high_sense_current;
+}
+
+int calculateCurrentLowSense(int current) {
+  float real_current = (float)current/1000.0;
+  int low_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5031_R_SENSE/V_LOW_SENSE)-1;
+  return low_sense_current;
+}
+

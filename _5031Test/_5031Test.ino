@@ -8,6 +8,8 @@
 unsigned int current_in_ma = 500;
 long vmax = 100000000ul;
 
+#define TMC_5031_R_SENSE 0.27
+
 //register
 #define TMC5031_GENERAL_CONFIG_REGISTER 0x00
 #define TMC5031_RAMP_MODE_REGISTER_1 0x20
@@ -62,8 +64,19 @@ void loop() {
   }
   if (checkMetro.check()) {
     // put your main code here, to run repeatedly: 
+    unsigned char cs = calculateCurrent(current_in_ma);
+    Serial.print("Current");
+    if (cs & 0x80) {
+      Serial.print(" (h);");
+      Serial.println((cs&0x7F),DEC);
+    } 
+    else {
+      Serial.print(" (l);");
+      Serial.println(cs,DEC);
+    }
   }
 }
+
 
 
 
