@@ -11,17 +11,18 @@ void write5031(unsigned char tmc_register, unsigned long datagram) {
   digitalWrite(tmc_5031,HIGH); 
 }
 
-void read5031x(unsigned char tmc_register, unsigned long datagram) {
+unsigned long read5031(unsigned char tmc_register, unsigned long datagram) {
   //select the TMC driver
   digitalWrite(tmc_5031,LOW);
 
-  send5031(tmc_register, datagram);
+  unsigned long return_value = send5031(tmc_register, datagram);
 
   //deselect the TMC chip
   digitalWrite(tmc_5031,HIGH); 
+  return return_value;
 }
 
-void send5031(unsigned char tmc_register, unsigned long datagram) {
+unsigned long send5031(unsigned char tmc_register, unsigned long datagram) {
   unsigned long i_datagram;
 
 #ifdef DEBUG
@@ -34,7 +35,7 @@ void send5031(unsigned char tmc_register, unsigned long datagram) {
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;
-  i_datagram = SPI.transfer((datagram >> 16) & 0xff);
+  i_datagram |= SPI.transfer((datagram >> 16) & 0xff);
   i_datagram <<= 8;
   i_datagram |= SPI.transfer((datagram >>  8) & 0xff);
   i_datagram <<= 8;
@@ -46,6 +47,8 @@ void send5031(unsigned char tmc_register, unsigned long datagram) {
   Serial.print("Received ");
   Serial.println(i_datagram,HEX);
 #endif
+
+  return i_datagram;
 }
 
 #define V_LOW_SENSE 0.325
