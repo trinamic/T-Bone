@@ -44,7 +44,7 @@ unsigned long send5031(unsigned char tmc_register, unsigned long datagram) {
 
 #ifdef DEBUG
   Serial.print("Status :");
-  Serial.println(status,BIN);
+  Serial.println(status,HEX);
   Serial.print("Received ");
   Serial.println(i_datagram,HEX);
 #endif
