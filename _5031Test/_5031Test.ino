@@ -5,11 +5,12 @@
 //#define DEBUG
 
 //config
-unsigned int run_current_in_ma = 400;
+unsigned int run_current_in_ma = 200;
 unsigned int hold_current_in_ma = 40;
 long vmax = 10000ul;
 
 #define TMC_5031_R_SENSE 0.27
+//TODO there is a 20mOhm additional resistance  so this should be 0.02??
 #define I_HOLD_DELAY 2
 
 //register
