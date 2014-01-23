@@ -6,8 +6,8 @@
 
 //config
 unsigned int run_current_in_ma = 800;
-unsigned int hold_current_in_ma = 600;
-long vmax = 100000000ul;
+unsigned int hold_current_in_ma = 400;
+long vmax = 316227ul;
 
 #define TMC_5031_R_SENSE 0.27
 #define I_HOLD_DELAY 2
@@ -21,7 +21,7 @@ long vmax = 100000000ul;
 #define TMC5031_A_1_REGISTER_1 0x24
 #define TMC5031_V_1_REGISTER_1 0x25
 #define TMC5031_A_MAX_REGISTER_1 0x26
-#define TMC5031_V_MAX_REGISTER_2 0x27
+#define TMC5031_V_MAX_REGISTER_1 0x27
 #define TMC5031_D_MAX_REGISTER_1 0x28
 #define TMC5031_D_1_REGISTER_1 0x29a
 #define TMC5031_V_STOP_REGISTER_1 0x29b
@@ -56,7 +56,9 @@ int squirrel_a = 12;
 int squirrel_b = 8;
 int tmc_5031 = 11;
 int reset_squirrel = 4;
+
 unsigned long chopper_config;
+unsigned long current_register;
 
 void setup() {
   //initialize the serial port for debugging
@@ -72,7 +74,7 @@ void setup() {
   pinMode(squirrel_b,OUTPUT);
   digitalWrite(squirrel_b,HIGH);
   pinMode(tmc_5031,OUTPUT);
-  digitalWrite(squirrel_b,HIGH);
+  digitalWrite(tmc_5031,HIGH);
   //initialize SPI
   SPI.begin();
   //initialize the genereal configuration of the tmc 5031
@@ -87,17 +89,17 @@ void setup() {
   } else {
     hold_current=calculateCurrentHighSense(hold_current_in_ma);
   }
-  unsigned long current_register=0;
+  current_register=0;
   //se89t the holding delay
   current_register |= I_HOLD_DELAY << 16;
   current_register |= run_current << 8;
   current_register |= hold_current;
   write5031(TMC5031_HOLD_RUN_CURRENT_REGISTER_2,current_register);
   chopper_config = 0
-    | (5<<15) // comparator blank time
+    | (2<<15) // comparator blank time 2=34
     | _BV(13) //random t_off
-    | (10 << 7) //hysteresis end time
-    | (3 << 4) // hysteresis start time
+    | (3 << 7) //hysteresis end time
+    | (5 << 4) // hysteresis start time
     | 5 //t OFF
     ;
    if (!low_sense) {
@@ -105,9 +107,9 @@ void setup() {
    } 
    write5031(TMC5031_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
    //Set the basic config parameters 
-   write5031(TMC5031_A_MAX_REGISTER_2,vmax);
-   write5031(TMC5031_D_MAX_REGISTER_2,vmax);
-   write5031(TMC5031_A_1_REGISTER_2,vmax);
+   write5031(TMC5031_A_MAX_REGISTER_2,vmax/10.0);
+   write5031(TMC5031_D_MAX_REGISTER_2,vmax/10.0);
+   write5031(TMC5031_A_1_REGISTER_2,vmax/10.0);
    write5031(TMC5031_V_STOP_REGISTER_2,1); //the datahseet says it is needed
    //get rid of the 'something happened after reboot' warning
    read5031(TMC5031_GENERAL_STATUS_REGISTER,0);
@@ -131,10 +133,10 @@ void loop() {
     Serial.println(x_actual);
     unsigned long inputvalue = read5031(TMC5031_INPUT_REGISTER,0);
     Serial.print("i: ");
-    Serial.println(inputvalue);
-    unsigned long status = read5031(TMC5031_DRIVER_STATUS_REGISTER_2,0);
+    Serial.println(inputvalue,HEX);
+    unsigned long d_status = read5031(TMC5031_DRIVER_STATUS_REGISTER_2,0);
     Serial.print("s: ");
-    Serial.println(status);
+    Serial.println(d_status,HEX);
     // put your main code here, to run repeatedly: 
   }
 }

@@ -16,6 +16,8 @@ unsigned long read5031(unsigned char tmc_register, unsigned long datagram) {
   digitalWrite(tmc_5031,LOW);
 
   send5031(tmc_register, datagram);
+  digitalWrite(tmc_5031,HIGH); 
+  digitalWrite(tmc_5031,LOW);
   unsigned long return_value = send5031(tmc_register, datagram);
 
   //deselect the TMC chip
@@ -79,6 +81,7 @@ int calculateCurrentLowSense(int current) {
   int low_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5031_R_SENSE/V_LOW_SENSE)-1;
   return low_sense_current;
 }
+
 
 
 
