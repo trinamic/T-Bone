@@ -2,11 +2,11 @@
 #include <TMC26XGenerator.h>
 #include <Metro.h>
 
-#define DEBUG
+//#define DEBUG
 
 //config
-unsigned int run_current_in_ma = 800;
-unsigned int hold_current_in_ma = 400;
+unsigned int run_current_in_ma = 400;
+unsigned int hold_current_in_ma = 40;
 long vmax = 316227ul;
 
 #define TMC_5031_R_SENSE 0.27
@@ -16,8 +16,10 @@ long vmax = 316227ul;
 #define TMC5031_GENERAL_CONFIG_REGISTER 0x00
 #define TMC5031_GENERAL_STATUS_REGISTER 0x01
 #define TMC5031_INPUT_REGISTER 0x04
+
 #define TMC5031_RAMP_MODE_REGISTER_1 0x20
 #define TMC5031_X_ACTUAL_REGISTER_1 0x21
+#define TMC5031_V_ACTUAL_REGISTER_1 0x22
 #define TMC5031_A_1_REGISTER_1 0x24
 #define TMC5031_V_1_REGISTER_1 0x25
 #define TMC5031_A_MAX_REGISTER_1 0x26
@@ -27,11 +29,14 @@ long vmax = 316227ul;
 #define TMC5031_V_STOP_REGISTER_1 0x29b
 #define TMC5031_X_TARGET_REGISTER_1 0x2d
 #define TMC5031_HOLD_RUN_CURRENT_REGISTER_1 0x30
+#define TMC5031_REFERENCE_SWITCH_CONFIG_REGISTER_1 0x34
+#define TMC5031_RAMP_STATUS_REGISTER_2 0x35
 #define TMC5031_CHOPPER_CONFIGURATION_REGISTER_1 0x6c
 #define TMC5031_DRIVER_STATUS_REGISTER_1 0x6f
 
 #define TMC5031_RAMP_MODE_REGISTER_2 0x40
 #define TMC5031_X_ACTUAL_REGISTER_2 0x41
+#define TMC5031_V_ACTUAL_REGISTER_2 0x42
 #define TMC5031_A_1_REGISTER_2 0x44
 #define TMC5031_V_1_REGISTER_2 0x45
 #define TMC5031_A_MAX_REGISTER_2 0x46
@@ -41,6 +46,8 @@ long vmax = 316227ul;
 #define TMC5031_V_STOP_REGISTER_2 0x49b
 #define TMC5031_X_TARGET_REGISTER_2 0x4d
 #define TMC5031_HOLD_RUN_CURRENT_REGISTER_2 0x50
+#define TMC5031_REFERENCE_SWITCH_CONFIG_REGISTER_2 0x54
+#define TMC5031_RAMP_STATUS_REGISTER_2 0x55
 #define TMC5031_CHOPPER_CONFIGURATION_REGISTER_2 0x7c
 #define TMC5031_DRIVER_STATUS_REGISTER_2 0x7f
 
@@ -86,7 +93,8 @@ void setup() {
   unsigned char hold_current;
   if (low_sense) {
     hold_current=calculateCurrentLowSense(hold_current_in_ma);
-  } else {
+  } 
+  else {
     hold_current=calculateCurrentHighSense(hold_current_in_ma);
   }
   current_register=0;
@@ -98,48 +106,74 @@ void setup() {
   chopper_config = 0
     | (2<<15) // comparator blank time 2=34
     | _BV(13) //random t_off
-    | (3 << 7) //hysteresis end time
-    | (5 << 4) // hysteresis start time
-    | 5 //t OFF
-    ;
-   if (!low_sense) {
+      | (3 << 7) //hysteresis end time
+        | (5 << 4) // hysteresis start time
+          | 5 //t OFF
+          ;
+  if (!low_sense) {
     chopper_config|= _BV(17); //lower v_sense
-   } 
-   write5031(TMC5031_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
-   //Set the basic config parameters 
-   write5031(TMC5031_A_MAX_REGISTER_2,vmax/10.0);
-   write5031(TMC5031_D_MAX_REGISTER_2,vmax/10.0);
-   write5031(TMC5031_A_1_REGISTER_2,vmax/10.0);
-   write5031(TMC5031_V_STOP_REGISTER_2,1); //the datahseet says it is needed
-   //get rid of the 'something happened after reboot' warning
-   read5031(TMC5031_GENERAL_STATUS_REGISTER,0);
+  } 
+  write5031(TMC5031_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
+  //configure reference switches
+  write5031(TMC5031_REFERENCE_SWITCH_CONFIG_REGISTER_2, 0 
+    | _BV(3) //stop_r is positive 
+  | _BV(2) //stop_l is positive
+  | _BV(1) //stop_r is active
+  | _BV(0) //stop_l ist actuve
+  );
+  //Set the basic config parameters 
+  unsigned long acceleration = vmax/10;
+  write5031(TMC5031_A_MAX_REGISTER_2,acceleration);
+  write5031(TMC5031_D_MAX_REGISTER_2,acceleration);
+  write5031(TMC5031_A_1_REGISTER_2,acceleration);
+  write5031(TMC5031_V_1_REGISTER_2,0);
+  write5031(TMC5031_D_1_REGISTER_2,acceleration); //the datahseet says it is needed
+  write5031(TMC5031_V_STOP_REGISTER_2,vmax); //the datahseet says it is needed
+  //get rid of the 'something happened after reboot' warning
+  read5031(TMC5031_GENERAL_STATUS_REGISTER,0);
 }
 
 unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(1000000ul);
+    target=random(10000000ul);
     unsigned long this_v = vmax+random(100)*vmax;
     Serial.print("Move to ");
-    Serial.println(target);
+    Serial.print(target);
+    Serial.print(" @ ");
+    Serial.println(this_v);
     Serial.println();
+
     write5031(TMC5031_V_MAX_REGISTER_2, this_v);
     write5031(TMC5031_X_TARGET_REGISTER_2, target);
   }
   if (checkMetro.check()) {
     unsigned long x_actual = read5031(TMC5031_X_ACTUAL_REGISTER_2,0);
+    unsigned long x_target = read5031(TMC5031_X_TARGET_REGISTER_2,0);
+    unsigned long v_actual = read5031(TMC5031_V_ACTUAL_REGISTER_2,0);
     Serial.print("X: ");
-    Serial.println(x_actual);
+    Serial.print(x_actual);
+    Serial.print(" -> ");
+    Serial.print(x_target);
+    Serial.print(" @ ");
+    Serial.println(v_actual);
+
     unsigned long inputvalue = read5031(TMC5031_INPUT_REGISTER,0);
     Serial.print("i: ");
     Serial.println(inputvalue,HEX);
+
     unsigned long d_status = read5031(TMC5031_DRIVER_STATUS_REGISTER_2,0);
     Serial.print("s: ");
     Serial.println(d_status,HEX);
+    unsigned long r_status = read5031(TMC5031_RAMP_STATUS_REGISTER_2,0);
+    Serial.print("r: ");
+    Serial.println(r_status,HEX);
     // put your main code here, to run repeatedly: 
   }
 }
+
+
 
 
 

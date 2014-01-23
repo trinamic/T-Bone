@@ -29,7 +29,9 @@ unsigned long send5031(unsigned char tmc_register, unsigned long datagram) {
   unsigned long i_datagram;
 
 #ifdef DEBUG
-  Serial.print("Sending ");
+  Serial.print("To ");
+  Serial.print(tmc_register,HEX);
+  Serial.print(" sending ");
   Serial.println(datagram,HEX);
 #endif
 
