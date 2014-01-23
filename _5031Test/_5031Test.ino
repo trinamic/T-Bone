@@ -7,7 +7,7 @@
 //config
 unsigned int run_current_in_ma = 400;
 unsigned int hold_current_in_ma = 40;
-long vmax = 316227ul;
+long vmax = 10000ul;
 
 #define TMC_5031_R_SENSE 0.27
 #define I_HOLD_DELAY 2
@@ -137,7 +137,7 @@ unsigned long target=0;
 
 void loop() {
   if (target==0 | moveMetro.check()) {
-    target=random(10000000ul);
+    target=random(100000ul);
     unsigned long this_v = vmax+random(100)*vmax;
     Serial.print("Move to ");
     Serial.print(target);
