@@ -16,7 +16,7 @@ def check_for_serial_port():
     return _default_serial_port
 
 
-def create_print():
+def create_printer():
     printer = {}
     printer['serial_port'] = check_for_serial_port()
     serial_port_ = printer['serial_port']
