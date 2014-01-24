@@ -5,7 +5,7 @@ import logging
 from math import sqrt, copysign
 from numpy import sign
 from threading import Thread
-from trinamic_3d_printer.Machine import Machine
+from trinamic_3d_printer.machine import Machine
 from trinamic_3d_printer.helpers import _convert_mm_to_steps, find_shortest_vector, _calculate_relative_vector
 
 __author__ = 'marcus'
