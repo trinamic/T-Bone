@@ -17,10 +17,8 @@ def check_for_serial_port():
 
 
 def create_printer():
-    printer = {}
-    printer['serial_port'] = check_for_serial_port()
-    serial_port_ = printer['serial_port']
-    printer['printer'] = Printer(serial_port=serial_port_, reset_pin=_reset_pin)
+    serial_port_ = check_for_serial_port()
+    printer = Printer(serial_port=serial_port_, reset_pin=_reset_pin)
 
     #basically the printer is just a bunch of stuff
     return printer
