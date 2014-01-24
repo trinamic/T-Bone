@@ -6,3 +6,6 @@
 
 #idea stuff
 .idea/
+
+#the bootstrap distfile
+bootstrap-3.0.3/dist
