@@ -38,10 +38,8 @@ class Printer(Thread):
 
         self._homing_timeout = 10
 
-        #finally create and conect the machine
+        #finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
-        _logger.debug("Connecting printer")
-        self.machine.connect()
 
     def configure(self, config):
         if not config:
@@ -60,6 +58,11 @@ class Printer(Thread):
         self._configure_axis(self.axis['y'], config["y-axis"])
 
         self.ready = True
+
+    def connect(self):
+        _logger.debug("Connecting printer")
+        self.machine.connect()
+
 
     def start_print(self):
         self._print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
