@@ -128,10 +128,6 @@ module.exports = function(grunt) {
       }
     },
 
-    jekyll: {
-      docs: {}
-    },
-
     validation: {
       options: {
         reset: true,
@@ -277,13 +273,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-html-validation');
-  grunt.loadNpmTasks('grunt-jekyll');
   grunt.loadNpmTasks('grunt-recess');
   grunt.loadNpmTasks('grunt-saucelabs');
   grunt.loadNpmTasks('grunt-sed');
 
   // Docs HTML validation task
-  grunt.registerTask('validate-html', ['jekyll', 'validation']);
+  grunt.registerTask('validate-html', ['validation']);
 
   // Test task.
   var testSubtasks = ['dist-css', 'jshint', 'qunit', 'validate-html'];
