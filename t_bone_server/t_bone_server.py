@@ -5,7 +5,14 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return render_template("index.html")
+    template_dictionary = templating_defaults()
+    return render_template("index.html", **template_dictionary)
+
+
+def templating_defaults():
+    return {
+        'name': 'T-Bone',
+    }
 
 
 if __name__ == '__main__':
