@@ -19,6 +19,7 @@ class Printer(Thread):
         self.printing = False
         self.config = None
         self.axis = {'x': {}, 'y': {}}
+        self.homed_axis = []
         self.axis['x']['motor'] = None
         self.axis['y']['motor'] = None
         self.axis['x']['scale'] = None
@@ -77,6 +78,16 @@ class Printer(Thread):
         self.machine.finish_motion()
         pass
 
+    def get_homeable_axis(self):
+        homeable_axis= []
+        for axis in self.axis:
+            if 'end-stops' in axis:
+                for position in ['left','right']:
+                    if position in axis['end-stop'] and not 'virtual' == axis['end-stops'][position]:
+                        homeable_axis.append(axis)
+                        break
+        return homeable_axis
+
     def home(self, axis):
         for home_axis in axis:
             _logger.info("Homing axis \'%s\' to zero", home_axis)
@@ -105,8 +116,10 @@ class Printer(Thread):
             #and do the homing
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'
+            self.homed_axis.append(home_axis)
         self.x_pos = 0
         self.y_pos = 0
+
 
 
     # tuple with x/y/e coordinates - if left out no change is intended

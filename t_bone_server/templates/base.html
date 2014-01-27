@@ -23,7 +23,6 @@
 <body>
 
 <div class="container">
-
     <!-- navbar -->
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="navbar-header">
@@ -49,17 +48,8 @@
         <!--/.nav-collapse -->
     </div>
 
-    <!-- Main component for a primary marketing message or call to action -->
-    <div class="jumbotron">
-        <h1>Navbar example</h1>
-
-        <p>This example is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work.
-            It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
-
-        <p>
-            <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
-        </p>
-    </div>
+    {% block content %}
+    {% endblock %}
 
 </div>
 <!-- /container -->
@@ -70,7 +60,7 @@
 
         <div class="col-md-8">{{ full_name }}, Status: {{ print_status }}</div>
         </p>
-        <div class="col-md-8">
+        <div class="col-md-4">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ queue_length }}" aria-valuemin="0" aria-valuemax="{{ max_queue_length }}"><span class="sr-only">Queue Status</span></div>
             </div>
