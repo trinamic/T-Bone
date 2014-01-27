@@ -22,6 +22,10 @@ def templating_defaults():
 
 
 if __name__ == '__main__':
+    #configure the overall logging
+    logging.basicConfig(filename='print.log', level=logging.INFO,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.info('Starting print server')
     #somehow we can get several initializations - hence we store a global printer
     try:
         if not _printer:
@@ -29,10 +33,14 @@ if __name__ == '__main__':
             config = json_config_file.read()
             _printer.connect()
             _printer.configure(config)
+        logging.info('configured, starting web interface')
         app.run(
             host='0.0.0.0',
-            debug=True
+            debug=True,
+            use_reloader=False
         )
     finally:
         #reset the printer
         _printer = None
+    logging.info('Quitting print server')
+
