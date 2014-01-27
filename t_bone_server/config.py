@@ -1,10 +1,10 @@
 import json
 
 __author__ = 'marcus'
+_config_file = 'printer-config.json-not'
 
-def read(_config_file):
-    if not _config_file:
-        raise Exception("No config w/o filename!")
+
+def read():
     json_config_file = open(_config_file)
     data = json.load(json_config_file)
     json_config_file.close()
