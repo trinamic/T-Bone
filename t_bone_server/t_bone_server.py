@@ -16,9 +16,21 @@ def hello_world():
 
 
 def templating_defaults():
-    return {
-        'name': 'T-Bone',
+    templating_dictionary = {
+        'short_name': 'T-Bone',
+        'full_name': 'T-Bone CNC Server'
     }
+    if _printer:
+        templating_dictionary['print'] = _printer.printing
+        if _printer.printing:
+            templating_dictionary['print_status'] = 'Printing'
+        else:
+            templating_dictionary['print_status'] = 'Idle'
+        if _printer.machine.machine_connection:
+            connection = _printer.machine.machine_connection
+            templating_dictionary['queue_length'] = connection.internal_queue_length
+            templating_dictionary['max_queue_length'] = connection.internal_queue_max_length
+    return templating_dictionary
 
 
 if __name__ == '__main__':
