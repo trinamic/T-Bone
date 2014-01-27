@@ -15,13 +15,21 @@ def start_page():
     return render_template("index.html", **template_dictionary)
 
 
+@app.route('/print')
+def print_page():
+    template_dictionary = templating_defaults()
+    return render_template("print.html", **template_dictionary)
+
+
 def templating_defaults():
     templating_dictionary = {
         'short_name': 'T-Bone',
-        'full_name': 'T-Bone CNC Server'
+        'full_name': 'T-Bone Reprap'
     }
     if _printer:
         templating_dictionary['print'] = _printer.printing
+        templating_dictionary['axis'] = _printer.axis
+        templating_dictionary['axis_names'] = _printer.axis_names()
         if _printer.printing:
             templating_dictionary['print_status'] = 'Printing'
         else:

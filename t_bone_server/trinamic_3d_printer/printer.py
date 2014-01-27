@@ -42,6 +42,11 @@ class Printer(Thread):
         #finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
 
+    def axis_names(self):
+        names = list(self.axis.keys())
+        names.sort()
+        return names
+
     def configure(self, config):
         if not config:
             raise PrinterError("No printer config given!")
@@ -57,6 +62,8 @@ class Printer(Thread):
 
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
+
+        self._extract_homing_information()
 
         self.ready = True
 
@@ -78,15 +85,15 @@ class Printer(Thread):
         self.machine.finish_motion()
         pass
 
-    def get_homeable_axis(self):
-        homeable_axis= []
-        for axis in self.axis:
+    def _extract_homing_information(self):
+        for axis_name, axis in self.axis.iteritems():
+            axis['homeable'] = False
             if 'end-stops' in axis:
-                for position in ['left','right']:
-                    if position in axis['end-stop'] and not 'virtual' == axis['end-stops'][position]:
-                        homeable_axis.append(axis)
+                for position in ['left', 'right']:
+                    if position in axis['end-stops'] and not 'virtual' == axis['end-stops'][position]:
+                        axis['homeable'] = True
+                        axis['homed'] = False
                         break
-        return homeable_axis
 
     def home(self, axis):
         for home_axis in axis:
@@ -116,10 +123,9 @@ class Printer(Thread):
             #and do the homing
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'
-            self.homed_axis.append(home_axis)
+            self.axis[axis]['homed'] = True
         self.x_pos = 0
         self.y_pos = 0
-
 
 
     # tuple with x/y/e coordinates - if left out no change is intended
@@ -162,7 +168,7 @@ class Printer(Thread):
         else:
             axis['home_acceleration'] = config['max-acceleration']
         if 'home-retract' in config:
-            axis['home_retract']  = config['home-retract']
+            axis['home_retract'] = config['home-retract']
         else:
             axis['home_retract'] = self._default_homing_retraction
 

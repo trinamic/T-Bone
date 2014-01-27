@@ -24,35 +24,19 @@
 
 <div class="container">
     <!-- navbar -->
-    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/">{{ short_name }}</a>
-        </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="/print">Print Model</a></li>
-                <li><a href="/move">Manual Move</a></li>
-                <li><a href="/config">Configuration</a></li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="http://trinamic.com/">Trinamic</a></li>
-                <li><a href="http://interactive-matter.de">Interactive Matter</a></li>
-            </ul>
-        </div>
-        <!--/.nav-collapse -->
+    <div class="masthead">
+        <h3 class="text-muted">{{ full_name }}</h3>
+        <ul class="nav nav-justified">
+            <li><a href="/print">Print Model</a></li>
+            <li><a href="/move">Manual Move</a></li>
+            <li><a href="/config">Configuration</a></li>
+        </ul>
     </div>
-
+    <!--/.nav-collapse -->
     {% block content %}
     {% endblock %}
 
 </div>
-<!-- /container -->
 
 <div id="footer">
     <div class="container">
@@ -62,16 +46,18 @@
         </p>
         <div class="col-md-4">
             <div class="progress">
-                <div class="progress-bar" role="progressbar" aria-valuenow="{{ queue_length }}" aria-valuemin="0" aria-valuemax="{{ max_queue_length }}"><span class="sr-only">Queue Status</span></div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="{{ queue_length }}" aria-valuemin="0"
+                     aria-valuemax="{{ max_queue_length }}"><span class="sr-only">Queue Status</span></div>
             </div>
         </div>
         </p>
     </div>
+</div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="/static/js/bootstrap.js"></script>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="/static/js/bootstrap.js"></script>
 </body>
 </html>
