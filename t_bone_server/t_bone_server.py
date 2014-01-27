@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 import logging
 import helpers
-import config
+import json_config_file
 
 app = Flask(__name__)
 _logger = logging.getLogger(__name__)
@@ -22,8 +22,9 @@ def templating_defaults():
 
 if __name__ == '__main__':
     _printer = helpers.create_printer()
-    config = config.read()
+    config = json_config_file.read()
     _printer.configure(config)
+    _printer.connect()
     app.run(
         host='0.0.0.0',
         debug=True

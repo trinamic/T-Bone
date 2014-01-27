@@ -1,7 +1,9 @@
 import json
 
 __author__ = 'marcus'
-_config_file = 'printer-config.json-not'
+#TODO perhaps we shift it to some better place later - like /etc??
+_config_directory = '/home/root/t3d/server/'
+_config_file = _config_directory+'printer_config.json'
 
 
 def read():
