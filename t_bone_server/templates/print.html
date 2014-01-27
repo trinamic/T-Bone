@@ -1,34 +1,33 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-{% for axis_name in axis %}
+    {% for axis_name in axis %}
+        <div class="row">
+            {% if axis[axis_name]['homeable'] %}
+                <p>&nbsp;</p>
+                <div class="col-lg-8">
+                    {% if axis[axis_name]['home'] %}
+                        Axis <em>{{ axis_name }}</em> is already homed.
+                    {% else %}
+                        Axis <em>{{ axis_name }}</em> is not homed.
+                    {% endif %}
+                </div>
+                <div class="col-lg-4">
+                    {% if axis[axis_name]['home'] %}
+                        <a class="btn btn-lg btn-default" href="/home/{{ axis_name }}">Home {{ axis_name }}<em></em></a>
+                    {% else %}
+                        <a class="btn btn-lg btn-warning" href="/home/{{ axis_name }}">Home {{ axis_name }}<em></em></a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
     <div class="row">
-        {% if axis[axis_name]['homeable'] %}
-            <p>&nbsp;</p>
-            <div class="col-lg-8">
-                {% if axis[axis_name]['home'] %}
-                    Axis <em>{{ axis_name }}</em> is already homed.
-                {% else %}
-                    Axis <em>{{ axis_name }}</em> is not homed.
-                {% endif %}
-            </div>
-            <div class="col-lg-4">
-                {% if axis[axis_name]['home'] %}
-                    <a class="btn btn-lg btn-default" href="/home/{{ axis_name }}">Home {{ axis_name }}<em></em></a>
-                {% else %}
-                    <a class="btn btn-lg btn-warning" href="/home/{{ axis_name }}">Home {{ axis_name }}<em></em></a>
-                {% endif %}
-            </div>
-        {% endif %}
+        <div class="col-lg-8">
+            &nbsp;
+        </div>
+        <div class="col-lg-4">
+            <a class="btn btn-lg btn-success" href="/home/all">Home {{ axis_name }}<em></em></a>
+        </div>
     </div>
-{% endfor %}
-<div class="row">
-    <div class="col-lg-8">
-        &nbsp;
-    </div>
-    <div class="col-lg-4">
-        <a class="btn btn-lg btn-success" href="/home/all">Home {{ axis_name }}<em></em></a>
-    </div>
-    {% endif %}
-</div>
 {% endblock %}

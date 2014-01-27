@@ -20,6 +20,10 @@ def print_page():
     template_dictionary = templating_defaults()
     return render_template("print.html", **template_dictionary)
 
+@app.route('/home/<axis>')
+def home_axis(axis):
+    template_dictionary = templating_defaults()
+    return render_template("print.html", **template_dictionary)
 
 def templating_defaults():
     templating_dictionary = {
