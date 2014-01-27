@@ -262,9 +262,11 @@ class _MachineConnection:
                 # if it is just the heart beat we write down the time
                 if command.command_number == -128:
                     self.last_heartbeat = time.clock()
-                    if command.arguments:
+                    if command.arguments and len(command.arguments)==2:
                         self.internal_queue_length = command.arguments[0]
                         self.internal_queue_max_length = command.arguments[1]
+                    else:
+                        _logger.warn("did not understand status command %s",command)
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
