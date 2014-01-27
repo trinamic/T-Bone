@@ -123,7 +123,7 @@ class Printer(Thread):
             #and do the homing
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'
-            self.axis[axis]['homed'] = True
+            self.axis[home_axis]['homed'] = True
         self.x_pos = 0
         self.y_pos = 0
 

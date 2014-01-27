@@ -20,10 +20,21 @@ def print_page():
     template_dictionary = templating_defaults()
     return render_template("print.html", **template_dictionary)
 
+
 @app.route('/home/<axis>')
 def home_axis(axis):
-    template_dictionary = templating_defaults()
-    return render_template("print.html", **template_dictionary)
+    if not _printer:
+        return "there is no printer", 400
+    all_axis = list(_printer.axis)
+    if 'all' == axis:
+        _printer.home(all_axis)
+    elif axis in all_axis:
+        _printer.home(axis)
+    else:
+        return "unkown axis", 400
+
+    return "ok"
+
 
 def templating_defaults():
     templating_dictionary = {
