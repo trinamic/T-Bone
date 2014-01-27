@@ -10,7 +10,7 @@ _printer = None
 
 
 @app.route('/')
-def hello_world():
+def start_page():
     template_dictionary = templating_defaults()
     return render_template("index.html", **template_dictionary)
 
