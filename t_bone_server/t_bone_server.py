@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import logging
+import threading
 import helpers
 import json_config_file
 
@@ -7,7 +8,19 @@ app = Flask(__name__)
 _logger = logging.getLogger(__name__)
 #this is THE printer - just a dictionary with anything
 _printer = None
+_printer_busy = False
+_printer_busy_lock = threading.RLock()
 
+
+def busy_function(original_function, *args, **kargs):
+    try:
+        with _printer_busy_lock:
+            _printer_busy = True
+        result = original_function(args, kargs)
+        return result
+    finally:
+        with _printer_busy_lock:
+            _printer_busy = False
 
 @app.route('/')
 def start_page():
@@ -22,6 +35,7 @@ def print_page():
 
 
 @app.route('/home/<axis>')
+@busy_function()
 def home_axis(axis):
     if not _printer:
         return "there is no printer", 400
