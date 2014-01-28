@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request
+import flask
+import json
 import logging
 import os
 import threading
@@ -107,6 +109,22 @@ def templating_defaults():
             templating_dictionary['queue_percentage'] = int(
                 float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
     return templating_dictionary
+
+
+@app.route('/status')
+def status():
+    connection = _printer.machine.machine_connection
+    return flask.jsonify(
+        {
+            'printing':_printer.printing,
+            'busy': (_printer_busy | _printer.printing),
+            'queue_length': connection.internal_queue_length,
+            'max_queue_length': connection.internal_queue_max_length,
+            'queue_percentage': int(
+                float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
+        }
+    )
+    pass
 
 
 if __name__ == '__main__':
