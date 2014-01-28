@@ -104,6 +104,8 @@ def templating_defaults():
             connection = _printer.machine.machine_connection
             templating_dictionary['queue_length'] = connection.internal_queue_length
             templating_dictionary['max_queue_length'] = connection.internal_queue_max_length
+            templating_dictionary['queue_percentage'] = int(
+                float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
     return templating_dictionary
 
 
