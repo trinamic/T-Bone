@@ -51,14 +51,15 @@ def print_page():
                     _logger.warn("unable to save file %s to %s", filename, upload_path)
         else:
             if _printer.prepared_file:
-                try:
-                    if os.path.exists(_printer.prepared_file):
-                        os.remove(_printer.prepared_file)
-                except:
-                    _logger.warn("unable to delete %s",_printer.prepared_file)
-            _printer.prepared_file = None
-    if _printer.prepared_file and request.args.get('really'):
-        _logger.info("Printing %s",_printer.prepared_file)
+                if request.args.get('really'):
+                    _logger.info("Printing %s",_printer.prepared_file)
+                else:
+                    try:
+                        if os.path.exists(_printer.prepared_file):
+                            os.remove(_printer.prepared_file)
+                    except:
+                        _logger.warn("unable to delete %s",_printer.prepared_file)
+                    _printer.prepared_file = None
 
     template_dictionary = templating_defaults()
     if _printer.prepared_file:
