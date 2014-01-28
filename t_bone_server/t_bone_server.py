@@ -5,10 +5,12 @@ import threading
 from werkzeug.utils import secure_filename
 import helpers
 import json_config_file
+from trinamic_3d_printer.gcode import GCodePrintThread
 
 _logger = logging.getLogger(__name__)
 #this is THE printer - just a dictionary with anything
 _printer = None
+_print_thread = None
 _printer_busy = False
 _printer_busy_lock = threading.RLock()
 app = Flask(__name__)
@@ -52,18 +54,20 @@ def print_page():
         else:
             if _printer.prepared_file:
                 if request.form and 'really' in request.form:
-                    _logger.info("Printing %s",_printer.prepared_file)
+                    _logger.info("Printing %s", _printer.prepared_file)
+                    print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)
+                    print_thread.start()
                 else:
                     try:
                         if os.path.exists(_printer.prepared_file):
                             os.remove(_printer.prepared_file)
                     except:
-                        _logger.warn("unable to delete %s",_printer.prepared_file)
+                        _logger.warn("unable to delete %s", _printer.prepared_file)
                     _printer.prepared_file = None
 
     template_dictionary = templating_defaults()
     if _printer.prepared_file:
-        template_dictionary['print_file']=_printer.prepared_file.rsplit('/', 1)[1]
+        template_dictionary['print_file'] = _printer.prepared_file.rsplit('/', 1)[1]
     return render_template("print.html", **template_dictionary)
 
 
