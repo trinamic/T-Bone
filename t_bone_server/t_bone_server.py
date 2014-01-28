@@ -51,7 +51,7 @@ def print_page():
                     _logger.warn("unable to save file %s to %s", filename, upload_path)
         else:
             if _printer.prepared_file:
-                if request.args.get('really'):
+                if request.form and 'really' in request.form:
                     _logger.info("Printing %s",_printer.prepared_file)
                 else:
                     try:
