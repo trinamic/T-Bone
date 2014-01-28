@@ -49,15 +49,27 @@
         </div>
     </div>
     <div class="row">
-        <form action="/print" method="post" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="printfile">Model</label>
-                <input type="file" class="form-control" id="printfile" name="printfile" placeholder="Email">
-            </div>
-            <p>
-                <button type="submit" class="btn btn-lg printer_function">Print
-                </button>
-            </p>
-        </form>
+        {% if print_file %}
+            <form action="/print" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    Print the file {{ print_file }}
+                </div>
+                <p>
+                    <button type="submit" class="btn btn-lg printer_function">Print
+                    </button>
+                </p>
+            </form>
+        {% else %}
+            <form action="/print" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="printfile">Model</label>
+                    <input type="file" class="form-control" id="printfile" name="printfile" placeholder="Email">
+                </div>
+                <p>
+                    <button type="submit" class="btn btn-lg printer_function">Upload
+                    </button>
+                </p>
+            </form>
+        {% endif %}
     </div>
 {% endblock %}

@@ -44,6 +44,7 @@ def print_page():
                 filename = secure_filename(file.filename)
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 try:
+                    _logger.info("Saving file %s to %s", filename, upload_path)
                     file.save(upload_path)
                     _printer.prepared_file = upload_path
                 except:
@@ -57,6 +58,8 @@ def print_page():
                     _logger.warn("unable to delete %s",_printer.prepared_file)
             _printer.prepared_file = None
     template_dictionary = templating_defaults()
+    if _printer.prepared_file:
+        template_dictionary['print_file']=_printer.prepared_file.rsplit('/', 1)[1]
     return render_template("print.html", **template_dictionary)
 
 
@@ -103,7 +106,8 @@ if __name__ == '__main__':
     logging.info('Starting print server')
     #somehow we can get several initializations - hence we store a global printer
     try:
-        os.mkdir(UPLOAD_FOLDER)
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.mkdir(UPLOAD_FOLDER)
         if not _printer:
             _printer = helpers.create_printer()
             config = json_config_file.read()
