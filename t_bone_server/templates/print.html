@@ -52,7 +52,8 @@
         {% if print_file %}
             <form action="/print" method="post" enctype="multipart/form-data">
                 <div class="form-group">
-                    Print the file {{ print_file }}
+                    Print the file {{ print_file }}.
+                    <input type="hidden" name="really" value="yes"/>
                 </div>
                 <p>
                     <button type="submit" class="btn btn-lg printer_function">Print

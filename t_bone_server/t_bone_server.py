@@ -57,6 +57,9 @@ def print_page():
                 except:
                     _logger.warn("unable to delete %s",_printer.prepared_file)
             _printer.prepared_file = None
+    if _printer.prepared_file and request.args.get('really'):
+        _logger.info("Printing %s",_printer.prepared_file)
+
     template_dictionary = templating_defaults()
     if _printer.prepared_file:
         template_dictionary['print_file']=_printer.prepared_file.rsplit('/', 1)[1]
