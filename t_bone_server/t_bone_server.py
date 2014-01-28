@@ -12,7 +12,7 @@ _printer = None
 _printer_busy = False
 _printer_busy_lock = threading.RLock()
 app = Flask(__name__)
-UPLOAD_FOLDER = '/path/to/the/uploads'
+UPLOAD_FOLDER = '/tmp/print_uploads'
 
 
 def busy_function(original_function):
@@ -38,16 +38,15 @@ def start_page():
 @app.route('/print', methods=['GET', 'POST'])
 def print_page():
     if request.method == 'POST':
-        if request.files and 'printfile' in request.files:
-            file = request.files['printfile']
-            if file and helpers.allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                try:
-                    saved_file = file.save(upload_path)
-                    _printer.prepared_file = saved_file
-                except:
-                    _logger.warn("unable to save file %s to %s", filename, upload_path)
+        file = request.files['printfile']
+        if file and helpers.allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            try:
+                file.save(upload_path)
+                _printer.prepared_file = upload_path
+            except:
+                _logger.warn("unable to save file %s to %s", filename, upload_path)
         else:
             _printer.prepared_file = None
     template_dictionary = templating_defaults()
@@ -97,6 +96,7 @@ if __name__ == '__main__':
     logging.info('Starting print server')
     #somehow we can get several initializations - hence we store a global printer
     try:
+        os.mkdir(UPLOAD_FOLDER)
         if not _printer:
             _printer = helpers.create_printer()
             config = json_config_file.read()
