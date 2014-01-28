@@ -12,15 +12,17 @@ _printer_busy = False
 _printer_busy_lock = threading.RLock()
 
 
-def busy_function(original_function, *args, **kargs):
-    try:
-        with _printer_busy_lock:
-            _printer_busy = True
-        result = original_function(args, kargs)
-        return result
-    finally:
-        with _printer_busy_lock:
-            _printer_busy = False
+def busy_function(original_function):
+    def busy_decorator(*args, **kargs):
+        try:
+            with _printer_busy_lock:
+                _printer_busy = True
+            result = original_function(*args, **kargs)
+            return result
+        finally:
+            with _printer_busy_lock:
+                _printer_busy = False
+    return busy_decorator
 
 @app.route('/')
 def start_page():
@@ -35,7 +37,7 @@ def print_page():
 
 
 @app.route('/home/<axis>')
-@busy_function()
+@busy_function
 def home_axis(axis):
     if not _printer:
         return "there is no printer", 400
