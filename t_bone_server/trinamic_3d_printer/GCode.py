@@ -1,10 +1,26 @@
 import logging
 import re
+from threading import Thread
 
 __author__ = 'marcus'
 
 _text_and_number_pattern = re.compile('([a-zA-Z]+)(\d+(.\d+)?)')
 _logger = logging.getLogger(__name__)
+
+
+class GCodePrintThread(Thread):
+    def __init__(self, file, printer, callback):
+        #this constructor could be a bit more elegant
+        super(GCodePrintThread, self).__init__()
+        self.file = file
+        self.printer = printer
+        self.callback = callback
+
+    def run(self):
+        gcode_input = open(self.file)
+        read_gcode_to_printer(gcode_input, self.printer)
+        if self.callback:
+            self.callback()
 
 
 def read_gcode_to_printer(input, printer):
