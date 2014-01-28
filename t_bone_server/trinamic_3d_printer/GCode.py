@@ -18,7 +18,9 @@ class GCodePrintThread(Thread):
 
     def run(self):
         gcode_input = open(self.file)
+        self.printer.start_print()
         read_gcode_to_printer(gcode_input, self.printer)
+        self.printer.finish_print()
         if self.callback:
             self.callback()
 
