@@ -7,6 +7,7 @@ __author__ = 'marcus'
 _reset_pin = "P8_26"
 _default_serial_port = "/dev/ttyO1"
 _create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
+ALLOWED_EXTENSIONS = {'gcode'}
 
 
 def check_for_serial_port():
@@ -22,3 +23,7 @@ def create_printer():
 
     #basically the printer is just a bunch of stuff
     return printer
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS

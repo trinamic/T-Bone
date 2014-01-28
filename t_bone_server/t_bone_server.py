@@ -1,15 +1,18 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import logging
+import os
 import threading
+from werkzeug.utils import secure_filename
 import helpers
 import json_config_file
 
-app = Flask(__name__)
 _logger = logging.getLogger(__name__)
 #this is THE printer - just a dictionary with anything
 _printer = None
 _printer_busy = False
 _printer_busy_lock = threading.RLock()
+app = Flask(__name__)
+UPLOAD_FOLDER = '/path/to/the/uploads'
 
 
 def busy_function(original_function):
@@ -22,7 +25,9 @@ def busy_function(original_function):
         finally:
             with _printer_busy_lock:
                 _printer_busy = False
+
     return busy_decorator
+
 
 @app.route('/')
 def start_page():
@@ -30,8 +35,18 @@ def start_page():
     return render_template("index.html", **template_dictionary)
 
 
-@app.route('/print')
+@app.route('/print', methods=['GET', 'POST'])
 def print_page():
+    if request.method == 'POST':
+        file = request.files['printfile']
+        if file and helpers.allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            try:
+                file.save(upload_path)
+            except:
+                _logger.warn("unable to save file %s to %s", filename, upload_path)
+
     template_dictionary = templating_defaults()
     return render_template("print.html", **template_dictionary)
 
@@ -85,6 +100,9 @@ if __name__ == '__main__':
             _printer.connect()
             _printer.configure(config)
         logging.info('configured, starting web interface')
+        #this has to be configured somewhere (json??)
+        app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+        app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
         app.run(
             host='0.0.0.0',
             debug=True,

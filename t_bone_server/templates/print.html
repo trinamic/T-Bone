@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
+    <div class="row">
+        <h1>Home Axis</h1>
+
+        <p>Before printing you are advised to home all axis</p>
+    </div>
     {% for axis_name in axis %}
         <div class="row">
             {% if axis[axis_name]['homeable'] %}
@@ -16,10 +21,14 @@
                 <div class="col-lg-4">
                     <p>
                         {% if axis[axis_name]['home'] %}
-                            <button class="btn btn-lg btn-default printer_function" onclick="$.ajax('/home/{{ axis_name }}');return false;">Home
-                            {{ axis_name }}<em></em></button>
+                            <button class="btn btn-lg btn-default printer_function"
+                                    onclick="$.ajax('/home/{{ axis_name }}');return false;">Home
+                                <em>{{ axis_name }}</em></button>
                         {% else %}
-                            <button class="btn btn-lg btn-warning printer_function" onclick="$.ajax('/home/{{ axis_name }}');return false;">Home {{ axis_name }}<em></em></button>
+                            <button class="btn btn-lg btn-warning printer_function"
+                                    onclick="$.ajax('/home/{{ axis_name }}');return false;">Home
+                                <em>{{ axis_name }}</em>
+                            </button>
                         {% endif %}
                     </p>
                 </div>
@@ -28,14 +37,27 @@
     {% endfor %}
     <div class="row">
         <div class="col-lg-8">
-            <p >
-            &nbsp;
+            <p>
+                &nbsp;
             </p>
         </div>
         <div class="col-lg-4">
             <p>
-            <button class="btn btn-lg btn-success printer_function" onclick="$.ajax('/home/all');return false;">Home {{ axis_name }}<em></em></button>
+                <button class="btn btn-lg btn-success printer_function" onclick="$.ajax('/home/all');return false;">Home
+                    all axis<em></em></button>
             </p>
         </div>
+    </div>
+    <div class="row">
+        <form action="/print" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="printfile">Model</label>
+                <input type="file" class="form-control" id="printfile" name="printfile" placeholder="Email">
+            </div>
+            <p>
+                <button type="submit" class="btn btn-lg printer_function">Print
+                </button>
+            </p>
+        </form>
     </div>
 {% endblock %}
