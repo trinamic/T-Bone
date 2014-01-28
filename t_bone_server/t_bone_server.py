@@ -38,15 +38,18 @@ def start_page():
 @app.route('/print', methods=['GET', 'POST'])
 def print_page():
     if request.method == 'POST':
-        file = request.files['printfile']
-        if file and helpers.allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            try:
-                file.save(upload_path)
-            except:
-                _logger.warn("unable to save file %s to %s", filename, upload_path)
-
+        if request.files and 'printfile' in request.files:
+            file = request.files['printfile']
+            if file and helpers.allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                try:
+                    saved_file = file.save(upload_path)
+                    _printer.prepared_file = saved_file
+                except:
+                    _logger.warn("unable to save file %s to %s", filename, upload_path)
+        else:
+            _printer.prepared_file = None
     template_dictionary = templating_defaults()
     return render_template("print.html", **template_dictionary)
 
@@ -99,6 +102,7 @@ if __name__ == '__main__':
             config = json_config_file.read()
             _printer.connect()
             _printer.configure(config)
+            _printer.prepared_file = None
         logging.info('configured, starting web interface')
         #this has to be configured somewhere (json??)
         app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
