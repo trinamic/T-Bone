@@ -13,6 +13,7 @@
     <!-- Bootstrap core CSS -->
     <link href="/static/css/bootstrap.css" rel="stylesheet">
     <link href="/static/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="/static/css/t-bone.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -23,7 +24,7 @@
 
 <body>
 
-<div class="container">
+<div id="wrap">
     <!-- navbar -->
     <div class="masthead">
         <h3 class="text-muted"></h3>
@@ -50,36 +51,40 @@
                 <!--/.nav-collapse -->
             </div>
         </div>
-
     </div>
 
-    <!--/.nav-collapse -->
-    {% block content %}
-    {% endblock %}
+    <div class="container">
 
-    <div id="footer">
-        <div class="container">
+        <!--/.nav-collapse -->
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
 
-            <div class="col-md-8">
-                <p class="text-muted">
-                    {{ full_name }}, Status: <span id="printing_status_text">{{ print_status }}</span>
-                </p>
 
-                <div class="progress" style="width: 100%" id="printing_progress_bar">
-                    <div id="queue-status-progress-bar"
-                         class="progress-bar " role="progressbar"
-                         style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="progress">
-                    <div id="queue-status-progress-bar"
-                         class="progress-bar  progress-bar-info" role="progressbar"
-                         style="width: {{ queue_percentage }}%"></div>
-                </div>
-            </div>
+<div id="footer">
+    <div class="container">
+
+        <div class="col-md-8">
+            <p class="text-muted">
+                {{ full_name }}, Status: <span id="printing-status-text">{{ print_status }}</span>
             </p>
+
+            <div class="progress" style="width: 100%; display: none" id="printing-progress">
+                <div id="printing-progress-bar"
+                     class="progress-bar " role="progressbar"
+                     style="width: 0%"></div>
+            </div>
         </div>
+        <div class="col-md-4">
+            <p>&nbsp;</p>
+            <div class="progress" id="queue-status-progress" style="display: none">
+                <div id="queue-status-progress-bar"
+                     class="progress-bar  progress-bar-info" role="progressbar"
+                     style="width: {{ queue_percentage }}%; display: none"></div>
+            </div>
+        </div>
+        </p>
     </div>
 </div>
 

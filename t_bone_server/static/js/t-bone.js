@@ -33,14 +33,15 @@ $().ready(function () {
     $("body").bind(
         "status_update",
         function (eventData) {
-            $("#queue-status-progress-bar").width(eventData.status_data.queue_percentage + "%");
-            $("#printing_status_text").text(eventData.status_data.print_status);
-            var printing_progress_bar = $("#printing_progress_bar")
+            $("#printing-status-text").text(eventData.status_data.print_status);
             if (eventData.status_data.printing) {
-                printing_progress_bar.show();
-                printing_progress_bar.width(eventData.status_data.lines_printed_percent + "%")
+                $("#printing-progress").show();
+                $("#printing-progress-bar").width(eventData.status_data.lines_printed_percent + "%");
+                $("queue-status-progress").show();
+                $("queue-status-progress-bar").width(eventData.status_data.queue_percentage + "%");
             } else {
-                printing_progress_bar.hide();
+                $("#printing-progress").hide();
+                $("queue-status-progress").hide();
             }
         }
     )
