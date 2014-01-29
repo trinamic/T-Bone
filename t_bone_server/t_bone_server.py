@@ -116,7 +116,7 @@ def status():
     connection = _printer.machine.machine_connection
     return flask.jsonify(
         {
-            'printing':_printer.printing,
+            'printing': _printer.printing,
             'busy': (_printer_busy | _printer.printing),
             'queue_length': connection.internal_queue_length,
             'max_queue_length': connection.internal_queue_max_length,
