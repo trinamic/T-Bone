@@ -26,43 +26,61 @@
 <div class="container">
     <!-- navbar -->
     <div class="masthead">
-        <h3 class="text-muted">{{ full_name }}</h3>
-        <ul class="nav nav-justified">
-            <li><a href="/print">Print Model</a></li>
-            <li><a href="/move">Manual Move</a></li>
-            <li><a href="/config">Configuration</a></li>
-        </ul>
-    </div>
-    <!--/.nav-collapse -->
-    {% block content %}
-    {% endblock %}
+        <h3 class="text-muted"></h3>
 
-</div>
-
-<div id="footer">
-    <div class="container">
-        <p class="text-muted">
-
-        <div class="col-md-8">{{ full_name }}, Status: {{ print_status }}</div>
-        </p>
-        <div class="col-md-4">
-            <div class="progress">
-                <div id="queue-status-progress-bar"
-                        class="progress-bar" role="progressbar" style="width: {{ queue_percentage }}%"
-                        aria-valuenow="{{ queue_length }}" aria-valuemin="0"
-                        aria-valuemax="{{ max_queue_length }}"><span
-                        class="sr-only">Queue Status: {{ queue_percentage }}% full</span></div>
+        <div class="navbar navbar-inverse">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">{{ full_name }}</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/print">Print Model</a></li>
+                        <li><a href="/move">Manual Move</a></li>
+                        <li><a href="/config">Configuration</a></li>
+                        </li>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
             </div>
         </div>
-        </p>
-    </div>
-</div>
+        <!--/.nav-collapse -->
+        {% block content %}
+        {% endblock %}
 
-<!-- Bootstrap core JavaScript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
-<script src="/static/js/jquery-1.11.0.min.js"></script>
-<script src="/static/js/bootstrap.js"></script>
-<script src="/static/js/t-bone.js"></script>
+    </div>
+
+    <div id="footer">
+        <div class="container">
+            <p class="text-muted">
+
+            <div class="col-md-8">{{ full_name }}, Status: {{ print_status }}</div>
+            </p>
+            <div class="col-md-4">
+                <div class="progress">
+                    <div id="queue-status-progress-bar"
+                         class="progress-bar  progress-bar-info" role="progressbar"
+                         style="width: {{ queue_percentage }}%"
+                         aria-valuenow="{{ queue_length }}" aria-valuemin="0"
+                         aria-valuemax="{{ max_queue_length }}"><span
+                            class="sr-only">Queue Status: {{ queue_percentage }}% full</span></div>
+                </div>
+            </div>
+            </p>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/js/jquery-1.11.0.min.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/t-bone.js"></script>
 </body>
 </html>
