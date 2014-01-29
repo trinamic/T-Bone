@@ -1,6 +1,7 @@
 import logging
 import re
 from threading import Thread
+from trinamic_3d_printer.helpers import file_len
 
 __author__ = 'marcus'
 
@@ -15,37 +16,47 @@ class GCodePrintThread(Thread):
         self.file = file
         self.printer = printer
         self.callback = callback
+        #let's see how many lines the print file got and reset progress
+        self.lines_to_print = file_len(file)
+        self.lines_printed = 0
+        self.printing = False
 
     def run(self):
-        gcode_input = open(self.file)
-        self.printer.start_print()
-        read_gcode_to_printer(gcode_input, self.printer)
-        self.printer.finish_print()
-        if self.callback:
-            self.callback()
+        self.printing = True
+        try:
+            gcode_input = open(self.file)
+            _logger.info("starting GCODE interptretation from %s to %s", input, self.printer)
+            self.lines_printed = 0
+            self.printer.start_print()
+            for line in gcode_input:
+                read_gcode_to_printer(line, self.printer)
+                self.lines_printed += 1
+            self.printer.finish_print()
+            _logger.info("fininshed gcode reading to %s ", self.printer)
+        finally:
+            self.printing = False
+            if self.callback:
+                self.callback()
 
 
-def read_gcode_to_printer(input, printer):
-    _logger.info("starting GCODE interptretation from %s to %s", input, printer)
-    for line in input:
-        gcode = decode_gcode_line(line)
-        #handling the negative case first is silly but gives us more flexibility in the elif struct
-        if not gcode:
-            #nothing to do fine!
-            pass
-        elif "G0" == gcode.code or "G1" == gcode.code: #TODO G1 & G0 is different
-            #we simply interpret the arguments as positions
-            positions = {}
-            for argument in gcode.options:
-                position = decode_text_and_number(argument)
-                if position:
-                    positions[position[0].lower()] = position[1]
-                else:
-                    _logger.warn("Unable to interpret position %s in %s", argument, line)
-            printer.move_to(positions)
-        else:
-            _logger.warn("Unknown GCODE %s ignored", gcode)
-    _logger.info("fininshed gcode reading to %s ", printer)
+def read_gcode_to_printer(line, printer):
+    gcode = decode_gcode_line(line)
+    #handling the negative case first is silly but gives us more flexibility in the elif struct
+    if not gcode:
+        #nothing to do fine!
+        pass
+    elif "G0" == gcode.code or "G1" == gcode.code: #TODO G1 & G0 is different
+        #we simply interpret the arguments as positions
+        positions = {}
+        for argument in gcode.options:
+            position = decode_text_and_number(argument)
+            if position:
+                positions[position[0].lower()] = position[1]
+            else:
+                _logger.warn("Unable to interpret position %s in %s", argument, line)
+        printer.move_to(positions)
+    else:
+        _logger.warn("Unknown GCODE %s ignored", gcode)
 
 
 class GCode:
