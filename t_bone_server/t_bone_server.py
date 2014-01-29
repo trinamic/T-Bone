@@ -114,15 +114,18 @@ def templating_defaults():
 @app.route('/status')
 def status():
     connection = _printer.machine.machine_connection
+    base_status = {'printing': _printer.printing,
+                   'busy': (_printer_busy | _printer.printing),
+                   'queue_length': connection.internal_queue_length,
+                   'max_queue_length': connection.internal_queue_max_length,
+                   'queue_percentage': int(
+                       float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)}
+    if _print_thread and _print_thread.running:
+        base_status['lines_to_print']=_print_thread.lines_to_print
+        base_status['lines_printed']=_print_thread.lines_printed
+        base_status['lines_printed_percent']=float(_print_thread.lines_printed)/float(_print_thread.lines_to_print)*10
     return flask.jsonify(
-        {
-            'printing': _printer.printing,
-            'busy': (_printer_busy | _printer.printing),
-            'queue_length': connection.internal_queue_length,
-            'max_queue_length': connection.internal_queue_max_length,
-            'queue_percentage': int(
-                float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
-        }
+        base_status
     )
     pass
 

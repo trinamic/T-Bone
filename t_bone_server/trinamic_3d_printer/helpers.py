@@ -38,3 +38,9 @@ def find_shortest_vector(vector_list):
             y_square = find_list[shortest_vector]['y'] ** 2
     return find_list[shortest_vector]
 
+def file_len(fname):
+    i=0
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1

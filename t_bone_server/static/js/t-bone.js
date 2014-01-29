@@ -34,6 +34,14 @@ $().ready(function () {
         "status_update",
         function (eventData) {
             $("#queue-status-progress-bar").width(eventData.status_data.queue_percentage+"%");
+            $("#printing_status_text").text(eventData.status_data.print_status);
+            if (eventData.status_data.printing) {
+                var printing_progress_bar=$("printing_progress_bar")
+                printing_progress_bar.show()
+                printing_progress_bar.width(eventData.status_data.lines_printed_percent+"%")
+            } else {
+
+            }
         }
     )
 })
