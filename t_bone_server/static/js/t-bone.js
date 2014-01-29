@@ -10,7 +10,7 @@ $(function () {
 var last_status;
 
 $().ready(function () {
-    $().timer(function () {
+    $("body").timer(function () {
             $.getJSON("/status", function (status_data) {
                 last_status = status_data
                 $("body").trigger({
