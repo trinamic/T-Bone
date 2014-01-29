@@ -26,30 +26,26 @@
 
 <div id="wrap">
     <!-- navbar -->
-    <div class="masthead">
-        <h3 class="text-muted"></h3>
-
-        <div class="navbar navbar-inverse">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="/">{{ full_name }}</a>
-                </div>
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li><a href="/print">Print Model</a></li>
-                        <li><a href="/move">Manual Move</a></li>
-                        <li><a href="/config">Configuration</a></li>
-                        </li>
-                    </ul>
-                </div>
-                <!--/.nav-collapse -->
+    <div class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">{{ full_name }}</a>
             </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/print">Print Model</a></li>
+                    <li><a href="/move">Manual Move</a></li>
+                    <li><a href="/config">Configuration</a></li>
+                    </li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
         </div>
     </div>
 
@@ -78,6 +74,7 @@
         </div>
         <div class="col-md-4">
             <p>&nbsp;</p>
+
             <div class="progress" id="queue-status-progress" style="display: none">
                 <div id="queue-status-progress-bar"
                      class="progress-bar  progress-bar-info" role="progressbar"
