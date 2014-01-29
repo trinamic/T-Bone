@@ -47,9 +47,11 @@
         </p>
         <div class="col-md-4">
             <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: {{ queue_percentage }}%"
-                     aria-valuenow="{{ queue_length }}" aria-valuemin="0"
-                     aria-valuemax="{{ max_queue_length }}"><span class="sr-only">Queue Status: {{ queue_percentage }}% full</span></div>
+                <div id="queue-status-progress-bar"
+                        class="progress-bar" role="progressbar" style="width: {{ queue_percentage }}%"
+                        aria-valuenow="{{ queue_length }}" aria-valuemin="0"
+                        aria-valuemax="{{ max_queue_length }}"><span
+                        class="sr-only">Queue Status: {{ queue_percentage }}% full</span></div>
             </div>
         </div>
         </p>
