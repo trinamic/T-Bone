@@ -22,5 +22,4 @@ $().ready(function () {
         delay = 1000,
         repeat = true
     )
-
 })
