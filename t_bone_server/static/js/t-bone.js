@@ -37,8 +37,8 @@ $().ready(function () {
             if (eventData.status_data.printing) {
                 $("#printing-progress").show();
                 $("#printing-progress-bar").width(eventData.status_data.lines_printed_percent + "%");
-                $("queue-status-progress").show();
-                $("queue-status-progress-bar").width(eventData.status_data.queue_percentage + "%");
+                $("#queue-status-progress").show();
+                $("#queue-status-progress-bar").width(eventData.status_data.queue_percentage + "%");
             } else {
                 $("#printing-progress").hide();
                 $("queue-status-progress").hide();
