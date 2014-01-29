@@ -50,25 +50,27 @@
                 <!--/.nav-collapse -->
             </div>
         </div>
-        <!--/.nav-collapse -->
-        {% block content %}
-        {% endblock %}
 
     </div>
 
+    <!--/.nav-collapse -->
+    {% block content %}
+    {% endblock %}
+
     <div id="footer">
         <div class="container">
-            <p class="text-muted">
 
-            <div class="col-md-8">{{ full_name }}, Status: <span id="printing_status_text">{{ print_status }}</span>
-                <div class="progress" style="width: 100%" hidden="hidden" id="printing_progress_bar">
+            <div class="col-md-8">
+                <p class="text-muted">
+                    {{ full_name }}, Status: <span id="printing_status_text">{{ print_status }}</span>
+                </p>
+
+                <div class="progress" style="width: 100%" id="printing_progress_bar">
                     <div id="queue-status-progress-bar"
                          class="progress-bar " role="progressbar"
                          style="width: 0%"></div>
                 </div>
             </div>
-        </div>
-            </p>
             <div class="col-md-4">
                 <div class="progress">
                     <div id="queue-status-progress-bar"
@@ -79,12 +81,13 @@
             </p>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/static/js/jquery-1.11.0.min.js"></script>
-    <script src="/static/js/bootstrap.js"></script>
-    <script src="/static/js/t-bone.js"></script>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="/static/js/jquery-1.11.0.min.js"></script>
+<script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/t-bone.js"></script>
 </body>
 </html>

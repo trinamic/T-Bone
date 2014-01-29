@@ -21,6 +21,7 @@ UPLOAD_FOLDER = '/tmp/print_uploads'
 
 def busy_function(original_function):
     def busy_decorator(*args, **kargs):
+        global _printer_busy
         try:
             with _printer_busy_lock:
                 _printer_busy = True
@@ -57,8 +58,9 @@ def print_page():
             if _printer.prepared_file:
                 if request.form and 'really' in request.form:
                     _logger.info("Printing %s", _printer.prepared_file)
-                    print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)
-                    print_thread.start()
+                    global _print_thread
+                    _print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)
+                    _print_thread.start()
                 else:
                     try:
                         if os.path.exists(_printer.prepared_file):
@@ -119,11 +121,12 @@ def status():
                    'queue_length': connection.internal_queue_length,
                    'max_queue_length': connection.internal_queue_max_length,
                    'queue_percentage': int(
-                       float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)}
-    if _print_thread and _print_thread.running:
+                       float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 100.0)}
+    global _print_thread
+    if _print_thread and _print_thread.printing:
         base_status['lines_to_print']=_print_thread.lines_to_print
         base_status['lines_printed']=_print_thread.lines_printed
-        base_status['lines_printed_percent']=float(_print_thread.lines_printed)/float(_print_thread.lines_to_print)*10
+        base_status['lines_printed_percent']=float(_print_thread.lines_printed)/float(_print_thread.lines_to_print)*100
     return flask.jsonify(
         base_status
     )
