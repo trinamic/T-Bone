@@ -85,6 +85,15 @@ class Printer(Thread):
         self.machine.finish_motion()
         pass
 
+    def get_motor_positons(self):
+        positions = {}
+        for axis_name in self.axis:
+            axis_config = self.axis[axis_name]
+            motor = axis_config['motor']
+            position = self.machine.get_positon(motor)
+            positions[axis_name]=position*axis_config['scale']
+        return positions
+
     def _extract_homing_information(self):
         for axis_name, axis in self.axis.iteritems():
             axis['homeable'] = False

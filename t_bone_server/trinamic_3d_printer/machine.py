@@ -197,6 +197,17 @@ class Machine():
         #while self.machine_connection.internal_queue_length > 0:
             pass # just wait TODO timeout??
 
+    def get_positon(self, motor):
+        command = MachineCommand()
+        command.command_number = 10
+        command.arguments = [
+            int(motor)
+        ]
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 30:
+            _logger.error("Unable read motor position: %s", reply)
+            raise MachineError("Unable read motor position", reply)
+        return reply.arguments[0]
 
 class _MachineConnection:
     def __init__(self, machine_serial):
