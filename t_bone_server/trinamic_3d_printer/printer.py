@@ -85,12 +85,12 @@ class Printer(Thread):
         self.machine.finish_motion()
         pass
 
-    def get_motor_positons(self):
+    def read_motor_positons(self):
         positions = {}
         for axis_name in self.axis:
             axis_config = self.axis[axis_name]
             motor = axis_config['motor']
-            position = self.machine.get_positon(motor)
+            position = self.machine.read_positon(motor)
             positions[axis_name]=position*axis_config['scale']
         return positions
 
