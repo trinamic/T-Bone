@@ -133,6 +133,11 @@ def status():
                    'max_queue_length': connection.internal_queue_max_length,
                    'queue_percentage': int(
                        float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 100.0)}
+    if _printer.printing:
+        base_status['print_status'] = 'Printing'
+    else:
+        base_status['print_status'] = 'Idle'
+
     global _print_thread
     if _print_thread and _print_thread.printing:
         base_status['lines_to_print'] = _print_thread.lines_to_print
