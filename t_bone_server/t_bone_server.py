@@ -7,7 +7,7 @@ import threading
 from werkzeug.utils import secure_filename
 import helpers
 import json_config_file
-from trinamic_3d_printer.gcode import GCodePrintThread
+from trinamic_3d_printer.gcode_interpreter import GCodePrintThread
 
 _logger = logging.getLogger(__name__)
 #this is THE printer - just a dictionary with anything
