@@ -42,6 +42,8 @@ def start_page():
 
 @app.route('/print', methods=['GET', 'POST'])
 def print_page():
+    if not _printer:
+        return "there is no printer", 400
     if request.method == 'POST':
         if request.files and 'printfile' in request.files:
             file = request.files['printfile']
@@ -57,6 +59,15 @@ def print_page():
         else:
             if _printer.prepared_file:
                 if request.form and 'really' in request.form:
+                    axis_to_home = []
+                    for axis in _printer.axis:
+                        printer_axis = _printer.axis[axis]
+                        if not 'homed' in printer_axis or not printer_axis['homed']:
+                            _logger.info("Homing axis %s before printing", axis)
+                            axis_to_home.append(axis)
+                    if axis_to_home:
+                        _printer.home(axis_to_home)
+
                     _logger.info("Printing %s", _printer.prepared_file)
                     global _print_thread
                     _print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)
@@ -124,9 +135,10 @@ def status():
                        float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 100.0)}
     global _print_thread
     if _print_thread and _print_thread.printing:
-        base_status['lines_to_print']=_print_thread.lines_to_print
-        base_status['lines_printed']=_print_thread.lines_printed
-        base_status['lines_printed_percent']=float(_print_thread.lines_printed)/float(_print_thread.lines_to_print)*100
+        base_status['lines_to_print'] = _print_thread.lines_to_print
+        base_status['lines_printed'] = _print_thread.lines_printed
+        base_status['lines_printed_percent'] = float(_print_thread.lines_printed) / float(
+            _print_thread.lines_to_print) * 100
     return flask.jsonify(
         base_status
     )
