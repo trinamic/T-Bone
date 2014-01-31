@@ -310,9 +310,10 @@ class PrintQueue():
         #calculate the target
         self._extract_movement_values(move, target_position)
         #and see how fast we can allowable go
-        move['max_achievable_speed_vector'] = self._maximum_achievable_speed(move)
+        maximum_achievable_speed = self._maximum_achievable_speed(move)
+        move['max_achievable_speed_vector'] = maximum_achievable_speed
         #and since we do not know it better the first guess is that the final speed is the max speed
-        move['speed'] = move['max_achievable_speed_vector']
+        move['speed'] = maximum_achievable_speed
         #now we can push the previous move to the queue and recalculate the whole queue
         if self.previous_movement:
             self.planning_list.append(self.previous_movement)
