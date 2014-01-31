@@ -164,7 +164,7 @@ class Machine():
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-            _logger.error("Unable to move Motor: %s", reply)
+            _logger.error("Unable to move Motor: %s -> %s", command, reply)
             raise MachineError("Unable to add motor move", reply)
         if self.batch_mode:
             command_buffer_length = int(reply.arguments[0])
