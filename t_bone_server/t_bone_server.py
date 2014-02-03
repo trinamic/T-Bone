@@ -17,6 +17,7 @@ _printer_busy = False
 _printer_busy_lock = threading.RLock()
 app = Flask(__name__)
 UPLOAD_FOLDER = '/tmp/print_uploads'
+MAX_CONTENT_LENGTH = 2 * 1024 * 1024 * 1024
 
 
 def busy_function(original_function):
@@ -168,7 +169,7 @@ if __name__ == '__main__':
         logging.info('configured, starting web interface')
         #this has to be configured somewhere (json??)
         app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-        app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+        app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
         app.run(
             host='0.0.0.0',
             debug=True,
