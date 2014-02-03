@@ -446,7 +446,7 @@ class PrintQueue():
             scaled_x = move_vector['x'] / move_vector['y']
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
-                'x': self.axis['y']['max_speed'] * scaled_y,
+                'x': self.axis['y']['max_speed'] * scaled_x,
                 'y': copysign(self.axis['y']['max_speed'], move_vector['y'])
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
