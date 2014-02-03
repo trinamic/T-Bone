@@ -91,7 +91,7 @@ class Printer(Thread):
             axis_config = self.axis[axis_name]
             motor = axis_config['motor']
             position = self.machine.read_positon(motor)
-            positions[axis_name]=position*axis_config['scale']
+            positions[axis_name] = position * axis_config['scale']
         return positions
 
     def _extract_homing_information(self):
@@ -240,6 +240,7 @@ class Printer(Thread):
             x_move_config['type'] = 'stop'
         else:
             x_move_config['type'] = 'way'
+            x_move_config['speed'] = max(x_move_config['speed'], 1)
 
         y_move_config = _axis_movement_template(self.axis['y'])
         y_move_config['target'] = step_pos['y']
@@ -248,6 +249,7 @@ class Printer(Thread):
             y_move_config['type'] = 'stop'
         else:
             y_move_config['type'] = 'way'
+            y_move_config['speed'] = max(y_move_config['speed'], 1)
 
         return x_move_config, y_move_config
 
@@ -275,10 +277,10 @@ class Printer(Thread):
                     "Moving X axis to %s gearing Y by %s to %s"
                     , step_pos['x'], y_factor, step_pos['y'])
 
-                y_acceleration=y_move_config['acceleration']*y_factor
+                y_acceleration = y_move_config['acceleration'] * y_factor
                 y_move_config['acceleration'] = y_acceleration
                 y_move_config['deceleration'] = y_acceleration
-                y_bow=y_move_config['startBow']*y_factor
+                y_bow = y_move_config['startBow'] * y_factor
                 y_move_config['startBow'] = y_bow
                 y_move_config['endBow'] = y_bow
                 self.machine.move_to([
@@ -291,10 +293,11 @@ class Printer(Thread):
                 _logger.debug(
                     "Moving Y axis to %s gearing X by %s  to %s"
                     , step_pos['x'], x_factor, step_pos['y'])
-                x_acceleration = x_move_config['acceleration']*x_factor
+                x_acceleration = x_move_config['acceleration'] * x_factor
                 x_move_config['acceleration'] = x_acceleration
                 x_move_config['deceleration'] = x_acceleration
-                x_bow=x_move_config['startBow']*x_factor
+                x_bow = x_move_config['startBow'] * x_factor
+
                 x_move_config['startBow'] = x_bow
                 x_move_config['endBow'] = x_bow
                 self.machine.move_to([
@@ -512,6 +515,8 @@ class PrintQueue():
                     'y': max_speed_y
                 })
             movement['speed'] = find_shortest_vector(speed_vectors)
+            if movement['speed']['x'] == 0 or movement['speed']['y'] == 0:
+                _logger.warn("not moving")
             max_speed = movement['speed']
 
 
