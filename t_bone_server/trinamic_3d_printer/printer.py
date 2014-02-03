@@ -450,7 +450,7 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
                 #ww can accelerate further
-                max_speed_y = get_target_velocity(last_y_speed, delta_x, self.axis['y']['bow'])
+                max_speed_y = get_target_velocity(last_y_speed, delta_y, self.axis['y']['bow'])
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
                     'x': max_speed_y * scaled_x,
