@@ -486,13 +486,11 @@ class PrintQueue():
                 max_speed_x = get_target_velocity(max_speed['x'], delta_x, self.axis['x']['bow'])
             else:
                 max_speed_x = get_target_velocity(0, delta_x, self.axis['x']['bow'])
-            max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
             delta_y = movement['delta_y']
             if sign(delta_y) == sign(max_speed['y']):
                 max_speed_y = get_target_velocity(max_speed['y'], delta_y, self.axis['y']['bow'])
             else:
                 max_speed_y = get_target_velocity(0, delta_y, self.axis['y']['bow'])
-            max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)# little trick to have a proper sign
             speed_vectors = [
                 movement['speed']
             ]
