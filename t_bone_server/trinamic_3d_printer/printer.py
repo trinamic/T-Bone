@@ -331,7 +331,7 @@ class PrintQueue():
             self._push_from_planning_to_execution(timeout)
         self.previous_movement = move
         #and recalculate the maximum allowed speed
-        self._recalculate_move_speeds(move)
+        self._recalculate_move_speeds(self.previous_movement)
 
     def next_movement(self, timeout=None):
         return self.queue.get(timeout=timeout)
