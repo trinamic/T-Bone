@@ -419,7 +419,7 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
-                max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x
+                max_speed_x = last_x_speed ** 2 + 2 * self.axis['x']['max_acceleration'] * delta_x #todo 3rd law of motion for constant jerk
                 max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
@@ -430,7 +430,7 @@ class PrintQueue():
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['x_stop'] = True
-                max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x
+                max_speed_x = 2 * self.axis['x']['max_acceleration'] * delta_x #todo 3rd law of motion for constant jerk
                 max_speed_x = copysign(sqrt(abs(max_speed_x)), max_speed_x)# little trick to have a proper sign
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
@@ -443,7 +443,7 @@ class PrintQueue():
                 self.previous_movement['x_stop'] = True
 
         if delta_y != 0:
-            scaled_y = move_vector['x'] / move_vector['y']
+            scaled_x = move_vector['x'] / move_vector['y']
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
                 'x': self.axis['y']['max_speed'] * scaled_y,
@@ -455,7 +455,7 @@ class PrintQueue():
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
-                    'x': max_speed_y * scaled_y,
+                    'x': max_speed_y * scaled_x,
                     'y': max_speed_y
                 })
             else:
@@ -466,7 +466,7 @@ class PrintQueue():
                 max_speed_y = copysign(sqrt(abs(max_speed_y)), max_speed_y)
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
-                    'x': max_speed_y * scaled_y,
+                    'x': max_speed_y * scaled_x,
                     'y': max_speed_y
                 })
         else:
