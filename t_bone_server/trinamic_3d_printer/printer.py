@@ -460,7 +460,7 @@ class PrintQueue():
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['y_stop'] = True
-                max_speed_y = get_target_velocity(0, delta_x, self.axis['y']['bow'])
+                max_speed_y = get_target_velocity(0, delta_y, self.axis['y']['bow'])
                 speed_vectors.append({
                     #how fast can we accelerate in X direction anyway
                     'x': max_speed_y * scaled_x,
