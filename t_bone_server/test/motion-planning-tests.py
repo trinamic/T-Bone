@@ -1,5 +1,6 @@
 from Queue import Empty, Full
-from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, has_length
+from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, \
+    has_length
 from math import sqrt
 from threading import Thread
 import unittest
@@ -134,7 +135,7 @@ class VectorTests(unittest.TestCase):
         assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
         assert_that(last_movement['speed']['y'], not_none())
         assert_that(last_movement['speed']['y'], less_than_or_equal_to(max_speed_y))
-        assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01)) #becaus we go 1/1 each time
+        assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01))  #becaus we go 1/1 each time
         assert_that(last_movement['speed']['y'], close_to(max_speed_y, 0.01))
         queue.add_movement({
             'x': 7,
@@ -151,7 +152,7 @@ class VectorTests(unittest.TestCase):
         #we still go on in x - so in thery we can speed up to desired target speed
         assert_that(last_movement['speed']['x'], greater_than(previous_movement['speed']['x']))
         previous_movement = queue.planning_list[-3]
-        assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5)) #becaus we go 1/1 each time
+        assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5))  #becaus we go 1/1 each time
         assert_that(previous_movement['speed']['y'], close_to(max_speed_y, 0.5))
         queue.add_movement({
             'x': 7,
@@ -167,7 +168,7 @@ class VectorTests(unittest.TestCase):
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
         assert_that(previous_movement['speed']['y'], equal_to(0))
         previous_movement = queue.planning_list[-4]
-        assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5)) #becaus we go 1/1 each time
+        assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5))  #becaus we go 1/1 each time
         assert_that(previous_movement['speed']['y'], close_to(max_speed_y, 0.5))
         # let's go back to zero to begin a new test
         queue.add_movement({
@@ -197,7 +198,7 @@ class VectorTests(unittest.TestCase):
                 'y': i + 1,
             })
         last_movement = queue.previous_movement
-        assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01)) #becaus we go 1/1 each time
+        assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01))  #becaus we go 1/1 each time
         assert_that(last_movement['speed']['y'], close_to(max_speed_y, 0.01))
         #and check if we can do a full stop
         queue.add_movement({
@@ -216,7 +217,7 @@ class VectorTests(unittest.TestCase):
         assert_that(previous_movement['x_stop'], equal_to(True))
         another_previous_movement = queue.planning_list[-3]
         assert_that(another_previous_movement['speed']['x'],
-                    greater_than(previous_movement['speed']['x'])) #becaus we stopped to turn around
+                    greater_than(previous_movement['speed']['x']))  #becaus we stopped to turn around
         assert_that(another_previous_movement['speed']['y'], greater_than(previous_movement['speed']['x']))
 
 
@@ -278,3 +279,140 @@ class VectorTests(unittest.TestCase):
         ]
         result = find_shortest_vector(testvectors)
         assert_that(result['y'], equal_to(0.5))
+
+    def test_motion_planning(self):
+        max_speed = 2
+        axis_config = {
+            'x': {
+                'max_acceleration': 0.5,
+                'max_speed': max_speed,
+                'bow': 1
+            },
+            'y': {
+                'max_acceleration': 0.5,
+                'max_speed': max_speed,
+                'bow': 1
+            }
+        }
+        queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
+        queue.default_target_speed = max_speed
+        #add some circle
+        queue.add_movement({
+            'x': 1,
+            'y': 0
+            #movement 0
+        })
+        queue.add_movement({
+            'x': 2,
+            'y': 0
+            #movement 1
+        })
+        queue.add_movement({
+            'x': 3,
+            'y': 0
+            #movement 2
+        })
+        queue.add_movement({
+            'x': 4,
+            'y': 1
+            #movement 3
+        })
+        queue.add_movement({
+            'x': 4,
+            'y': 2
+            #movement 4
+        })
+        queue.add_movement({
+            'x': 4,
+            'y': 3
+            #movement 5
+        })
+        queue.add_movement({
+            'x': 3,
+            'y': 4
+            #movement 6
+        })
+        queue.add_movement({
+            'x': 2,
+            'y': 4
+            #movement 7
+        })
+        queue.add_movement({
+            'x': 0,
+            'y': 4
+            #movement 8
+        })
+        queue.add_movement({
+            'x': 0,
+            'y': 2
+            #movement 9
+        })
+        queue.add_movement({
+            'x': 0,
+            'y': 1
+            #movement 10
+        })
+        queue.add_movement({
+            'x': 1,
+            'y': 0
+            #movement 11
+        })
+        queue.add_movement({
+            'x': 2,
+            'y': 0
+            #movement 12
+        })
+        assert_that(queue.previous_movement, not_none())
+        assert_that(queue.planning_list, has_length(12))
+        planned_list = queue.planning_list
+
+        assert_that(planned_list[1]['speed']['x'], equal_to(max_speed))
+        assert_that(planned_list[0]['speed']['x'], less_than(planned_list[1]['speed']['x']))
+        for i in range(0, 3):
+            assert_that(planned_list[i]['delta_y'], equal_to(0))
+            assert_that(planned_list[i]['speed']['y'], equal_to(0))
+
+        try:
+            assert_that(planned_list[2]['x_stop'], not (equal_to(True)))
+        except KeyError:
+            pass  #ok, this is enough - it should just not be true
+        assert_that(planned_list[3]['x_stop'], equal_to(True))
+
+        assert_that(planned_list[4]['speed']['y'], equal_to(max_speed))
+        assert_that(planned_list[3]['speed']['y'], less_than(planned_list[4]['speed']['y']))
+        assert_that(planned_list[3]['delta_x'], equal_to(1))
+
+        for i in range(4, 5):
+            assert_that(planned_list[i]['delta_x'], equal_to(0))
+            assert_that(planned_list[i]['speed']['x'], equal_to(0))
+
+        try:
+            assert_that(planned_list[5]['y_stop'], not (equal_to(True)))
+        except KeyError:
+            pass  #ok, this is enough - it should just not be true
+        assert_that(planned_list[6]['y_stop'], equal_to(True))
+
+        assert_that(planned_list[7]['speed']['x'], equal_to(-max_speed))
+        assert_that(planned_list[6]['speed']['x'], greater_than(planned_list[7]['speed']['x']))
+        for i in range(7, 8):
+            assert_that(planned_list[i]['delta_y'], equal_to(0))
+            assert_that(planned_list[i]['speed']['y'], equal_to(0))
+
+        try:
+            assert_that(planned_list[7]['x_stop'], not (equal_to(True)))
+        except KeyError:
+            pass  #ok, this is enough - it should just not be true
+        assert_that(planned_list[8]['x_stop'], equal_to(True))
+
+        for i in range(9, 10):
+            assert_that(planned_list[i]['delta_x'], equal_to(0))
+            assert_that(planned_list[i]['speed']['x'], equal_to(0))
+
+        try:
+            assert_that(planned_list[10]['y_stop'], not (equal_to(True)))
+        except KeyError:
+            pass  #ok, this is enough - it should just not be true
+        assert_that(planned_list[11]['y_stop'], equal_to(True))
+
+
+
