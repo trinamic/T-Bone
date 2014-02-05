@@ -370,6 +370,7 @@ class VectorTests(unittest.TestCase):
         assert_that(planned_list[0]['speed']['x'], greater_than(0))
         assert_that(planned_list[0]['speed']['x'], less_than(planned_list[1]['speed']['x']))
         assert_that(planned_list[3]['speed']['x'], less_than(planned_list[1]['speed']['x']))
+        assert_that(planned_list[3]['speed']['x'], equal_to(planned_list[0]['speed']['x']))
         assert_that(planned_list[3]['speed']['x'], greater_than(0))
         for i in range(0, 3):
             assert_that(planned_list[i]['delta_y'], equal_to(0))
@@ -387,6 +388,7 @@ class VectorTests(unittest.TestCase):
         assert_that(planned_list[3]['speed']['y'], less_than(planned_list[4]['speed']['y']))
         assert_that(planned_list[6]['speed']['y'], less_than(planned_list[4]['speed']['y']))
         assert_that(planned_list[6]['speed']['y'], greater_than(0))
+        assert_that(planned_list[6]['speed']['y'], equal_to(planned_list[3]['speed']['y']))
         assert_that(planned_list[3]['delta_x'], equal_to(1))
 
         for i in range(4, 5):
