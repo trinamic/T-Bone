@@ -3,7 +3,7 @@ from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equ
 from math import sqrt
 from threading import Thread
 import unittest
-from trinamic_3d_printer.Printer import _calculate_relative_vector, find_shortest_vector, PrintQueue
+from trinamic_3d_printer.printer import _calculate_relative_vector, find_shortest_vector, PrintQueue
 
 
 class VectorTests(unittest.TestCase):
@@ -12,11 +12,13 @@ class VectorTests(unittest.TestCase):
         axis_config = {
             'x': {
                 'max_acceleration': 1,
-                'max_speed': 1
+                'max_speed': 1,
+                'bow': 1
             },
             'y': {
                 'max_acceleration': 1,
-                'max_speed': 1
+                'max_speed': 1,
+                'bow': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=2, max_length=5)
@@ -55,11 +57,13 @@ class VectorTests(unittest.TestCase):
         axis_config = {
             'x': {
                 'max_acceleration': 1,
-                'max_speed': 1
+                'max_speed': 1,
+                'bow': 1
             },
             'y': {
                 'max_acceleration': 1,
-                'max_speed': 1
+                'max_speed': 1,
+                'bow': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=2, max_length=5)
@@ -106,11 +110,13 @@ class VectorTests(unittest.TestCase):
         axis_config = {
             'x': {
                 'max_acceleration': 0.5,
-                'max_speed': max_speed_x
+                'max_speed': max_speed_x,
+                'bow': 1
             },
             'y': {
                 'max_acceleration': 0.5,
-                'max_speed': max_speed_y
+                'max_speed': max_speed_y,
+                'bow': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
