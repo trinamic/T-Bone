@@ -252,7 +252,7 @@ class Printer(Thread):
         return x_move_config, y_move_config
 
     def _move(self, delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config):
-        if delta_x and not delta_y: #silly, but simpler to understand
+        if delta_x and not delta_y:  #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to %s", step_pos['x'])
 
@@ -260,7 +260,7 @@ class Printer(Thread):
                 x_move_config
             ])
 
-        elif delta_y and not delta_x: # still silly, but stil easier to understand
+        elif delta_y and not delta_x:  # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to %s", step_pos['y'])
 
@@ -308,7 +308,7 @@ class PrintQueue():
     def __init__(self, axis_config, min_length, max_length, default_target_speed=None):
         self.axis = axis_config
         self.planning_list = list()
-        self.queue_size = min_length - 1 #since we got one extra
+        self.queue_size = min_length - 1  #since we got one extra
         self.queue = Queue(maxsize=(max_length - min_length))
         self.previous_movement = None
         #we will use the last_movement as special case since it may not fully configured
@@ -331,7 +331,7 @@ class PrintQueue():
             self._push_from_planning_to_execution(timeout)
         self.previous_movement = move
         #and recalculate the maximum allowed speed
-        self._recalculate_move_speeds(self.previous_movement)
+        #self._recalculate_move_speeds(self.previous_movement)
 
     def next_movement(self, timeout=None):
         return self.queue.get(timeout=timeout)
@@ -401,71 +401,61 @@ class PrintQueue():
             last_y_speed = 0
         delta_x = move['delta_x']
         delta_y = move['delta_y']
-        move_vector = move['relative_move_vector']
+        normalized_move_vector = move['relative_move_vector']
         #derrive the various speed vectors from the movement … for desired head and maximum axis speed
         speed_vectors = [
             {
                 # add the desired speed vector as initial value
-                'x': move['target_speed'] * move_vector['x'],
-                'y': move['target_speed'] * move_vector['y']
+                'x': move['target_speed'] * normalized_move_vector['x'],
+                'y': move['target_speed'] * normalized_move_vector['y']
             }
         ]
         if delta_x != 0:
-            scaled_y = move_vector['y'] / move_vector['x']
+            scaled_y = normalized_move_vector['y'] / normalized_move_vector['x']
             speed_vectors.append({
                 #what would the speed vector for max x speed look like
-                'x': copysign(self.axis['x']['max_speed'], move_vector['x']),
-                'y': self.axis['x']['max_speed'] * copysign(scaled_y, move_vector['y'])
+                'x': copysign(self.axis['x']['max_speed'], normalized_move_vector['x']),
+                'y': self.axis['x']['max_speed'] * copysign(scaled_y, normalized_move_vector['y'])
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
                 max_speed_x = get_target_velocity(last_x_speed, delta_x,
-                                                  self.axis['x']['bow']) # TODO huh, no max acceleration??
-                speed_vectors.append({
-                    #how fast can we accelerate in X direction anyway
-                    'x': max_speed_x,
-                    'y': max_speed_x * scaled_y
-                })
+                                                  self.axis['x']['bow'])  # TODO huh, no max acceleration??
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['x_stop'] = True
                 max_speed_x = get_target_velocity(0, delta_x, self.axis['x']['bow'])
-                speed_vectors.append({
-                    #how fast can we accelerate in X direction anyway
-                    'x': max_speed_x,
-                    'y': max_speed_x * scaled_y
-                })
+            speed_vectors.append({
+                #how fast can we accelerate in X direction anyway
+                'x': max_speed_x,
+                'y': max_speed_x * scaled_y
+            })
         else:
             #we HAVE to turn around!
             if self.previous_movement:
                 self.previous_movement['x_stop'] = True
 
         if delta_y != 0:
-            scaled_x = move_vector['x'] / move_vector['y']
+            scaled_x = normalized_move_vector['x'] / normalized_move_vector['y']
             speed_vectors.append({
                 #what would the maximum speed vector for y movement look like
                 'x': self.axis['y']['max_speed'] * scaled_x,
-                'y': copysign(self.axis['y']['max_speed'], move_vector['y'])
+                'y': copysign(self.axis['y']['max_speed'], normalized_move_vector['y'])
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
                 #ww can accelerate further
                 max_speed_y = get_target_velocity(last_y_speed, delta_y, self.axis['y']['bow'])
-                speed_vectors.append({
-                    #how fast can we accelerate in X direction anyway
-                    'x': max_speed_y * scaled_x,
-                    'y': max_speed_y
-                })
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['y_stop'] = True
                 max_speed_y = get_target_velocity(0, delta_y, self.axis['y']['bow'])
-                speed_vectors.append({
-                    #how fast can we accelerate in X direction anyway
-                    'x': max_speed_y * scaled_x,
-                    'y': max_speed_y
-                })
+            speed_vectors.append({
+                #how fast can we accelerate in X direction anyway
+                'x': max_speed_y * scaled_x,
+                'y': max_speed_y
+            })
         else:
             #we HAVE to turn around!
             if self.previous_movement:
@@ -511,6 +501,7 @@ class PrintQueue():
             if movement['speed']['x'] == 0 or movement['speed']['y'] == 0:
                 _logger.warn("not moving")
             max_speed = movement['speed']
+
 
 #from https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L579
 def get_target_velocity(start_velocity, length, jerk):
