@@ -4,7 +4,7 @@ from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equ
 from math import sqrt
 from threading import Thread
 import unittest
-from trinamic_3d_printer.printer import _calculate_relative_vector, find_shortest_vector, PrintQueue
+from trinamic_3d_printer.printer import _calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
 
 
 class VectorTests(unittest.TestCase):
@@ -430,6 +430,15 @@ class VectorTests(unittest.TestCase):
         except KeyError:
             pass  #ok, this is enough - it should just not be true
         assert_that(planned_list[11]['y_stop'], equal_to(True))
+
+        #ok so far so good - but let's see if this is correctly converted to a motion
+        printer = Printer(serial_port="none", reset_pin="X")
+        printer.configure(axis_config)
+        #easy to detect
+        for movement in planned_list:
+            delta_x, delta_y, move_vector, step_pos, step_speed_vector = printer._add_movement_calculations(movement)
+            x_move_config, y_move_config = printer._generate_move_config(movement, step_pos, step_speed_vector)
+            #jsut liek the real thing
 
 
 
