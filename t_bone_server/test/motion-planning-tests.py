@@ -285,13 +285,21 @@ class VectorTests(unittest.TestCase):
         axis_config = {
             'x': {
                 'max_acceleration': 0.5,
+                'max_step_acceleration': 1,
                 'max_speed': max_speed,
-                'bow': 1
+                'bow': 1,
+                'bow_step': 7,
+                'scale': 7,
+                'motor': 0
             },
             'y': {
                 'max_acceleration': 0.5,
+                'max_step_acceleration': 1,
                 'max_speed': max_speed,
-                'bow': 1
+                'bow': 1,
+                'bow_step': 11,
+                'scale': 11,
+                'motor': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
@@ -433,7 +441,7 @@ class VectorTests(unittest.TestCase):
 
         #ok so far so good - but let's see if this is correctly converted to a motion
         printer = Printer(serial_port="none", reset_pin="X")
-        printer.configure(axis_config)
+        printer.axis = axis_config
         #easy to detect
         for movement in planned_list:
             delta_x, delta_y, move_vector, step_pos, step_speed_vector = printer._add_movement_calculations(movement)
