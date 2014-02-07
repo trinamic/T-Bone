@@ -443,10 +443,12 @@ class VectorTests(unittest.TestCase):
         printer = Printer(serial_port="none", reset_pin="X")
         printer.axis = axis_config
         #easy to detect
-        for movement in planned_list:
+        nr_of_commands = 0
+        for commmand_nr, movement in enumerate(planned_list):
+            nr_of_commands=commmand_nr
             delta_x, delta_y, move_vector, step_pos, step_speed_vector = printer._add_movement_calculations(movement)
             x_move_config, y_move_config = printer._generate_move_config(movement, step_pos, step_speed_vector)
-            #jsut liek the real thing
-
+            #just like the real thing
+        assert_that(nr_of_commands, equal_to(11))
 
 
