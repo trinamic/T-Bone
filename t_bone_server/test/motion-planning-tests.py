@@ -547,6 +547,9 @@ class VectorTests(unittest.TestCase):
                 assert_that(x_move_config['speed'] == 0)
             if not y_found:
                 assert_that(y_move_config['speed'] == 0)
+            assert_that(machine_move['acceleration'],equal_to(machine_move['deceleration']))
+            assert_that(machine_move['startBow'],equal_to(machine_move['endBow']))
+            assert_that(x_found or y_found, equal_to(True))
 
         for command_number, machine_command in enumerate(machine_move_list):
             compare_move_configs(machine_command, move_configs[command_number]['x'], move_configs[command_number]['y'])
