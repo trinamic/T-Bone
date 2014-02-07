@@ -532,3 +532,21 @@ class VectorTests(unittest.TestCase):
             assert_that(machine_move_list[i], has_length(1))
             assert_that(machine_move_list[i][0]['motor'], equal_to(1))
         assert_that(machine_move_list[11], has_length(2))
+
+        def compare_move_configs(machine_move_config, x_move_config, y_move_config):
+            x_found = False
+            y_found = False
+            for machine_move in machine_move_config:
+                if machine_move['motor'] == 0:
+                    assert_that(x_found, equal_to(False))
+                    x_found = True
+                if machine_move['motor'] == 1:
+                    assert_that(y_found, equal_to(False))
+                    y_found = True
+            if not x_found:
+                assert_that(x_move_config['speed'] == 0)
+            if not y_found:
+                assert_that(y_move_config['speed'] == 0)
+
+        for command_number, machine_command in enumerate(machine_move_list):
+            compare_move_configs(machine_command, move_configs[command_number]['x'], move_configs[command_number]['y'])

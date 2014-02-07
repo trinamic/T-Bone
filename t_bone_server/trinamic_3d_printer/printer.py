@@ -278,9 +278,11 @@ class Printer(Thread):
                 y_acceleration = y_move_config['acceleration'] * y_factor
                 y_move_config['acceleration'] = y_acceleration
                 y_move_config['deceleration'] = y_acceleration
+
                 y_bow = y_move_config['startBow'] * y_factor
                 y_move_config['startBow'] = y_bow
                 y_move_config['endBow'] = y_bow
+
                 self.machine.move_to([
                     x_move_config,
                     y_move_config
@@ -294,10 +296,11 @@ class Printer(Thread):
                 x_acceleration = x_move_config['acceleration'] * x_factor
                 x_move_config['acceleration'] = x_acceleration
                 x_move_config['deceleration'] = x_acceleration
-                x_bow = x_move_config['startBow'] * x_factor
 
+                x_bow = x_move_config['startBow'] * x_factor
                 x_move_config['startBow'] = x_bow
                 x_move_config['endBow'] = x_bow
+
                 self.machine.move_to([
                     x_move_config,
                     y_move_config
