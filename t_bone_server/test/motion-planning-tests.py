@@ -517,14 +517,18 @@ class VectorTests(unittest.TestCase):
         machine_move_list = printer.machine.move_list
 
         assert_that(machine_move_list, has_length(12))
-        for i in range(0,2):
+        for i in range(0, 2):
             assert_that(machine_move_list[i], has_length(1))
+            assert_that(machine_move_list[i][0]['motor'], equal_to(0))
         assert_that(machine_move_list[3], has_length(2))
-        for i in range(4,5):
+        for i in range(4, 5):
             assert_that(machine_move_list[i], has_length(1))
+            assert_that(machine_move_list[i][0]['motor'], equal_to(1))
         assert_that(machine_move_list[6], has_length(2))
-        for i in range(7,8):
+        for i in range(7, 8):
             assert_that(machine_move_list[i], has_length(1))
-        for i in range(9,10):
+            assert_that(machine_move_list[i][0]['motor'], equal_to(0))
+        for i in range(9, 10):
             assert_that(machine_move_list[i], has_length(1))
+            assert_that(machine_move_list[i][0]['motor'], equal_to(1))
         assert_that(machine_move_list[11], has_length(2))
