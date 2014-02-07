@@ -445,8 +445,12 @@ class VectorTests(unittest.TestCase):
         #easy to detect
         nr_of_commands = 0
         for commmand_nr, movement in enumerate(planned_list):
-            nr_of_commands=commmand_nr
+            nr_of_commands = commmand_nr
             delta_x, delta_y, move_vector, step_pos, step_speed_vector = printer._add_movement_calculations(movement)
+            assert_that(step_pos['x'], equal_to(movement['x'] * 7))
+            assert_that(step_pos['y'], equal_to(movement['y'] * 11))
+            assert_that(step_speed_vector['x'], equal_to(int(movement['speed']['x'] * 7)))
+            assert_that(step_speed_vector['y'], equal_to(int(movement['speed']['y'] * 11)))
             x_move_config, y_move_config = printer._generate_move_config(movement, step_pos, step_speed_vector)
             #just like the real thing
         assert_that(nr_of_commands, equal_to(11))
