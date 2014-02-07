@@ -480,8 +480,25 @@ class VectorTests(unittest.TestCase):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
             assert_that(move_configs[i]['y']['type'], equal_to('stop'))
         assert_that(move_configs[3]['x']['type'], equal_to('stop'))
-        assert_that(move_configs[3]['x']['type'], equal_to('stop'))
+        for i in range(3,5):
+            assert_that(move_configs[i]['y']['type'], equal_to('way'))
         assert_that(move_configs[5]['y']['type'], equal_to('way'))
         assert_that(move_configs[8]['x']['type'], equal_to('stop'))
         assert_that(move_configs[7]['x']['type'], equal_to('way'))
+        for i in range(0,3):
+            assert_that(move_configs[i]['x']['type'], equal_to('way'))
+        for i in range(0,2):
+            assert_that(move_configs[i]['y']['type'], equal_to('stop'))
+        for i in range(3,5):
+            assert_that(move_configs[i]['y']['type'], equal_to('way'))
+        for i in range(4,5):
+            assert_that(move_configs[i]['x']['type'], equal_to('stop'))
+        for i in range(6,8):
+            assert_that(move_configs[i]['x']['type'], equal_to('way'))
+        for i in range(7,8):
+            assert_that(move_configs[i]['y']['type'], equal_to('stop'))
+        for i in range(9,10):
+            assert_that(move_configs[i]['y']['type'], equal_to('way'))
+        for i in range(9,10):
+            assert_that(move_configs[i]['x']['type'], equal_to('stop'))
 
