@@ -442,6 +442,15 @@ class VectorTests(unittest.TestCase):
         #ok so far so good - but let's see if this is correctly converted to a motion
         printer = Printer(serial_port="none", reset_pin="X")
         printer.axis = axis_config
+
+        class DummyMaychine:
+            move_list = []
+
+            def move_to(self, move_config):
+                self.move_list.append(move_config)
+
+        printer.machine = DummyMaychine()
+
         #easy to detect
         nr_of_commands = 0
         move_configs = []
@@ -472,33 +481,50 @@ class VectorTests(unittest.TestCase):
                 'x': x_move_config,
                 'y': y_move_config
             })
-            #just like the real thing
+            #move a bit just like the real thing
+            printer._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+
         assert_that(nr_of_commands, equal_to(12))
         assert_that(len(move_configs), equal_to(12))
 
-        for i in range(0,2):
+        for i in range(0, 2):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
             assert_that(move_configs[i]['y']['type'], equal_to('stop'))
         assert_that(move_configs[3]['x']['type'], equal_to('stop'))
-        for i in range(3,5):
+        for i in range(3, 5):
             assert_that(move_configs[i]['y']['type'], equal_to('way'))
         assert_that(move_configs[5]['y']['type'], equal_to('way'))
         assert_that(move_configs[8]['x']['type'], equal_to('stop'))
         assert_that(move_configs[7]['x']['type'], equal_to('way'))
-        for i in range(0,3):
+        for i in range(0, 3):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
-        for i in range(0,2):
+        for i in range(0, 2):
             assert_that(move_configs[i]['y']['type'], equal_to('stop'))
-        for i in range(3,5):
+        for i in range(3, 5):
             assert_that(move_configs[i]['y']['type'], equal_to('way'))
-        for i in range(4,5):
+        for i in range(4, 5):
             assert_that(move_configs[i]['x']['type'], equal_to('stop'))
-        for i in range(6,8):
+        for i in range(6, 8):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
-        for i in range(7,8):
+        for i in range(7, 8):
             assert_that(move_configs[i]['y']['type'], equal_to('stop'))
-        for i in range(9,10):
+        for i in range(9, 10):
             assert_that(move_configs[i]['y']['type'], equal_to('way'))
-        for i in range(9,10):
+        for i in range(9, 10):
             assert_that(move_configs[i]['x']['type'], equal_to('stop'))
 
+        #ok what do we got in our machine move list??
+        machine_move_list = printer.machine.move_list
+
+        assert_that(machine_move_list, has_length(12))
+        for i in range(0,2):
+            assert_that(machine_move_list[i], has_length(1))
+        assert_that(machine_move_list[3], has_length(2))
+        for i in range(4,5):
+            assert_that(machine_move_list[i], has_length(1))
+        assert_that(machine_move_list[6], has_length(2))
+        for i in range(7,8):
+            assert_that(machine_move_list[i], has_length(1))
+        for i in range(9,10):
+            assert_that(machine_move_list[i], has_length(1))
+        assert_that(machine_move_list[11], has_length(2))
