@@ -444,15 +444,28 @@ class VectorTests(unittest.TestCase):
         printer.axis = axis_config
         #easy to detect
         nr_of_commands = 0
-        for commmand_nr, movement in enumerate(planned_list):
-            nr_of_commands = commmand_nr
+        move_configs = []
+        for movement in planned_list:
+            nr_of_commands += 1
             delta_x, delta_y, move_vector, step_pos, step_speed_vector = printer._add_movement_calculations(movement)
             assert_that(step_pos['x'], equal_to(movement['x'] * 7))
             assert_that(step_pos['y'], equal_to(movement['y'] * 11))
             assert_that(step_speed_vector['x'], equal_to(int(movement['speed']['x'] * 7)))
             assert_that(step_speed_vector['y'], equal_to(int(movement['speed']['y'] * 11)))
             x_move_config, y_move_config = printer._generate_move_config(movement, step_pos, step_speed_vector)
+            assert_that(x_move_config['motor'], equal_to(0))
+            assert_that(y_move_config['motor'], equal_to(1))
+            assert_that(x_move_config['target'], equal_to(movement['x'] * 7))
+            assert_that(y_move_config['target'], equal_to(movement['y'] * 11))
+            assert_that(x_move_config['speed'], equal_to(abs(int(movement['speed']['x'] * 7))))
+            assert_that(y_move_config['speed'], equal_to(abs(int(movement['speed']['y'] * 11))))
+            ##collect the move configs for later analyisis
+            move_configs.append({
+                'x': x_move_config,
+                'y': y_move_config
+            })
             #just like the real thing
-        assert_that(nr_of_commands, equal_to(11))
+        assert_that(nr_of_commands, equal_to(12))
+        assert_that(len(move_configs), equal_to(12))
 
 
