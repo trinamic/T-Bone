@@ -476,4 +476,12 @@ class VectorTests(unittest.TestCase):
         assert_that(nr_of_commands, equal_to(12))
         assert_that(len(move_configs), equal_to(12))
 
+        for i in range(0,2):
+            assert_that(move_configs[i]['x']['type'], equal_to('way'))
+            assert_that(move_configs[i]['y']['type'], equal_to('stop'))
+        assert_that(move_configs[3]['x']['type'], equal_to('stop'))
+        assert_that(move_configs[3]['x']['type'], equal_to('stop'))
+        assert_that(move_configs[5]['y']['type'], equal_to('way'))
+        assert_that(move_configs[8]['x']['type'], equal_to('stop'))
+        assert_that(move_configs[7]['x']['type'], equal_to('way'))
 
