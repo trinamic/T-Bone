@@ -294,7 +294,7 @@ class VectorTests(unittest.TestCase):
             },
             'y': {
                 'max_acceleration': 0.5,
-                'max_step_acceleration': 1,
+                'max_step_acceleration': 2,
                 'max_speed': max_speed,
                 'bow': 1,
                 'bow_step': 11,
@@ -455,6 +455,14 @@ class VectorTests(unittest.TestCase):
             x_move_config, y_move_config = printer._generate_move_config(movement, step_pos, step_speed_vector)
             assert_that(x_move_config['motor'], equal_to(0))
             assert_that(y_move_config['motor'], equal_to(1))
+            assert_that(x_move_config['acceleration'], equal_to(1))
+            assert_that(y_move_config['acceleration'], equal_to(2))
+            assert_that(x_move_config['deceleration'], equal_to(1))
+            assert_that(y_move_config['deceleration'], equal_to(2))
+            assert_that(x_move_config['startBow'], equal_to(7))
+            assert_that(y_move_config['startBow'], equal_to(11))
+            assert_that(x_move_config['endBow'], equal_to(7))
+            assert_that(y_move_config['endBow'], equal_to(11))
             assert_that(x_move_config['target'], equal_to(movement['x'] * 7))
             assert_that(y_move_config['target'], equal_to(movement['y'] * 11))
             assert_that(x_move_config['speed'], equal_to(abs(int(movement['speed']['x'] * 7))))
