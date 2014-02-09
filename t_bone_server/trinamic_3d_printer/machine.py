@@ -17,7 +17,6 @@ _buffer_empyting_wait_time = 0.1
 _buffer_warn_waittime = 10
 
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.DEBUG)
 
 
 class Machine():
@@ -150,7 +149,7 @@ class Machine():
         command = MachineCommand()
         command.command_number = 10
         command.arguments = []
-        _logger.debug("Adding Move:")
+        _logger.info("Adding Move:")
         for motor in motors:
             command.arguments.append(int(motor['motor']))
             command.arguments.append(int(motor['target']))
@@ -161,7 +160,7 @@ class Machine():
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
             command.arguments.append(int(motor['startBow']))
-            _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
+            _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
                           motor['speed'])
 
         reply = self.machine_connection.send_command(command)
