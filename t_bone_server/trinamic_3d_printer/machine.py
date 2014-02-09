@@ -10,13 +10,14 @@ import Adafruit_BBIO.GPIO as GPIO
 __author__ = 'marcus'
 
 _default_timeout = 5
-_commandEndMatcher = re.compile(";")    #needed to search for command ends
-_min_command_buffer_free_space = 5 # how much arduino buffer to preserve
-_initial_buffer_length = 20 #how much buffer do we need befoer starting to print
+_commandEndMatcher = re.compile(";")  #needed to search for command ends
+_min_command_buffer_free_space = 5  # how much arduino buffer to preserve
+_initial_buffer_length = 20  #how much buffer do we need befoer starting to print
 _buffer_empyting_wait_time = 0.1
 _buffer_warn_waittime = 10
 
 _logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
 
 
 class Machine():
@@ -85,14 +86,14 @@ class Machine():
             command.arguments = (
                 int(motor),
                 position_number,
-                1, #1 is a real endstop
+                1,  #1 is a real endstop
                 polarity_token
             )
         else:
             command.arguments = (
                 int(motor),
                 position_number,
-                0, #1 is a virtual endstop
+                0,  #1 is a virtual endstop
                 int(end_stop_config['position'])
             )
 
@@ -149,6 +150,7 @@ class Machine():
         command = MachineCommand()
         command.command_number = 10
         command.arguments = []
+        _logger.debug("Adding Move:")
         for motor in motors:
             command.arguments.append(int(motor['motor']))
             command.arguments.append(int(motor['target']))
@@ -159,6 +161,8 @@ class Machine():
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
             command.arguments.append(int(motor['startBow']))
+            _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
+                          motor['speed'])
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
@@ -192,8 +196,8 @@ class Machine():
                     else:
                         _logger.debug("waiting for free buffer")
         else:
-        #while self.machine_connection.internal_queue_length > 0:
-            pass # just wait TODO timeout??
+            #while self.machine_connection.internal_queue_length > 0:
+            pass  # just wait TODO timeout??
 
     def read_positon(self, motor):
         command = MachineCommand()
@@ -206,6 +210,7 @@ class Machine():
             _logger.error("Unable read motor position: %s", reply)
             raise MachineError("Unable read motor position", reply)
         return int(reply.arguments[0])
+
 
 class _MachineConnection:
     def __init__(self, machine_serial):
@@ -271,18 +276,18 @@ class _MachineConnection:
                 # if it is just the heart beat we write down the time
                 if command.command_number == -128:
                     self.last_heartbeat = time.clock()
-                    if command.arguments and len(command.arguments)==2:
+                    if command.arguments and len(command.arguments) == 2:
                         self.internal_queue_length = command.arguments[0]
                         self.internal_queue_max_length = command.arguments[1]
                     else:
-                        _logger.warn("did not understand status command %s",command)
+                        _logger.warn("did not understand status command %s", command)
                 else:
                     #we add it to the response queue
                     self.response_queue.put(command)
                     _logger.debug("received command %s", command)
 
     def _read_next_command(self):
-        line = self._doRead()   # read a ';' terminated line
+        line = self._doRead()  # read a ';' terminated line
         if not line or not line.strip():
             return None
         line = line.strip()
