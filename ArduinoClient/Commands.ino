@@ -245,19 +245,9 @@ char readMovementParameters(movement* move) {
     messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
     return -1;
   }
-  long dMax = messenger.readLongArg();
-  if (dMax<=0) {
-    messenger.sendCmd(kError,F("cannot move with no or negative deceleration"));
-    return -1;
-  }
-  long startBow = messenger.readLongArg();
-  if (startBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
-    return -1;
-  }
-  long endBow = messenger.readLongArg();
-  if (endBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+  long jerk = messenger.readLongArg();
+  if (jerk<0) {
+    messenger.sendCmd (kError,F("Jerk cannot be negative")); 
     return -1;
   }
 
@@ -272,9 +262,7 @@ char readMovementParameters(movement* move) {
   }
   move->vMax=vMax;
   move->aMax=aMax;
-  move->dMax=dMax;
-  move->startBow=startBow;
-  move->endBow=endBow;
+  move->jerk=jerk;
 
   return 0;
 }
@@ -415,19 +403,9 @@ void onHome() {
     messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
     return;
   }
-  long dMax = messenger.readLongArg();
-  if (dMax<=0) {
-    messenger.sendCmd(kError,F("cannot home with no or negative deceleration"));
-    return;
-  }
-  long startBow = messenger.readLongArg();
-  if (startBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
-    return;
-  }
-  long endBow = messenger.readLongArg();
-  if (endBow<0) {
-    messenger.sendCmd (kError,F("Start bow cannot be negative")); 
+  long jerk = messenger.readLongArg();
+  if (jerk<0) {
+    messenger.sendCmd (kError,F("Jerk cannot be negative")); 
     return;
   }
 #ifdef DEBUG_HOMING
@@ -443,20 +421,13 @@ void onHome() {
   Serial.print(homeRetract);
   Serial.print(F(", aMax="));
   Serial.print(aMax);
-  Serial.print(F(", dMax="));
-  Serial.print(dMax);
-  Serial.print(F(": startBow="));
-  Serial.print(startBow);
-  Serial.print(F(", endBow="));
-  Serial.print(endBow);
+  Serial.print(F(": jerk="));
+  Serial.print(jerk);
   Serial.println();
 #endif
   const __FlashStringHelper* error =  homeMotor(
   motor,timeout,
-  homeFastSpeed, homeSlowSpeed,homeRetract,
-  aMax,dMax,
-  startBow,endBow
-    );
+  homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
   if (error==NULL) {
     messenger.sendCmdStart(kOK);
     messenger.sendCmdArg(F("homed"));

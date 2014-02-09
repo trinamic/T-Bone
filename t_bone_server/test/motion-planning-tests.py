@@ -466,12 +466,8 @@ class VectorTests(unittest.TestCase):
             assert_that(y_move_config['motor'], equal_to(1))
             assert_that(x_move_config['acceleration'], equal_to(1))
             assert_that(y_move_config['acceleration'], equal_to(2))
-            assert_that(x_move_config['deceleration'], equal_to(1))
-            assert_that(y_move_config['deceleration'], equal_to(2))
             assert_that(x_move_config['startBow'], equal_to(7))
             assert_that(y_move_config['startBow'], equal_to(11))
-            assert_that(x_move_config['endBow'], equal_to(7))
-            assert_that(y_move_config['endBow'], equal_to(11))
             assert_that(x_move_config['target'], equal_to(movement['x'] * 7))
             assert_that(y_move_config['target'], equal_to(movement['y'] * 11))
             assert_that(x_move_config['speed'], equal_to(abs(int(movement['speed']['x'] * 7))))
@@ -547,8 +543,6 @@ class VectorTests(unittest.TestCase):
                 assert_that(x_move_config['speed'] == 0)
             if not y_found:
                 assert_that(y_move_config['speed'] == 0)
-            assert_that(machine_move['acceleration'],equal_to(machine_move['deceleration']))
-            assert_that(machine_move['startBow'],equal_to(machine_move['endBow']))
             assert_that(x_found or y_found, equal_to(True))
 
         for command_number, machine_command in enumerate(machine_move_list):

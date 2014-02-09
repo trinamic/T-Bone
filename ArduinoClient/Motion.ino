@@ -109,7 +109,7 @@ void checkMotion() {
         Serial.print(F(" at "));
         Serial.println(move.vMax);
 #endif
-        moveMotor(move.motor, move.target, move.vMax, move.aMax, move.dMax, move.startBow, move.endBow, prepare_shaddow_registers, move.type==move_over);
+        moveMotor(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
         moving_motors |= _BV(move.motor);
         last_target[move.motor]=move.target;
 
@@ -126,7 +126,7 @@ void checkMotion() {
               Serial.print(F(" to "));
               Serial.println(follower.target,DEC);
 #endif
-              moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.dMax, follower.startBow, follower.endBow, prepare_shaddow_registers, follower.type==follow_over);
+              moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
               moving_motors |= _BV(follower.motor);
               last_target[follower.motor]=follower.target;
             }

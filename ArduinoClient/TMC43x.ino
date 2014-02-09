@@ -48,8 +48,8 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigne
 
 const __FlashStringHelper* homeMotor(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
-unsigned long homming_accel, unsigned long homing_deccel,
-unsigned long homming_start_bow, unsigned long homing_end_bow)
+unsigned long homming_accel,
+unsigned long homming_jerk)
 {
   //todo shouldn't we check if there is a movement going??
 
@@ -58,11 +58,11 @@ unsigned long homming_start_bow, unsigned long homing_end_bow)
   //since we just start 
   );   
   write43x(motor_nr, A_MAX_REGISTER,homming_accel); //set maximum acceleration
-  write43x(motor_nr, D_MAX_REGISTER,homing_deccel); //set maximum deceleration
-  write43x(motor_nr,BOW_1_REGISTER,homming_start_bow);
-  write43x(motor_nr,BOW_2_REGISTER,homing_end_bow);
-  write43x(motor_nr,BOW_3_REGISTER,homing_end_bow);
-  write43x(motor_nr,BOW_4_REGISTER,homming_start_bow);
+  write43x(motor_nr, D_MAX_REGISTER,homming_accel); //set maximum deceleration
+  write43x(motor_nr,BOW_1_REGISTER,homming_jerk);
+  write43x(motor_nr,BOW_2_REGISTER,homming_jerk);
+  write43x(motor_nr,BOW_3_REGISTER,homming_jerk);
+  write43x(motor_nr,BOW_4_REGISTER,homming_jerk);
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
@@ -140,7 +140,7 @@ inline long getMotorPosition(unsigned char motor_nr) {
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dMax, long startBow, long endBow, boolean configure_shadow, boolean isWaypoint) {
+void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
   unsigned char cs_pin = motor_nr;
 
   if (pos==0) {
@@ -200,11 +200,11 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   if (!configure_shadow) {
     write43x(cs_pin,V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
     write43x(cs_pin, A_MAX_REGISTER,aMax); //set maximum acceleration
-    write43x(cs_pin, D_MAX_REGISTER,dMax); //set maximum deceleration
-    write43x(cs_pin,BOW_1_REGISTER,startBow);
-    write43x(cs_pin,BOW_2_REGISTER,endBow);
-    write43x(cs_pin,BOW_3_REGISTER,endBow);
-    write43x(cs_pin,BOW_4_REGISTER,startBow);
+    write43x(cs_pin, D_MAX_REGISTER,aMax); //set maximum deceleration
+    write43x(cs_pin,BOW_1_REGISTER,jerk);
+    write43x(cs_pin,BOW_2_REGISTER,jerk);
+    write43x(cs_pin,BOW_3_REGISTER,jerk);
+    write43x(cs_pin,BOW_4_REGISTER,jerk);
     //TODO pos comp is not shaddowwed
     next_pos_comp[motor_nr] = comp_pos;
     write43x(cs_pin,POS_COMP_REGISTER,comp_pos);
@@ -213,11 +213,11 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long dM
   else {
     write43x(cs_pin,SH_V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
     write43x(cs_pin, SH_A_MAX_REGISTER,aMax); //set maximum acceleration
-    write43x(cs_pin, SH_D_MAX_REGISTER,dMax); //set maximum deceleration
-    write43x(cs_pin,SH_BOW_1_REGISTER,startBow);
-    write43x(cs_pin,SH_BOW_2_REGISTER,endBow);
-    write43x(cs_pin,SH_BOW_3_REGISTER,endBow);
-    write43x(cs_pin,SH_BOW_4_REGISTER,startBow);
+    write43x(cs_pin, SH_D_MAX_REGISTER,aMax); //set maximum deceleration
+    write43x(cs_pin,SH_BOW_1_REGISTER,jerk);
+    write43x(cs_pin,SH_BOW_2_REGISTER,jerk);
+    write43x(cs_pin,SH_BOW_3_REGISTER,jerk);
+    write43x(cs_pin,SH_BOW_4_REGISTER,jerk);
 
     //TODO pos comp is not shaddowwed
     next_pos_comp[motor_nr] = comp_pos;

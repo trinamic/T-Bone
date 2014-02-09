@@ -21,9 +21,7 @@ struct movement {
   long target;
   double vMax;
   long aMax;
-  long dMax;
-  long startBow;
-  long endBow;
+  long jerk;
 };
 
 struct squirrel {

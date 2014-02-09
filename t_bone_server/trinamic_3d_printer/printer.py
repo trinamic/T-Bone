@@ -228,9 +228,7 @@ class Printer(Thread):
             return {
                 'motor': axis['motor'],
                 'acceleration': axis['max_step_acceleration'],
-                'deceleration': axis['max_step_acceleration'],
                 'startBow': axis['bow_step'],
-                'endBow': axis['bow_step']
             }
 
         x_move_config = _axis_movement_template(self.axis['x'])

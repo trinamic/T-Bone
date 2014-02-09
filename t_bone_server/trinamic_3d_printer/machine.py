@@ -158,9 +158,7 @@ class Machine():
                 command.arguments.append(ord('w'))
             command.arguments.append(float(motor['speed']))
             command.arguments.append(int(motor['acceleration']))
-            command.arguments.append(int(motor['deceleration']))
             command.arguments.append(int(motor['startBow']))
-            command.arguments.append(int(motor['endBow']))
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
