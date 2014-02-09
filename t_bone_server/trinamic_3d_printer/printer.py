@@ -499,8 +499,6 @@ class PrintQueue():
                     'y': max_speed_y
                 })
             movement['speed'] = find_shortest_vector(speed_vectors)
-            if movement['speed']['x'] == 0 or movement['speed']['y'] == 0:
-                _logger.warn("not moving")
             max_speed = movement['speed']
 
 
