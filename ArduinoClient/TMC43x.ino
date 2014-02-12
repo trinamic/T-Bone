@@ -188,12 +188,8 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long je
   Serial.print(vMax);
   Serial.print(F(", aMax="));
   Serial.print(aMax);
-  Serial.print(F(", dMax="));
-  Serial.print(dMax);
-  Serial.print(F(": startBow="));
-  Serial.print(startBow);
-  Serial.print(F(", endBow="));
-  Serial.print(endBow);
+  Serial.print(F(": jerk="));
+  Serial.print(jerk);
   Serial.println();
 #endif    
 
