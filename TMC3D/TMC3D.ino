@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <TMC26XGenerator.h>
 
-// TMC4361
+// TMC4361 registers
 #define GENERAL_CONFIG_REGISTER 0x0
 #define START_CONFIG_REGISTER 0x2
 #define SPIOUT_CONF_REGISTER 0x04
