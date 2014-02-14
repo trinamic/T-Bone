@@ -277,11 +277,6 @@ class Printer(Thread):
 
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
 
-                self.machine.move_to([
-                    x_move_config,
-                    y_move_config
-                ])
-                #move
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'])
                 _logger.debug(
@@ -291,10 +286,11 @@ class Printer(Thread):
                 x_move_config['acceleration'] =  y_move_config['acceleration'] * x_factor # todo or the max of the config/scaeld??
                 x_move_config['startBow'] =  y_move_config['startBow'] * x_factor
 
-                self.machine.move_to([
-                    x_move_config,
-                    y_move_config
-                ])
+            #move
+            self.machine.move_to([
+                x_move_config,
+                y_move_config
+            ])
 
 
 class PrintQueue():
