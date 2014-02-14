@@ -28,8 +28,8 @@ void initialzeTMC43x() {
   //preconfigure the TMC43x
   for (char i=0; i<nr_of_motors;i++) {
     write43x(i, GENERAL_CONFIG_REGISTER, 0); //we use direct values
-    write43x(i, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
-    write43x(i, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps ()TDODO does not work)
+    write43x(i, RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
+    write43x(i, SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     write43x(i,CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
     write43x(i,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
