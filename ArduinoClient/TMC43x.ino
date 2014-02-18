@@ -90,7 +90,7 @@ unsigned long homming_jerk)
           Serial.println(homed,DEC);
 #endif
           target -= 1000l;
-          write43x(motor_nr,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_speed));
+          write43x(motor_nr,V_MAX_REGISTER, FIXED_23_8_MAKE(homing_speed));
           write43x(motor_nr, X_TARGET_REGISTER,target);
         }
       } 
@@ -114,7 +114,7 @@ unsigned long homming_jerk)
           Serial.println(actual);
 #endif
         }
-        write43x(motor_nr,V_MAX_REGISTER, FIXED_24_8_MAKE(homing_fast_speed));
+        write43x(motor_nr,V_MAX_REGISTER, FIXED_23_8_MAKE(homing_fast_speed));
         write43x(motor_nr, X_TARGET_REGISTER,go_back_to);
         delay(10ul);
         status = read43x(motor_nr, STATUS_REGISTER,0);
@@ -140,7 +140,7 @@ inline long getMotorPosition(unsigned char motor_nr) {
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
+void moveMotor(unsigned char motor_nr, long pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
   unsigned char cs_pin = motor_nr;
 
   if (pos==0) {
@@ -193,10 +193,12 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long je
   Serial.println();
 #endif    
 
+  long fixed_a_max = FIXED_23_8_MAKE(aMax);
+
   if (!configure_shadow) {
-    write43x(cs_pin,V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
-    write43x(cs_pin, A_MAX_REGISTER,aMax); //set maximum acceleration
-    write43x(cs_pin, D_MAX_REGISTER,aMax); //set maximum deceleration
+    write43x(cs_pin,V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
+    write43x(cs_pin, A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+    write43x(cs_pin, D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
     write43x(cs_pin,BOW_1_REGISTER,jerk);
     write43x(cs_pin,BOW_2_REGISTER,jerk);
     write43x(cs_pin,BOW_3_REGISTER,jerk);
@@ -207,9 +209,9 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, long aMax, long je
 
   } 
   else {
-    write43x(cs_pin,SH_V_MAX_REGISTER,FIXED_24_8_MAKE(vMax)); //set the velocity 
-    write43x(cs_pin, SH_A_MAX_REGISTER,aMax); //set maximum acceleration
-    write43x(cs_pin, SH_D_MAX_REGISTER,aMax); //set maximum deceleration
+    write43x(cs_pin,SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
+    write43x(cs_pin, SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+    write43x(cs_pin, SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
     write43x(cs_pin,SH_BOW_1_REGISTER,jerk);
     write43x(cs_pin,SH_BOW_2_REGISTER,jerk);
     write43x(cs_pin,SH_BOW_3_REGISTER,jerk);

@@ -50,8 +50,8 @@
 #define START_OUT_ADD_REGISTER 0x11
 //some nice calculation s
 //simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
-#define FIXED_8_24_MAKE(a)     (int32_t)((a*(1ul << 24ul)))
-#define FIXED_24_8_MAKE(a)     (int32_t)((a*(1ul << 8ul)))
+#define FIXED_23_8_MAKE(a)     (int32_t)((a*(1ul << 8ul)))
+#define FIXED_22_2_MAKE(a)     (int32_t)((a*(1ul << 2ul)))
 
 //how to mask REFERENCE_CONFIG_REGISTER if you want to configure just one end 
 #define LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(6) | _BV(10) | _BV(11) | _BV(14))

@@ -20,7 +20,7 @@ struct movement {
   unsigned char motor;
   long target;
   double vMax;
-  long aMax;
+  double aMax;
   long jerk;
 };
 
