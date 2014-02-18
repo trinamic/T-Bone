@@ -442,6 +442,7 @@ class VectorTests(unittest.TestCase):
         #ok so far so good - but let's see if this is correctly converted to a motion
         printer = Printer(serial_port="none", reset_pin="X")
         printer.axis = axis_config
+        printer._postconfig()
 
         class DummyMaychine:
             move_list = []
@@ -530,8 +531,8 @@ class VectorTests(unittest.TestCase):
         assert_that(machine_move_list[11], has_length(2))
 
         def compare_move_configs(machine_move_config, x_move_config, y_move_config):
-            x_move=None
-            y_move=None
+            x_move = None
+            y_move = None
             for machine_move in machine_move_config:
                 if machine_move['motor'] == 0:
                     assert_that(x_move, equal_to(None))
@@ -544,10 +545,10 @@ class VectorTests(unittest.TestCase):
             if not y_move:
                 assert_that(y_move_config['speed'] == 0)
             if x_move and y_move:
-                ratio = float(x_move['speed'])/float(y_move['speed'])
-                assert_that(float(x_move['acceleration'])/float(y_move['acceleration']),close_to(ratio,0.0001))
-                assert_that(float(x_move['startBow'])/float(y_move['startBow']),close_to(ratio,0.0001))
-            assert_that(y_move or x_move, not(equal_to(None)))
+                ratio = float(x_move['speed']) / float(y_move['speed'])
+                assert_that(float(x_move['acceleration']) / float(y_move['acceleration']), close_to(ratio, 0.0001))
+                assert_that(float(x_move['startBow']) / float(y_move['startBow']), close_to(ratio, 0.0001))
+            assert_that(y_move or x_move, not (equal_to(None)))
 
         for command_number, machine_command in enumerate(machine_move_list):
             compare_move_configs(machine_command, move_configs[command_number]['x'], move_configs[command_number]['y'])

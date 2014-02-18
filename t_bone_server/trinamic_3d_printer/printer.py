@@ -36,6 +36,8 @@ class Printer(Thread):
         self.print_queue_min_length = print_min_length
         self.print_queue_max_length = print_max_length
         self._default_homing_retraction = None
+        self._x_step_conversion = None
+        self._y_step_conversion = None
 
         self._homing_timeout = 10
 
@@ -62,6 +64,12 @@ class Printer(Thread):
 
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
+        self._postconfig()
+
+    def _postconfig(self):
+        #we need the stepping rations for variuos vcalclutaions later
+        self._x_step_conversion = float(self.axis['x']['scale']) / float(self.axis['y']['scale'])
+        self._y_step_conversion = float(self.axis['y']['scale']) / float(self.axis['x']['scale'])
 
         self._extract_homing_information()
 
@@ -268,22 +276,24 @@ class Printer(Thread):
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if abs(delta_x) > abs(delta_y):
-                y_factor = abs(move_vector['y'] / move_vector['x'])
+                y_factor = abs(move_vector['y'] / move_vector['x'] * self._y_step_conversion)
                 _logger.debug(
                     "Moving X axis to %s gearing Y by %s to %s"
                     , step_pos['x'], y_factor, step_pos['y'])
 
-                y_move_config['acceleration'] = x_move_config['acceleration'] * y_factor # todo or the max of the config/scaeld??
+                y_move_config['acceleration'] = x_move_config[
+                                                    'acceleration'] * y_factor  # todo or the max of the config/scaeld??
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
 
             else:
-                x_factor = abs(move_vector['x'] / move_vector['y'])
+                x_factor = abs(move_vector['x'] / move_vector['y'] * self._x_step_conversion)
                 _logger.debug(
                     "Moving Y axis to %s gearing X by %s  to %s"
                     , step_pos['x'], x_factor, step_pos['y'])
 
-                x_move_config['acceleration'] =  y_move_config['acceleration'] * x_factor # todo or the max of the config/scaeld??
-                x_move_config['startBow'] =  y_move_config['startBow'] * x_factor
+                x_move_config['acceleration'] = y_move_config[
+                                                    'acceleration'] * x_factor  # todo or the max of the config/scaeld??
+                x_move_config['startBow'] = y_move_config['startBow'] * x_factor
 
             #move
             self.machine.move_to([
