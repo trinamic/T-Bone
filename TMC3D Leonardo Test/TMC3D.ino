@@ -1,8 +1,7 @@
 #include <SPI.h>
 #include <TMC26XGenerator.h>
-#include <Metro.h>
 
-// TMC4361 registers
+// TMC4361
 #define GENERAL_CONFIG_REGISTER 0x0
 #define START_CONFIG_REGISTER 0x2
 #define SPIOUT_CONF_REGISTER 0x04
@@ -20,6 +19,7 @@
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
 
+
 #define REFERENCE_CONFIG_REGISTER 0x01
 #define VIRTUAL_STOP_LEFT_REGISTER 0x33
 #define VIRTUAL_STOP_RIGHT_REGISTER 0x34
@@ -28,12 +28,12 @@
 #define X_ACTUAL_REGISTER 0x21
 #define X_LATCH_REGISTER 0x36
 
-// TMC2660 registers
+// TMC2660
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 100
 #define CLOCK_FREQUENCY 16000000ul
 
-// TMC5031 registers
+// TMC5031
 #define TMC5031_GENERAL_CONFIG_REGISTER 0x00
 #define TMC5031_GENERAL_STATUS_REGISTER 0x01
 #define TMC5031_INPUT_REGISTER 0x04
@@ -85,8 +85,6 @@
 #define PWM1_PIN 9
 #define PWM2_PIN 10
 #define PWM3_PIN 5
-int pwmTime = 255;
-int pwmStep = 5;
 
 // Define analog TEMP inputs
 #define TEMP1_PIN A0                    // Analog 0
@@ -119,6 +117,7 @@ long bow = 1000000;
 long end_bow = bow;
 long amax = vmax/100;
 long dmax = amax;
+int enc_res = 2000;
 
 // TMC2660
 TMC26XGenerator tmc260 = TMC26XGenerator(AMP4361, TMC260_SENSE_RESISTOR_IN_MO);
@@ -127,6 +126,9 @@ unsigned char status;
 
 void setup()
 {
+  // Use HWBE as Output
+  DDRE |= _BV(2);
+  
   // Analog reference AREF
   analogReference(EXTERNAL);
   
@@ -136,6 +138,12 @@ void setup()
   //SPI.setDataMode(SPI_MODE3);             // Set CPOL=1 and CPHA=1
   SPI.begin();
   Serial.begin(9600);
+  
+  // Use HWBE pin to reset motion controller TMC4361
+  delay(100);
+  PORTE &= ~(_BV(2));
+  delay(100);
+  PORTE |= _BV(2);
   
   // Set CS IOs
   pinMode(CS_5041_PIN, OUTPUT);
@@ -167,7 +175,7 @@ void setup()
   motorconfig |= steps_per_revolution << 4;
 
   // 4361_1
-  writeRegister(CS_4361_1_PIN, GENERAL_CONFIG_REGISTER, _BV(9));       // xtarget
+  writeRegister(CS_4361_1_PIN, GENERAL_CONFIG_REGISTER, _BV(9) | _BV(12));       // xtarget
   writeRegister(CS_4361_1_PIN, CLK_FREQ_REGISTER, CLOCK_FREQUENCY);
   writeRegister(CS_4361_1_PIN, START_CONFIG_REGISTER, _BV(10));         // start automatically
   writeRegister(CS_4361_1_PIN, RAMP_MODE_REGISTER, _BV(2) | 2);         // we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -189,7 +197,7 @@ void setup()
   writeRegister(CS_4361_1_PIN, V_MAX_REGISTER, vmax << 8); //set the velocity - TODO recalculate float numbers
   writeRegister(CS_4361_1_PIN, A_MAX_REGISTER, amax); //set maximum acceleration
   writeRegister(CS_4361_1_PIN, D_MAX_REGISTER, dmax); //set maximum deceleration
-  
+
   // 4361_2
   writeRegister(CS_4361_2_PIN, GENERAL_CONFIG_REGISTER, _BV(9));       // xtarget
   writeRegister(CS_4361_2_PIN, CLK_FREQ_REGISTER, CLOCK_FREQUENCY);
@@ -305,17 +313,17 @@ void setup()
   // ---------------------TMC5041---ENDE---------------------------
   // --------------------------------------------------------------
 
-  writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
-  writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_2, 10000ul);
-  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_2, 0);
-
-  writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
-  writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_1, 10000ul);
-  //writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 500000);
-
+  //writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
+  //writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_2, 10000ul);
+  //writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_2, 200000);
+  
+  //writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
+  //writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_1, 10000ul);
+  //writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 9999999);
+  
   // Fahrbefehele
-  //writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
-  //writeRegister(CS_4361_1_PIN, X_TARGET_REGISTER, 9999999);
+  writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
+  writeRegister(CS_4361_1_PIN, X_TARGET_REGISTER, 9999999);
   //writeRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   //writeRegister(CS_4361_2_PIN, X_TARGET_REGISTER, 9999999);
   //writeRegister(CS_4361_3_PIN, X_ACTUAL_REGISTER, 0);
@@ -329,42 +337,36 @@ unsigned long target=0;
 
 void loop()
 {
-  /*Serial.println("4361_1: ");
+  Serial.println("4361_1: ");
   readRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
-  Serial.println("4361_2: ");
+
+  /*Serial.println("4361_2: ");
   readRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   Serial.println("4361_3: ");
   readRegister(CS_4361_3_PIN, X_ACTUAL_REGISTER, 0);
   Serial.println("5041: ");
   readRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);*/
   delay(100);
-
+  
   // PWM Test
+  int pwmTime1 = 0;
+  int pwmTime2 = 0;
+  int pwmTime3 = 0;
+  int pwmStep = 5;
   //pwmTime = pwmTime + pwmStep;
-  //analogWrite(PWM1_PIN, pwmTime);
-  //analogWrite(PWM2_PIN, pwmTime);
-  //analogWrite(PWM3_PIN, pwmTime);
+  //analogWrite(PWM1_PIN, pwmTime1);
+  //analogWrite(PWM2_PIN, pwmTime2);
+  //analogWrite(PWM3_PIN, pwmTime3);
   
-  readRegister(CS_4361_1_PIN, STATUS_REGISTER, 0);
-  
-  // Read analog value temperature
-  int temp1 = analogRead(TEMP1_PIN);
+  /*int temp1 = analogRead(TEMP1_PIN);
+  Serial.print("Temperatur:");
   Serial.println(temp1);
   
-  if(pwmTime == 0 || pwmTime == 255)
-  {
-    pwmStep = -pwmStep;
-  }
+  int temp1fb = analogRead(FEEDBACK1_PIN);
+  Serial.print("Feedback PWM1:");
+  Serial.println(temp1fb);
+  
+  int temp2fb = analogRead(FEEDBACK2_PIN);
+  Serial.print("Feedback PWM2:");
+  Serial.println(temp2fb);*/
 }
-
-
-
-
-
-
-
-
-
-
-
-
