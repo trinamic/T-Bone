@@ -3,10 +3,10 @@ long last_target[nr_of_motors];
 
 void initialzeTMC43x() {
   //reset the quirrel
-  digitalWriteFast(reset_squirrel, LOW);
+  digitalWriteFast(RESET_SQUIRREL_PIN, LOW);
 
-  pinModeFast(start_signal_pin,INPUT);
-  digitalWriteFast(start_signal_pin,LOW);
+  pinModeFast(START_SIGNAL_PIN,INPUT);
+  digitalWriteFast(START_SIGNAL_PIN,LOW);
 
   //initialize CS pin
   digitalWriteFast(SQUIRREL_0_PIN,HIGH);
@@ -22,7 +22,7 @@ void initialzeTMC43x() {
   }
   //enable the reset again
   delay(1);
-  digitalWriteFast(reset_squirrel, HIGH);
+  digitalWriteFast(RESET_SQUIRREL_PIN, HIGH);
   delay(10);
   //initialize SPI
   SPI.setClockDivider(SPI_CLOCK_DIV4);
@@ -239,10 +239,10 @@ inline void signal_start() {
     next_pos_comp[i] = 0;
   }    
   //carefully trigger the start pin 
-  digitalWriteFast(start_signal_pin,HIGH);
-  pinModeFast(start_signal_pin,OUTPUT);
-  digitalWriteFast(start_signal_pin,LOW);
-  pinModeFast(start_signal_pin,INPUT);
+  digitalWriteFast(START_SIGNAL_PIN,HIGH);
+  pinModeFast(START_SIGNAL_PIN,OUTPUT);
+  digitalWriteFast(START_SIGNAL_PIN,LOW);
+  pinModeFast(START_SIGNAL_PIN,INPUT);
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif

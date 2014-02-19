@@ -33,6 +33,9 @@
 #define SQUIRREL_0_PIN 8
 #define SQUIRREL_1_PIN 12
 #define TMC5041_PIN 11
+#define RESET_SQUIRREL_PIN 4
+#define START_SIGNAL_PIN 7
+
 
 //standards
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -64,9 +67,6 @@ squirrel motors[nr_of_motors] = {
     DEFAULT_STEPS_PER_REVOLUTION       }
 };
 
-const char reset_squirrel = 4;
-const char start_signal_pin = 7;
-
 motion_state current_motion_state = no_motion;
 
 //config
@@ -81,8 +81,8 @@ Metro watchDogMetro = Metro(1000);
 
 void setup() {
   //at least we should try deactivate the squirrels
-  pinModeFast(reset_squirrel,OUTPUT);
-  digitalWriteFast(reset_squirrel, LOW);
+  pinModeFast(RESET_SQUIRREL_PIN,OUTPUT);
+  digitalWriteFast(RESET_SQUIRREL_PIN, LOW);
 
   pinModeFast(TMC5041_PIN,OUTPUT);
   digitalWriteFast(TMC5041_PIN,HIGH);
