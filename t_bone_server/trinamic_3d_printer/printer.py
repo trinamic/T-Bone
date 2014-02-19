@@ -1,5 +1,5 @@
 # coding=utf-8
-from Queue import Queue
+from Queue import Queue, Empty
 from copy import deepcopy
 import logging
 from math import sqrt, copysign
@@ -40,6 +40,7 @@ class Printer(Thread):
         self._y_step_conversion = None
 
         self._homing_timeout = 10
+        self._print_queue_wait_time = 0.1
 
         #finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
@@ -89,8 +90,8 @@ class Printer(Thread):
 
     def finish_print(self):
         self._print_queue.finish()
-        self.printing = False
         self.machine.finish_motion()
+        self.printing = False
         pass
 
     def read_motor_positons(self):
@@ -151,14 +152,14 @@ class Printer(Thread):
 
     def run(self):
         while self.printing:
-            #get the next movement from stack
-            movement = self._print_queue.next_movement()
-
-            delta_x, delta_y, move_vector, step_pos, step_speed_vector = self._add_movement_calculations(movement)
-
-            x_move_config, y_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
-
-            self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+            try:
+                #get the next movement from stack
+                movement = self._print_queue.next_movement(self._print_queue_wait_time)
+                delta_x, delta_y, move_vector, step_pos, step_speed_vector = self._add_movement_calculations(movement)
+                x_move_config, y_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
+                self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+            except Empty:
+                _logger.debug("Print Queue did not return a value - this can be pretty normal")
 
     def _configure_axis(self, axis, config):
         axis['steps_per_mm'] = config['steps-per-mm']
