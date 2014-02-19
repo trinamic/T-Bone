@@ -58,6 +58,7 @@ void checkMotion() {
       Serial.println('#');
 #endif
       motor_status=0;
+      target_motor_status = next_target_motor_status;
       signal_start();
       next_move_prepared=false;
     }
@@ -137,6 +138,8 @@ void checkMotion() {
         next_target_motor_status = moving_motors;
         //for the first move we need to configure everything a bit 
         if (!prepare_shaddow_registers) {
+          target_motor_status = next_target_motor_status;
+          motor_status=0;
           signal_start();
           //and we need to prepare the next move for the shadow registers
           prepare_shaddow_registers = true;
@@ -198,6 +201,8 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
+
 
 
 

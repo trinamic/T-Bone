@@ -217,10 +217,8 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
 }
 
 inline void signal_start() {
-  target_motor_status = next_target_motor_status;
   //prepare the pos compr registers
   for (char i=0; i< nr_of_motors; i++) {
-
     //clear the event register
     read43x(i,EVENTS_REGISTER,0);
     write43x(i,POS_COMP_REGISTER,next_pos_comp[i]);
