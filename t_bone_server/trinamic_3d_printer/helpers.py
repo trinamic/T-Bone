@@ -5,7 +5,7 @@ __author__ = 'marcus'
 def _convert_mm_to_steps(millimeters, conversion_factor):
     if millimeters is None:
         return None
-    return int(millimeters * conversion_factor)
+    return int(float(millimeters) * float(conversion_factor))
 
 
 def _calculate_relative_vector(delta_x, delta_y):
