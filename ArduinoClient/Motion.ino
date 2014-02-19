@@ -70,13 +70,14 @@ void checkMotion() {
 
       //we leave a rest in the move queue since it could be a partial movement
       if (moveQueue.count()>min_buffer_depth) {
-        if (min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
+        if (min_buffer_depth!=0 && min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
 #ifdef DEBUG_MOTION_STATUS
           Serial.println(F("Inital motion buffer full."));
 #endif
           min_buffer_depth=DEFAULT_COMMAND_BUFFER_DEPTH;
         }
-        //TODO but how we empty the queue? - in motion is more than true&false ...
+        //configure the start conditions for the motors
+        //TODO - is'nt this more or less something just to be done for the first tqwo moves??
         for (char i; i<nr_of_motors;i++) {
           //give all motors a nice start config
           if (!prepare_shaddow_registers) {
@@ -100,7 +101,6 @@ void checkMotion() {
         byte moving_motors=0;
         //analysze the movement (nad take a look at the next
         movement move = moveQueue.pop();
-        movement followers[MAX_FOLLOWING_MOTORS];
         //check out which momtors are geared with this
 
 #ifdef DEBUG_MOTION
