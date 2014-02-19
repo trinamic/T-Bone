@@ -49,7 +49,7 @@ void resetMotion() {
 
 void checkMotion() {
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
-    if ((motor_status & target_motor_status) == target_motor_status) {
+    if (target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));
