@@ -24,6 +24,7 @@ void initialzeTMC43x() {
   digitalWriteFast(reset_squirrel, HIGH);
   delay(10);
   //initialize SPI
+  SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.begin();
   //preconfigure the TMC43x
   for (char i=0; i<nr_of_motors;i++) {
