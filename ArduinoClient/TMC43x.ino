@@ -147,7 +147,7 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
-  direction[motor_nr]=(target_po)s>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
+  direction[motor_nr]=(target_pos)>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
   if (isWaypoint) {
     aim_target = 2*(target_pos-last_pos)+last_pos;
   } 
@@ -246,31 +246,6 @@ inline void signal_start() {
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif
-  /*
-  //and in case the dirver is already past the next position and we do not check this manualyy read it
-   for (char i=0; i< nr_of_motors; i++) {
-   if (pos_comp[i]!=0) {
-   unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
-   #ifdef DEBUG_X_POS
-   Serial.print(motor_pos);
-   if (direction[i]==1) Serial.print('>');
-   if (direction[i]==-1) Serial.print('<');
-   if (direction[i]==0) Serial.print('=');
-   Serial.print(pos_comp[i]);
-   #endif
-   if ((direction[i]==1 && motor_pos>=pos_comp[i])
-   || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
-   motor_target_reached(i);
-   #ifdef DEBUG_X_POS
-   Serial.print('*');
-   #endif
-   }
-   #ifdef DEBUG_X_POS
-   Serial.println();
-   #endif
-   }
-   }
-   */
 #ifdef DEBUG_MOTION_TRACE
   Serial.println('-');
 #endif
