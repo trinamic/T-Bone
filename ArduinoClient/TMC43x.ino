@@ -193,7 +193,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double aMax, long 
   Serial.println();
 #endif    
 
-  long fixed_a_max = FIXED_23_8_MAKE(aMax);
+  long fixed_a_max = FIXED_22_2_MAKE(aMax);
 
   if (!configure_shadow) {
     write43x(cs_pin,V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
