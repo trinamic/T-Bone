@@ -1,7 +1,8 @@
 volatile boolean next_move_prepared = false;
 volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
-volatile unsigned int target_motor_status;
+volatile unsigned char target_motor_status;
+volatile unsigned char next_target_motor_status;
 char direction[nr_of_motors];
 unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 
@@ -25,6 +26,8 @@ void startMotion(char initial_min_buffer_depth) {
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
   current_motion_state = in_motion;
+  target_motor_status=0;
+  next_target_motor_status=0;
 }
 
 void finishMotion() {
@@ -131,7 +134,7 @@ void checkMotion() {
         while (follower.type == follow_over || follower.type == follow_to);
 
         //in the end all moviong motorts must have apssed pos_comp
-        target_motor_status = moving_motors;
+        next_target_motor_status = moving_motors;
         //for the first move we need to configure everything a bit 
         if (!prepare_shaddow_registers) {
           signal_start();

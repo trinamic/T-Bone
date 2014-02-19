@@ -149,7 +149,7 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
   long last_pos = last_target[motor_nr]; //this was our last position
   direction[motor_nr]=(target_pos)>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
   if (isWaypoint) {
-    aim_target = 2*(target_pos-last_pos)+last_pos;
+    aim_target =target_pos;// 2*(target_pos-last_pos)+last_pos;
   } 
   else {
     aim_target=target_pos;
@@ -217,6 +217,7 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
 }
 
 inline void signal_start() {
+  target_motor_status = next_target_motor_status;
   //prepare the pos compr registers
   for (char i=0; i< nr_of_motors; i++) {
 
