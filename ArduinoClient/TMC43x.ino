@@ -229,7 +229,7 @@ inline void signal_start() {
 
     //clear the event register
     read43x(i,EVENTS_REGISTER,0);
-    if (motor_status & _BV(i)) {
+    if (target_motor_status & _BV(i)) {
       write43x(i,POS_COMP_REGISTER,next_pos_comp[i]);
       unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
       if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
