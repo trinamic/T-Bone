@@ -158,7 +158,7 @@ class Machine():
             else:
                 command.arguments.append(ord('w'))
             command.arguments.append(float(motor['speed']))
-            command.arguments.append(int(motor['acceleration']))
+            command.arguments.append(float(motor['acceleration']))
             command.arguments.append(int(motor['startBow']))
             _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
                           motor['speed'])

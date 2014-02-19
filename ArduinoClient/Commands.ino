@@ -240,7 +240,7 @@ char readMovementParameters(movement* move) {
     messenger.sendCmd (kError,F("cannot move with no or negative speed"));
     return -1;
   }
-  long aMax = messenger.readLongArg();
+  double aMax = messenger.readFloatArg();
   if (aMax<=0) {
     messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
     return -1;
