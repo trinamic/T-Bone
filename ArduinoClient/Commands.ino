@@ -457,7 +457,15 @@ void onCommands() {
   Serial.print(COMMAND_QUEUE_LENGTH);
   Serial.print(F("\tRAM:  "));
   Serial.print(ram);
-  Serial.print(in_motion? F("\tin motion"): F("\tstopped"));
+  if (current_motion_state==no_motion) {
+    Serial.println(F("\t - not moving"));
+  } else if (current_motion_state==in_motion) {
+    Serial.println(F("\t - in motion"));
+  } else if (current_motion_state==finishing_motion) {
+    Serial.println(F("\t - finishing motion"));
+  } else {
+    Serial.println(F("Unkmown motion"));
+  }  
   Serial.println();
 #endif
 
@@ -476,7 +484,15 @@ void watchDogPing() {
   Serial.print(COMMAND_QUEUE_LENGTH);
   Serial.print(F("\tRAM:  "));
   Serial.print(ram);
-  Serial.print(in_motion? F("\tin motion"): F("\tstopped"));
+  if (current_motion_state==no_motion) {
+    Serial.println(F("\t - not moving"));
+  } else if (current_motion_state==in_motion) {
+    Serial.println(F("\t - in motion"));
+  } else if (current_motion_state==finishing_motion) {
+    Serial.println(F("\t - finishing motion"));
+  } else {
+    Serial.println(F("Unkmown motion"));
+  }  
   Serial.println();
 #endif
 }
