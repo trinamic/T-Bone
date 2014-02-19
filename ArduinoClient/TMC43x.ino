@@ -228,7 +228,20 @@ inline void signal_start() {
 
     //clear the event register
     read43x(i,EVENTS_REGISTER,0);
-    write43x(i,POS_COMP_REGISTER,next_pos_comp[i]);
+    if (motor_status & _BV(i)) {
+      write43x(i,POS_COMP_REGISTER,next_pos_comp[i]);
+      unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
+      if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
+        || (direction[i]==-1 && motor_pos<=next_pos_comp[i])) {
+        motor_target_reached(i);
+#ifdef DEBUG_X_POS
+        Serial.print('*');
+#endif
+      }
+#ifdef DEBUG_X_POS
+      Serial.println();
+#endif
+    }
     next_pos_comp[i] = 0;
   }    
   //carefully trigger the start pin 
@@ -239,31 +252,31 @@ inline void signal_start() {
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif
-/*
+  /*
   //and in case the dirver is already past the next position and we do not check this manualyy read it
-  for (char i=0; i< nr_of_motors; i++) {
-    if (pos_comp[i]!=0) {
-      unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
-#ifdef DEBUG_X_POS
-      Serial.print(motor_pos);
-      if (direction[i]==1) Serial.print('>');
-      if (direction[i]==-1) Serial.print('<');
-      if (direction[i]==0) Serial.print('=');
-      Serial.print(pos_comp[i]);
-#endif
-      if ((direction[i]==1 && motor_pos>=pos_comp[i])
-        || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
-        motor_target_reached(i);
-#ifdef DEBUG_X_POS
-        Serial.print('*');
-#endif
-      }
-#ifdef DEBUG_X_POS
-      Serial.println();
-#endif
-    }
-  }
-  */
+   for (char i=0; i< nr_of_motors; i++) {
+   if (pos_comp[i]!=0) {
+   unsigned long motor_pos = read43x(i, X_ACTUAL_REGISTER,0);
+   #ifdef DEBUG_X_POS
+   Serial.print(motor_pos);
+   if (direction[i]==1) Serial.print('>');
+   if (direction[i]==-1) Serial.print('<');
+   if (direction[i]==0) Serial.print('=');
+   Serial.print(pos_comp[i]);
+   #endif
+   if ((direction[i]==1 && motor_pos>=pos_comp[i])
+   || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
+   motor_target_reached(i);
+   #ifdef DEBUG_X_POS
+   Serial.print('*');
+   #endif
+   }
+   #ifdef DEBUG_X_POS
+   Serial.println();
+   #endif
+   }
+   }
+   */
 #ifdef DEBUG_MOTION_TRACE
   Serial.println('-');
 #endif
@@ -340,6 +353,9 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
+
+
 
 
 
