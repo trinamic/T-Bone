@@ -47,7 +47,8 @@ class Machine():
         init_command.command_number = 9
         reply = self.machine_connection.send_command(init_command)
         if reply.command_number != 0:
-            raise MachineCommand("Unable to start")
+            _logger.error("Unable to start, received %s which is not OK",reply)
+            raise MachineError("Unable to start")
 
     def disconnect(self):
         if self.machine_connection:
