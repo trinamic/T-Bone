@@ -33,6 +33,7 @@ class GCodePrintThread(Thread):
                 self.lines_printed += 1
             self.printer.finish_print()
             _logger.info("fininshed gcode reading to %s ", self.printer)
+            #todo and here we need some more or less clever plan - since we cannot restart the print thread
         finally:
             self.printing = False
             if self.callback:

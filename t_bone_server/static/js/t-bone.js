@@ -41,7 +41,7 @@ $().ready(function () {
                 $("#queue-status-progress-bar").width(eventData.status_data.queue_percentage + "%");
             } else {
                 $("#printing-progress").hide();
-                $("queue-status-progress").hide();
+                $("#queue-status-progress").hide();
             }
         }
     )
