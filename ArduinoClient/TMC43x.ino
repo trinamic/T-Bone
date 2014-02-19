@@ -1,4 +1,5 @@
 volatile long next_pos_comp[nr_of_motors];
+long last_target[nr_of_motors];
 
 void initialzeTMC43x() {
   //reset the quirrel
@@ -35,6 +36,7 @@ void initialzeTMC43x() {
     write43x(i,START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolution(i,motors[i].steps_per_revolution);
+    last_target[i]=0;
   }
 }
 
@@ -145,7 +147,7 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
-  direction[motor_nr]=target_pos>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
+  direction[motor_nr]=(target_po)s>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
   if (isWaypoint) {
     aim_target = 2*(target_pos-last_pos)+last_pos;
   } 
@@ -211,6 +213,7 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
 
   }
   write43x(motor_nr,X_TARGET_REGISTER,aim_target);
+  last_target[motor_nr]=target_pos;
 }
 
 inline void signal_start() {
@@ -344,6 +347,8 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
+
 
 
 

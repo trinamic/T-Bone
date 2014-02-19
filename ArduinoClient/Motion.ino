@@ -2,7 +2,6 @@ volatile boolean next_move_prepared = false;
 volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
 volatile unsigned int target_motor_status;
-long last_target[nr_of_motors];
 char direction[nr_of_motors];
 unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 
@@ -22,7 +21,6 @@ void startMotion(char initial_min_buffer_depth) {
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
     write43x(i, INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
-    last_target[i]=0;
   }
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
@@ -111,7 +109,6 @@ void checkMotion() {
 #endif
         moveMotor(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
         moving_motors |= _BV(move.motor);
-        last_target[move.motor]=move.target;
 
         movement follower;
         do {
@@ -128,7 +125,6 @@ void checkMotion() {
 #endif
               moveMotor(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
               moving_motors |= _BV(follower.motor);
-              last_target[follower.motor]=follower.target;
             }
           }
         } 
