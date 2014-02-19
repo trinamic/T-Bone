@@ -18,7 +18,9 @@
 #define X_TARGET_REGISTER 0x37
 #define COVER_LOW_REGISTER 0x6c
 #define COVER_HIGH_REGISTER 0x6d
-
+#define ENC_POS 0x50
+#define ENC_IN_CONF 0x07
+#define ENC_IN_RES 0x54
 
 #define REFERENCE_CONFIG_REGISTER 0x01
 #define VIRTUAL_STOP_LEFT_REGISTER 0x33
@@ -127,7 +129,7 @@ unsigned char status;
 void setup()
 {
   // Use HWBE as Output
-  DDRE |= _BV(2);
+  DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
   
   // Analog reference AREF
   analogReference(EXTERNAL);
@@ -141,7 +143,7 @@ void setup()
   
   // Use HWBE pin to reset motion controller TMC4361
   delay(100);
-  PORTE &= ~(_BV(2));
+  PORTE &= ~(_BV(2));          //to check (reset for motion controller)
   delay(100);
   PORTE |= _BV(2);
   
@@ -175,7 +177,7 @@ void setup()
   motorconfig |= steps_per_revolution << 4;
 
   // 4361_1
-  writeRegister(CS_4361_1_PIN, GENERAL_CONFIG_REGISTER, _BV(9) | _BV(12));       // xtarget
+  writeRegister(CS_4361_1_PIN, GENERAL_CONFIG_REGISTER, _BV(9) | _BV(12));       // xtarget, disable diff encoder
   writeRegister(CS_4361_1_PIN, CLK_FREQ_REGISTER, CLOCK_FREQUENCY);
   writeRegister(CS_4361_1_PIN, START_CONFIG_REGISTER, _BV(10));         // start automatically
   writeRegister(CS_4361_1_PIN, RAMP_MODE_REGISTER, _BV(2) | 2);         // we want to go to positions in nice S-Ramps ()TDODO does not work)
@@ -197,6 +199,8 @@ void setup()
   writeRegister(CS_4361_1_PIN, V_MAX_REGISTER, vmax << 8); //set the velocity - TODO recalculate float numbers
   writeRegister(CS_4361_1_PIN, A_MAX_REGISTER, amax); //set maximum acceleration
   writeRegister(CS_4361_1_PIN, D_MAX_REGISTER, dmax); //set maximum deceleration
+
+  writeRegister(CS_4361_1_PIN, ENC_IN_RES, enc_res); // write encoder resolution into register
 
   // 4361_2
   writeRegister(CS_4361_2_PIN, GENERAL_CONFIG_REGISTER, _BV(9));       // xtarget
@@ -339,7 +343,8 @@ void loop()
 {
   Serial.println("4361_1: ");
   readRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
-
+  Serial.println("4361_1_ENC_POS: ");
+  readRegister(CS_4361_1_PIN, ENC_POS, 0);              // Read encoder position register
   /*Serial.println("4361_2: ");
   readRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   Serial.println("4361_3: ");
