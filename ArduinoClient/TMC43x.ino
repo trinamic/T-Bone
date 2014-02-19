@@ -243,6 +243,7 @@ inline void signal_start() {
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif
+/*
   //and in case the dirver is already past the next position and we do not check this manualyy read it
   for (char i=0; i< nr_of_motors; i++) {
     if (pos_comp[i]!=0) {
@@ -266,8 +267,9 @@ inline void signal_start() {
 #endif
     }
   }
+  */
 #ifdef DEBUG_MOTION_TRACE
-  Serial.println();
+  Serial.println('-');
 #endif
 #ifdef DEBUG_X_POS
   Serial.println();
