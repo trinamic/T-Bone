@@ -63,6 +63,7 @@ squirrel motors[nr_of_motors] = {
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
     DEFAULT_STEPS_PER_REVOLUTION       }
 };
+
 const char reset_squirrel = 4;
 const char start_signal_pin = 7;
 
