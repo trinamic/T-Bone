@@ -140,10 +140,10 @@ inline long getMotorPosition(unsigned char motor_nr) {
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotor(unsigned char motor_nr, long pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
+void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
   unsigned char cs_pin = motor_nr;
 
-  if (pos==0) {
+  if (target_pos==0) {
     Serial.println("ZERO");
     //We avoid 0 since it is a marker 
     //TODO silly hack!
@@ -152,16 +152,14 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double aMax, long 
 
 
   long aim_target;
-  long comp_pos;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
-  direction[motor_nr]=pos>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
-  comp_pos = pos;
+  direction[motor_nr]=target_pos>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
   if (isWaypoint) {
-    aim_target = 2*(pos-last_pos)+last_pos;
+    aim_target = 2*(target_pos-last_pos)+last_pos;
   } 
   else {
-    aim_target=pos;
+    aim_target=target_pos;
   }
 
 #ifdef DEBUG_MOTION  
@@ -204,8 +202,8 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double aMax, long 
     write43x(cs_pin,BOW_3_REGISTER,jerk);
     write43x(cs_pin,BOW_4_REGISTER,jerk);
     //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = comp_pos;
-    write43x(cs_pin,POS_COMP_REGISTER,comp_pos);
+    next_pos_comp[motor_nr] = target_pos;
+    write43x(cs_pin,POS_COMP_REGISTER,target_pos);
 
   } 
   else {
@@ -218,7 +216,7 @@ void moveMotor(unsigned char motor_nr, long pos, double vMax, double aMax, long 
     write43x(cs_pin,SH_BOW_4_REGISTER,jerk);
 
     //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = comp_pos;
+    next_pos_comp[motor_nr] = target_pos;
 
   }
   write43x(cs_pin,X_TARGET_REGISTER,aim_target);
