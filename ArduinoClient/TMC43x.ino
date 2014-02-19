@@ -142,16 +142,6 @@ inline long getMotorPosition(unsigned char motor_nr) {
 }
 
 void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
-  unsigned char cs_pin = motor_nr;
-
-  if (target_pos==0) {
-    Serial.println("ZERO");
-    //We avoid 0 since it is a marker 
-    //TODO silly hack!
-    // pos=1;
-  }
-
-
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
@@ -195,32 +185,32 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
   long fixed_a_max = FIXED_22_2_MAKE(aMax);
 
   if (!configure_shadow) {
-    write43x(cs_pin,V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
-    write43x(cs_pin, A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
-    write43x(cs_pin, D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
-    write43x(cs_pin,BOW_1_REGISTER,jerk);
-    write43x(cs_pin,BOW_2_REGISTER,jerk);
-    write43x(cs_pin,BOW_3_REGISTER,jerk);
-    write43x(cs_pin,BOW_4_REGISTER,jerk);
+    write43x(motor_nr,V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
+    write43x(motor_nr, A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+    write43x(motor_nr, D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
+    write43x(motor_nr,BOW_1_REGISTER,jerk);
+    write43x(motor_nr,BOW_2_REGISTER,jerk);
+    write43x(motor_nr,BOW_3_REGISTER,jerk);
+    write43x(motor_nr,BOW_4_REGISTER,jerk);
     //TODO pos comp is not shaddowwed
     next_pos_comp[motor_nr] = target_pos;
-    write43x(cs_pin,POS_COMP_REGISTER,target_pos);
+    write43x(motor_nr,POS_COMP_REGISTER,target_pos);
 
   } 
   else {
-    write43x(cs_pin,SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
-    write43x(cs_pin, SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
-    write43x(cs_pin, SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
-    write43x(cs_pin,SH_BOW_1_REGISTER,jerk);
-    write43x(cs_pin,SH_BOW_2_REGISTER,jerk);
-    write43x(cs_pin,SH_BOW_3_REGISTER,jerk);
-    write43x(cs_pin,SH_BOW_4_REGISTER,jerk);
+    write43x(motor_nr,SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
+    write43x(motor_nr, SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+    write43x(motor_nr, SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
+    write43x(motor_nr,SH_BOW_1_REGISTER,jerk);
+    write43x(motor_nr,SH_BOW_2_REGISTER,jerk);
+    write43x(motor_nr,SH_BOW_3_REGISTER,jerk);
+    write43x(motor_nr,SH_BOW_4_REGISTER,jerk);
 
     //TODO pos comp is not shaddowwed
     next_pos_comp[motor_nr] = target_pos;
 
   }
-  write43x(cs_pin,X_TARGET_REGISTER,aim_target);
+  write43x(motor_nr,X_TARGET_REGISTER,aim_target);
 }
 
 inline void signal_start() {
