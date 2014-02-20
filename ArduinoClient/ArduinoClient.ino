@@ -35,7 +35,7 @@ const char nr_of_motors = 2;
 #define COMMAND_QUEUE_LENGTH 70
 
 //standards
-#define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
+#define TMC_260_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define CLOCK_FREQUENCY 16000000ul
 #define DEFAULT_CURRENT_IN_MA 1
