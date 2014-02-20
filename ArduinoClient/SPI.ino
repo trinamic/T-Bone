@@ -16,9 +16,9 @@ long send43x(unsigned const char motor_nr, unsigned const char tmc43x_register, 
 
   //select the TMC driver
   if (motor_nr==0) {
-    digitalWriteFast(SQUIRREL_0_PIN,LOW);
+    digitalWriteFast(CS_4361_1_PIN,LOW);
   } else if (motor_nr==1) {
-    digitalWriteFast(SQUIRREL_1_PIN,LOW);
+    digitalWriteFast(CS_4361_2_PIN,LOW);
   }
   //TODO this won't work  but will be the nost successfuly optimization come up with an idea
 
@@ -47,9 +47,9 @@ long send43x(unsigned const char motor_nr, unsigned const char tmc43x_register, 
 
   //deselect the TMC chip
   if (motor_nr==0) {
-    digitalWriteFast(SQUIRREL_0_PIN,HIGH);
+    digitalWriteFast(CS_4361_1_PIN,HIGH);
   } else if (motor_nr==1) {
-    digitalWriteFast(SQUIRREL_1_PIN,HIGH);
+    digitalWriteFast(CS_4361_2_PIN,HIGH);
   }
 
   return i_datagram;

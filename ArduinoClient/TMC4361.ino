@@ -9,11 +9,11 @@ void initialzeTMC4361() {
   digitalWriteFast(START_SIGNAL_PIN,LOW);
 
   //initialize CS pin
-  digitalWriteFast(SQUIRREL_0_PIN,HIGH);
-  pinModeFast(SQUIRREL_0_PIN,OUTPUT);
+  digitalWriteFast(CS_4361_1_PIN,HIGH);
+  pinModeFast(CS_4361_1_PIN,OUTPUT);
   //initialize CS pin
-  digitalWriteFast(SQUIRREL_1_PIN,HIGH);
-  pinModeFast(SQUIRREL_1_PIN,OUTPUT);
+  digitalWriteFast(CS_4361_2_PIN,HIGH);
+  pinModeFast(CS_4361_2_PIN,OUTPUT);
 
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {

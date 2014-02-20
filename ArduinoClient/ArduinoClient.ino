@@ -12,9 +12,9 @@
 //# Debug Settings #
 //##################
 
-//#define DEBUG_MOTOR_CONTFIG
-//#define DEBUG_HOMING
-//#define DEBUG_ENDSTOPS
+#define DEBUG_MOTOR_CONTFIG
+#define DEBUG_HOMING
+#define DEBUG_ENDSTOPS
 
 //#define DEBUG_MOTION
 //#define DEBUG_MOTION_TRACE
@@ -46,9 +46,9 @@ const char nr_of_motors = 2;
 
 //#define CALCULATE_OUTPUT 13
 //the CS pins have to be defines for digitalWriteFast 
-#define SQUIRREL_0_PIN 4
-#define SQUIRREL_1_PIN 12
-#define SQUIRREL_2_PIN 6
+#define CS_4361_1_PIN 4
+#define CS_4361_2_PIN 12
+#define CS_4361_3_PIN 6
 #define START_SIGNAL_PIN A3
 #define TMC5041_PIN 11
 
