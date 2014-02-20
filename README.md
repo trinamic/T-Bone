@@ -9,7 +9,7 @@ Arduino Leonardo Pinout
 
 Adapted from pins.h in the Arduino software.
 
-**Arduino Pin – Atmel Pin & function - connection **
+**Arduino Pin – Atmel Pin & function - connection**
 
 + D0 -				PD2, 				RXD1/INT2 - 				Serial BeagleBone
 + D1 -				PD3					TXD1/INT3 - 				Serial BeagleBone
