@@ -23,7 +23,7 @@
 //#define DEBUG_MOTION_STATUS
 //#define DEBUG_X_POS
 
-//#define DEBUG_STATUS
+#define DEBUG_STATUS
 
 
 //how many motors do we know?
