@@ -41,6 +41,12 @@ void initialzeTMC4361() {
 }
 
 const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigned int steps) {
+#ifdef DEBUG_MOTOR_CONTFIG
+  Serial.print(F("Settings steps per rev for #"));
+  Serial.print(motor_nr);
+  Serial.print(F(" to "));
+  Serial.println(steps);
+#endif
   //configure the motor type
   unsigned long motorconfig = 0x00; //we want 256 microsteps
   motorconfig |= steps<<4;
@@ -321,6 +327,7 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 

@@ -3,6 +3,14 @@ const __FlashStringHelper* setCurrent(unsigned char motor_number, int newCurrent
   if (newCurrent>MAX_MOTOR_CURRENT) {
     return F("Current too high");
   } 
+  #ifdef DEBUG_MOTOR_CONTFIG
+  Serial.print(F("Settings current for #"));
+  Serial.print(motor_number);
+  Serial.print(F(" to "));
+  Serial.print(newCurrent);
+  Serial.println(F("mA."));
+#endif
+
   motors[motor_number].tmc260.setCurrent(newCurrent);
   setTMC260Registers(motor_number);
   return NULL;
