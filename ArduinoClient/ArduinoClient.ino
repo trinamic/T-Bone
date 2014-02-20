@@ -33,7 +33,6 @@
 #define SQUIRREL_0_PIN 8
 #define SQUIRREL_1_PIN 12
 #define TMC5041_PIN 11
-#define RESET_SQUIRREL_PIN 4
 #define START_SIGNAL_PIN 7
 
 
@@ -59,12 +58,12 @@ squirrel motors[nr_of_motors] = {
   {
     3,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION      }
+    DEFAULT_STEPS_PER_REVOLUTION        }
   ,
   {
     2,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION       }
+    DEFAULT_STEPS_PER_REVOLUTION         }
 };
 
 motion_state current_motion_state = no_motion;
@@ -80,12 +79,11 @@ CmdMessenger messenger = CmdMessenger(Serial1);
 Metro watchDogMetro = Metro(1000); 
 
 void setup() {
-  //at least we should try deactivate the squirrels
-  pinModeFast(RESET_SQUIRREL_PIN,OUTPUT);
-  digitalWriteFast(RESET_SQUIRREL_PIN, LOW);
+  // Use HWBE as Output
+  DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
 
-  pinModeFast(TMC5041_PIN,OUTPUT);
-  digitalWriteFast(TMC5041_PIN,HIGH);
+  //at least we should try deactivate the squirrels
+  resetSquirrels(true, true);
 
 
   //initialize the serial port for commands
@@ -122,6 +120,18 @@ void loop() {
   }
 }
 
+inline void resetSquirrels(boolean shutdown, boolean bringup) {
+  if (shutdown) {
+    // Use HWBE pin to reset motion controller TMC4361
+    PORTE &= ~(_BV(2));          //to check (reset for motion controller)
+  }
+  if (shutdown && bringup) {
+    delay(1);
+  }
+  if (bringup) {
+    PORTE |= _BV(2);
+  }
+}
 
 
 
