@@ -21,7 +21,7 @@ void startMotion(char initial_min_buffer_depth) {
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
-    write43x(i, INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
+    write43x(i, TMC4361_INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
   }
   next_move_prepared=false; //TODO in theory this is not needed  
   prepare_shaddow_registers = false;
@@ -81,7 +81,7 @@ void checkMotion() {
         for (char i; i<nr_of_motors;i++) {
           //give all motors a nice start config
           if (!prepare_shaddow_registers) {
-            write43x(i, START_CONFIG_REGISTER, 0
+            write43x(i, TMC4361_START_CONFIG_REGISTER, 0
               | _BV(0) //xtarget requires start
             | _BV(1) //vmax requires start
             | _BV(5) //external start is an start
@@ -90,7 +90,7 @@ void checkMotion() {
             );   
           } 
           else {
-            write43x(i, START_CONFIG_REGISTER, 0
+            write43x(i, TMC4361_START_CONFIG_REGISTER, 0
               | _BV(0) //x_target requires start
             | _BV(4)  //use shaddow motion profiles
             | _BV(5) //external start is an start

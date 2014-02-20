@@ -24,7 +24,7 @@ struct movement {
   long jerk;
 };
 
-struct squirrel {
+struct TMC4361_info{
   char target_reached_interrupt_pin;
   char target_reached_interrupt_nr;
   void (*target_reached_interrupt_routine)();

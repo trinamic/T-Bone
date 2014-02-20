@@ -49,7 +49,7 @@ void OnUnknownCommand() {
 
 void onInit() {
   //initialize the 43x
-  initialzeTMC43x();
+  initialzeTMC4361();
   //start the tmc260 driver
   intializeTMC260();
   //we stop the motion anyway
@@ -312,7 +312,7 @@ void onPosition() {
   if (motor<0) {
     return;
   }
-  unsigned long position = read43x(motor,X_ACTUAL_REGISTER,0);
+  unsigned long position = read43x(motor,TMC4361_X_ACTUAL_REGISTER,0);
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
@@ -360,7 +360,7 @@ void onConfigureEndStop() {
 
   //TODO this is dummy config - we need specific settings for specific motors 
   for (char i=0; i<nr_of_motors; i++) {
-    write43x(i, REFERENCE_CONFIG_REGISTER, 0 
+    write43x(i, TMC4361_REFERENCE_CONFIG_REGISTER, 0 
       | _BV(0) //STOP_LEFT enable
     | _BV(2) //positive Stop Left stops motor
     //  | _BV(3)

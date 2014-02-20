@@ -50,7 +50,7 @@ const char nr_of_motors = 2;
 #define START_SIGNAL_PIN A3
 #define TMC5041_PIN 11
 
-squirrel motors[nr_of_motors] = {
+TMC4361_info motors[nr_of_motors] = {
   {
     3,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
@@ -86,8 +86,8 @@ void setup() {
   // Use HWBE as Output
   DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
 
-  //at least we should try deactivate the squirrels
-  resetSquirrels(true, true);
+  //at least we should try deactivate the motion drivers
+  resetTMC4361(true, true);
 
 
   //initialize the serial port for commands
@@ -111,9 +111,6 @@ void setup() {
   watchDogStart();
 }
 
-unsigned long tmc43xx_write;
-unsigned long tmc43xx_read;
-
 void loop() {
   //move if neccessary
   checkMotion();
@@ -124,7 +121,7 @@ void loop() {
   }
 }
 
-inline void resetSquirrels(boolean shutdown, boolean bringup) {
+inline void resetTMC4361(boolean shutdown, boolean bringup) {
   if (shutdown) {
     // Use HWBE pin to reset motion controller TMC4361
     PORTE &= ~(_BV(2));          //to check (reset for motion controller)
