@@ -25,16 +25,12 @@
 
 //#define DEBUG_STATUS
 
+
+//how many motors do we know?
+const char nr_of_motors = 2;
+
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 70
-
-//#define CALCULATE_OUTPUT 13
-//the CS pins have to be defines for digitalWriteFast 
-#define SQUIRREL_0_PIN 8
-#define SQUIRREL_1_PIN 12
-#define TMC5041_PIN 11
-#define START_SIGNAL_PIN 7
-
 
 //standards
 #define TMC_26X_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -46,13 +42,13 @@
 #define DEFAULT_ACCELERATION 1
 #define DEFAULT_BOW 1
 
-#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_motors)
-
-//how many motors do we know?
-const char nr_of_motors = 2;
-
-//how many otors can be theoretically geared together
-#define MAX_FOLLOWING_MOTORS (nr_of_motors-1)
+//#define CALCULATE_OUTPUT 13
+//the CS pins have to be defines for digitalWriteFast 
+#define SQUIRREL_0_PIN 4
+#define SQUIRREL_1_PIN 12
+#define SQUIRREL_2_PIN 6
+#define START_SIGNAL_PIN A3
+#define TMC5041_PIN 11
 
 squirrel motors[nr_of_motors] = {
   {
@@ -64,7 +60,15 @@ squirrel motors[nr_of_motors] = {
     2,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
     DEFAULT_STEPS_PER_REVOLUTION         }
+    //third would be pin 7 
 };
+
+
+#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_motors)
+
+//how many otors can be theoretically geared together
+#define MAX_FOLLOWING_MOTORS (nr_of_motors-1)
+
 
 motion_state current_motion_state = no_motion;
 
