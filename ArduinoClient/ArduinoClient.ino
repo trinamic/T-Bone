@@ -28,7 +28,7 @@
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 70
 
-#define CALCULATE_OUTPUT 13
+//#define CALCULATE_OUTPUT 13
 //the CS pins have to be defines for digitalWriteFast 
 #define SQUIRREL_0_PIN 8
 #define SQUIRREL_1_PIN 12
