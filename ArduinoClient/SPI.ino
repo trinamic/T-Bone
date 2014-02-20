@@ -11,7 +11,7 @@ unsigned long read43x(unsigned const char cs_squirrel,unsigned const char tmc43x
   return result;
 }
 
-long send43x(unsigned const char motor_nr, unsigned const char tmc43x_register, unsigned const long datagram) {
+long send43x(unsigned const char motor_nr, unsigned const char tmc4361_register, unsigned const long datagram) {
   unsigned long i_datagram;
 
   //select the TMC driver
@@ -23,12 +23,16 @@ long send43x(unsigned const char motor_nr, unsigned const char tmc43x_register, 
   //TODO this won't work  but will be the nost successfuly optimization come up with an idea
 
 #ifdef DEBUG_SPI
-  Serial.print("Sending ");
-  Serial.println(datagram,HEX);
+  Serial.print(F("Sending "));
+  Serial.print(datagram,HEX);
+  Serial.print(F(" to "));
+  Serial.print(tmc4361_register,HEX);
+  Serial.print(F(" of #"));
+  Serial.println(motor_nr,HEX);
 #endif
 
   //the first value is irgnored
-  status = SPI.transfer(tmc43x_register);
+  status = SPI.transfer(tmc4361_register);
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;
@@ -39,10 +43,11 @@ long send43x(unsigned const char motor_nr, unsigned const char tmc43x_register, 
   i_datagram |= SPI.transfer((datagram) & 0xff);
 
 #ifdef DEBUG_SPI
-  Serial.print("Status :");
+  Serial.print(F("Status :"));
   Serial.println(status,BIN);
-  Serial.print("Received ");
+  Serial.print(F("Received "));
   Serial.println(i_datagram,HEX);
+  Serial.println();
 #endif
 
   //deselect the TMC chip
