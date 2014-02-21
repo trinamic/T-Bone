@@ -30,6 +30,8 @@
 
 //how many motors do we know?
 const char nr_of_coordinated_motors = 3;
+const char nr_of_controlled_motors = 2;
+const char nr_of_motors = nr_of_coordinated_motors + nr_of_controlled_motors;
 
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 40
