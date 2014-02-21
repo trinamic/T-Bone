@@ -22,7 +22,7 @@ void init5041() {
   setCurrent5041(1,DEFAULT_CURRENT_IN_MA);
 }
 
-void setCurrent5041(unsigned char motor_number, int newCurrent) {
+const __FlashStringHelper*  setCurrent5041(unsigned char motor_number, int newCurrent) {
   //TODO this seems quite strange - the run current is trucated anyway??
   unsigned char run_current = calculateCurrentValue(newCurrent);
   boolean low_sense = run_current & 0x80;
@@ -61,6 +61,7 @@ void setCurrent5041(unsigned char motor_number, int newCurrent) {
   else {
     writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
   }
+  return NULL;
 }
 
 

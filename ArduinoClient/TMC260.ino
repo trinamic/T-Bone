@@ -1,6 +1,6 @@
 
 const __FlashStringHelper* setCurrent260(unsigned char motor_number, int newCurrent) {
-  if (newCurrent>MAX_MOTOR_CURRENT) {
+  if (newCurrent>MAX_MOTOR_CURRENT_260) {
     return F("Current too high");
   } 
   #ifdef DEBUG_MOTOR_CONTFIG
