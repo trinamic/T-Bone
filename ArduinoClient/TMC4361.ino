@@ -132,7 +132,7 @@ unsigned long homming_jerk)
 #endif
         } 
         else {
-          long actual = read4361(motor_nr, TMC4361_X_LATCH_REGISTER,0);
+          long actual = X_TARGET_IN_DIRECTION(motor_nr,read4361(motor_nr, TMC4361_X_LATCH_REGISTER,0));
           go_back_to = actual;
 #ifdef DEBUG_HOMING
           Serial.println(F("homed at "));
@@ -278,13 +278,12 @@ inline void signal_start() {
 
 const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean active_high) {
   unsigned long endstop_config = getClearedEndStopConfig(motor_nr, left);
-  unsigned long clearing_pattern;
   if (left) {
     if (active_high) {
 #ifdef DEBUG_ENDSTOPS
       Serial.println(F("Configuring left end stop as active high"));
 #endif
-      clearing_pattern |= 0 
+      endstop_config |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(2) //positive Stop Left stops motor
           | _BV(11) //X_LATCH if stopl becomes active ..
@@ -294,7 +293,7 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
 #ifdef DEBUG_ENDSTOPS
       Serial.println(F("Configuring left end stop as active low"));
 #endif
-      clearing_pattern |= 0 
+      endstop_config |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(10) //X_LATCH if stopl becomes inactive ..
           ;
@@ -305,7 +304,7 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
 #ifdef DEBUG_ENDSTOPS
       Serial.println(F("Configuring right end stop as active high"));
 #endif
-      clearing_pattern |= 0 
+      endstop_config |= 0 
         | _BV(1) //STOP_RIGHT enable
         | _BV(3) //positive Stop right stops motor
           | _BV(13) //X_LATCH if storl becomes active ..
@@ -315,12 +314,17 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
 #ifdef DEBUG_ENDSTOPS
       Serial.println(F("Configuring right end stop as active low"));
 #endif
-      clearing_pattern |= 0 
+      endstop_config |= 0 
         | _BV(0) //STOP_LEFT enable
         | _BV(12) //X_LATCH if stopr becomes inactive ..
           ;
     }
   }
+  //ensure that the endstops are inverted if the motor is inverted
+  if (inverted_motors & _BV(motor_nr)) {
+    endstop_config |= _BV(4);
+  }
+  write4361(motor_nr,TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
   return NULL;
 }
 

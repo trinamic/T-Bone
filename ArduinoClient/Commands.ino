@@ -128,7 +128,7 @@ void onInvertMotor() {
   if (invert==0) {
     messenger.sendCmdStart(kInvertMotor);
     messenger.sendCmdArg(motor+1);
-    if (inversed_motors| _BV(motor)) {
+    if (inverted_motors| _BV(motor)) {
       messenger.sendCmdArg(-1);
     } 
     else {
@@ -138,12 +138,17 @@ void onInvertMotor() {
     return;
   }
   if (invert<0) {
-    inversed_motors |= _BV(motor);
-  messenger.sendCmd(kOK,F("Motor inverted"));
+    inverted_motors |= _BV(motor);
+    //invert endstops
+    unsigned long endstop_config = read4361(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
+    endstop_config |= _BV(4);
+    read4361(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+
+    messenger.sendCmd(kOK,F("Motor inverted"));
   } 
   else {
-    inversed_motors &= ~(_BV(motor));
-  messenger.sendCmd(kOK,F("Motor not inverted"));
+    inverted_motors &= ~(_BV(motor));
+    messenger.sendCmd(kOK,F("Motor not inverted"));
   }
 }
 
@@ -569,6 +574,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
