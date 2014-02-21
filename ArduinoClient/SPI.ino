@@ -21,6 +21,12 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   else if (motor_nr==1) {
     digitalWriteFast(CS_4361_2_PIN,HIGH);
   }
+  else if (motor_nr==2) {
+    digitalWriteFast(CS_4361_3_PIN,HIGH);
+  }
+  else if (motor_nr==3) {
+    digitalWriteFast(CS_5041_PIN,HIGH);
+  }
   //TODO this won't work  but will be the nost successfuly optimization come up with an idea
 
 #ifdef DEBUG_SPI
@@ -62,6 +68,12 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   } 
   else if (motor_nr==1) {
     digitalWriteFast(CS_4361_2_PIN,LOW);
+  }
+  else if (motor_nr==2) {
+    digitalWriteFast(CS_4361_3_PIN,LOW);
+  }
+  else if (motor_nr==3) {
+    digitalWriteFast(CS_5041_PIN,LOW);
   }
 
   return i_datagram;
