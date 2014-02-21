@@ -39,7 +39,7 @@ void initialzeTMC4361() {
   delay(1);
   resetTMC4361(false,true);
   delay(10);
-  
+
   //initialize SPI
   SPI.begin();
   //SPI.setClockDivider(SPI_CLOCK_DIV4);
@@ -116,7 +116,7 @@ unsigned long homming_jerk)
 #endif
           target -= 1000l;
           write4361(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_speed));
-          write4361(motor_nr, TMC4361_X_TARGET_REGISTER,target);
+          write4361(motor_nr, TMC4361_X_TARGET_REGISTER,X_TARGET_IN_DIRECTION(motor_nr,target));
         }
       } 
       else {
@@ -140,7 +140,7 @@ unsigned long homming_jerk)
 #endif
         }
         write4361(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_fast_speed));
-        write4361(motor_nr, TMC4361_X_TARGET_REGISTER,go_back_to);
+        write4361(motor_nr, TMC4361_X_TARGET_REGISTER, X_TARGET_IN_DIRECTION(motor_nr,go_back_to));
         delay(10ul);
         status = read4361(motor_nr, TMC4361_STATUS_REGISTER,0);
         while (!(status & _BV(0))) {
@@ -343,6 +343,7 @@ inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean lef
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 
