@@ -218,6 +218,13 @@ class Printer(Thread):
         current = config["current"]
         self.machine.set_current(motor, current)
 
+        if "inverted" in config and config["inverted"]:
+            axis['inverted'] = True
+        else:
+            axis['inverted'] = False
+        self.machine.invert_motor(motor, axis['inverted'])
+
+
     def _add_movement_calculations(self, movement):
         step_pos = {
             'x': _convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
