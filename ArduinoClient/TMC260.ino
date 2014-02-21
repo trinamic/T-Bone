@@ -19,7 +19,7 @@ const __FlashStringHelper* setCurrent(unsigned char motor_number, int newCurrent
 void intializeTMC260() {
   for (char i=0; i<nr_of_coordinated_motors;i++) {
     //configure TMC43x SPI
-    write4361(i, TMC4361_SPIOUT_CONF_REGISTER,TMC_260_CONFIG);
+    writeRegister(i, TMC4361_SPIOUT_CONF_REGISTER,TMC_260_CONFIG);
     //configure the TMC26x
     motors[i].tmc260.setMicrosteps(256);
     setTMC260Registers(i);
@@ -37,11 +37,11 @@ void setTMC260Registers(unsigned char motor_number) {
 void set260Register(unsigned char motor_number, unsigned long value) {
   //santitize to 20 bits 
   value &= 0xFFFFF;
-  write4361(motor_number, TMC4361_COVER_LOW_REGISTER,value);  //Cover-Register: Einstellung des SMARTEN=aus
+  writeRegister(motor_number, TMC4361_COVER_LOW_REGISTER,value);  //Cover-Register: Einstellung des SMARTEN=aus
 
-  read4361(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  read4361(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  read4361(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
 }
 
 

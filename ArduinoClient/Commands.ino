@@ -143,9 +143,9 @@ void onInvertMotor() {
     //TODO somehow the endstops are not reacting as expected at least there is a problem with retract after hitting
     inverted_motors |= _BV(motor);
     //invert endstops
-    unsigned long endstop_config = read4361(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
+    unsigned long endstop_config = readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
     endstop_config |= _BV(4);
-    read4361(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+    readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
 
     messenger.sendCmd(kOK,F("Motor inverted"));
   } 
@@ -350,7 +350,7 @@ void onPosition() {
   if (motor<0) {
     return;
   }
-  unsigned long position = read4361(motor,TMC4361_X_ACTUAL_REGISTER,0);
+  unsigned long position = readRegister(motor,TMC4361_X_ACTUAL_REGISTER,0);
   messenger.sendCmdStart(kPos);
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
@@ -398,7 +398,7 @@ void onConfigureEndStop() {
 
   //TODO this is dummy config - we need specific settings for specific motors 
   for (char i=0; i<nr_of_coordinated_motors; i++) {
-    write4361(i, TMC4361_REFERENCE_CONFIG_REGISTER, 0 
+    writeRegister(i, TMC4361_REFERENCE_CONFIG_REGISTER, 0 
       | _BV(0) //STOP_LEFT enable
     | _BV(2) //positive Stop Left stops motor
     //  | _BV(3)

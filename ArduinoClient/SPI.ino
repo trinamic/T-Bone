@@ -1,17 +1,17 @@
 unsigned char status;
 
 
-void write4361(unsigned const char cs_squirrel,unsigned const char tmc4361_register, unsigned const long datagram) {
-  send4361(cs_squirrel,tmc4361_register | 0x80,datagram);
+void writeRegister(unsigned const char cs_squirrel,unsigned const char tmc4361_register, unsigned const long datagram) {
+  sendRegister(cs_squirrel,tmc4361_register | 0x80,datagram);
 }
 
-unsigned long read4361(unsigned const char cs_squirrel,unsigned const char tmc4361_register, unsigned const long datagram) {
-  send4361(cs_squirrel,tmc4361_register, datagram);
-  unsigned long result =  send4361(cs_squirrel, tmc4361_register, datagram);
+unsigned long readRegister(unsigned const char cs_squirrel,unsigned const char tmc4361_register, unsigned const long datagram) {
+  sendRegister(cs_squirrel,tmc4361_register, datagram);
+  unsigned long result = sendRegister(cs_squirrel, tmc4361_register, datagram);
   return result;
 }
 
-long send4361(unsigned const char motor_nr, unsigned const char tmc4361_register, unsigned const long datagram) {
+long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_register, unsigned const long datagram) {
   unsigned long i_datagram;
 
   //select the TMC driver
