@@ -47,7 +47,7 @@ class Machine():
         init_command.command_number = 9
         reply = self.machine_connection.send_command(init_command)
         if reply.command_number != 0:
-            _logger.error("Unable to start, received %s which is not OK",reply)
+            _logger.error("Unable to start, received %s which is not OK", reply)
             raise MachineError("Unable to start")
 
     def disconnect(self):
@@ -71,7 +71,7 @@ class Machine():
         if inverted:
             invert_value = -1
         else:
-            invert_value=1
+            invert_value = 1
         command.arguments = (
             int(motor),
             invert_value
@@ -177,7 +177,7 @@ class Machine():
             command.arguments.append(float(motor['acceleration']))
             command.arguments.append(int(motor['startBow']))
             _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
-                          motor['speed'])
+                         motor['speed'])
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
