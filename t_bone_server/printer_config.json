@@ -4,10 +4,10 @@
         "current": 0.2,
         "steps-per-mm": 1420.8984,
         "max-speed": 900,
-        "max-acceleration": 9000,
-        "bow-acceleration": 3000,
-        "inverted":false,
-        "inverted_comment":"not fully functional yet",
+        "max-acceleration": 3000,
+        "bow-acceleration": 20.0,
+        "inverted": false,
+        "inverted_comment": "not fully functional yet",
         "end-stops": {
             "left": {
                 "polarity": "positive"
@@ -26,8 +26,8 @@
         "current": 0.2,
         "steps-per-mm": 1420.8984,
         "max-speed": 900,
-        "max-acceleration": 9000,
-        "bow-acceleration": 3000,
+        "max-acceleration": 3000,
+        "bow-acceleration": 20.0,
         "end-stops": {
             "left": {
                 "polarity": "positive"
@@ -49,5 +49,25 @@
         },
         "homing-timeout": 15,
         "home-retract": 5
+    },
+    "z-axis": {
+        "motors": [3,4],
+        "current": 0.4,
+        "steps-per-mm": 5074.590,
+        "max-speed": 3,
+        "max-acceleration": 1,
+        "bow-acceleration": 0.4,
+        "end-stops": {
+            "left": {
+                "polarity": "positive"
+            },
+            "right": {
+                "polarity": "virtual",
+                "position": 20.2
+            }
+        },
+        "home-speed": 3,
+        "home-acceleration": 1,
+        "home-precision-speed": .1
     }
 }
