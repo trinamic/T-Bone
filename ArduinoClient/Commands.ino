@@ -557,7 +557,7 @@ char decodeMotorNumber() {
     messenger.sendCmdEnd();
     return -1;
   } 
-  else if (motor>nr_of_coordinated_motors) {
+  else if (motor>nr_of_motors) {
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(motor,DEC);
     messenger.sendCmdArg(1,DEC);
