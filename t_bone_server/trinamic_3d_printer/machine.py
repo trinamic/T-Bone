@@ -65,6 +65,21 @@ class Machine():
         if not reply or reply.command_number != 0:
             raise MachineError("Unable to set motor current", reply)
 
+    def invert_motor(self, motor=None, inverted=False):
+        command = MachineCommand()
+        command.command_number = 4
+        if inverted:
+            invert_value = -1
+        else:
+            invert_value=1
+        command.arguments = (
+            int(motor),
+            invert_value
+        )
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+            raise MachineError("Unable to invert motor", reply)
+
     def configure_endstop(self, motor, position, end_stop_config):
         command = MachineCommand()
         command.command_number = 3
