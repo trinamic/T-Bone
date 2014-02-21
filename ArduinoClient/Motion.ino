@@ -3,7 +3,7 @@ volatile boolean prepare_shaddow_registers = false;
 volatile unsigned int motor_status;
 volatile unsigned char target_motor_status;
 volatile unsigned char next_target_motor_status;
-char direction[nr_of_motors];
+char direction[nr_of_coordinated_motors];
 unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 
 void startMotion(char initial_min_buffer_depth) {
@@ -17,7 +17,7 @@ void startMotion(char initial_min_buffer_depth) {
   Serial.println(F("starting motion"));
 #endif
   //TODO initialize drivers??
-  for (char i; i<nr_of_motors;i++) {
+  for (char i; i<nr_of_coordinated_motors;i++) {
     pinMode(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
@@ -78,7 +78,7 @@ void checkMotion() {
         }
         //configure the start conditions for the motors
         //TODO - is'nt this more or less something just to be done for the first tqwo moves??
-        for (char i; i<nr_of_motors;i++) {
+        for (char i; i<nr_of_coordinated_motors;i++) {
           //give all motors a nice start config
           if (!prepare_shaddow_registers) {
             write4361(i, TMC4361_START_CONFIG_REGISTER, 0

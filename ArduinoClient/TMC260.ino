@@ -17,7 +17,7 @@ const __FlashStringHelper* setCurrent(unsigned char motor_number, int newCurrent
 }
 
 void intializeTMC260() {
-  for (char i=0; i<nr_of_motors;i++) {
+  for (char i=0; i<nr_of_coordinated_motors;i++) {
     //configure TMC43x SPI
     write4361(i, TMC4361_SPIOUT_CONF_REGISTER,TMC_260_CONFIG);
     //configure the TMC26x

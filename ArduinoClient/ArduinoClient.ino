@@ -29,7 +29,7 @@
 
 
 //how many motors do we know?
-const char nr_of_motors = 2;
+const char nr_of_coordinated_motors = 2;
 
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 40
@@ -57,7 +57,7 @@ const char nr_of_motors = 2;
 #define INT_4361_2_PIN 2
 #define INT_4361_3_PIN 7
 
-TMC4361_info motors[nr_of_motors] = {
+TMC4361_info motors[nr_of_coordinated_motors] = {
   {
     INT_4361_1_PIN,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
@@ -71,10 +71,10 @@ TMC4361_info motors[nr_of_motors] = {
 };
 
 
-#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_motors)
+#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_coordinated_motors)
 
 //how many otors can be theoretically geared together
-#define MAX_FOLLOWING_MOTORS (nr_of_motors-1)
+#define MAX_FOLLOWING_MOTORS (nr_of_coordinated_motors-1)
 
 
 motion_state current_motion_state = no_motion;

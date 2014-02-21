@@ -1,5 +1,5 @@
-volatile long next_pos_comp[nr_of_motors];
-long last_target[nr_of_motors];
+volatile long next_pos_comp[nr_of_coordinated_motors];
+long last_target[nr_of_coordinated_motors];
 
 void prepareTMC4361() {
   pinModeFast(START_SIGNAL_PIN,INPUT);
@@ -14,7 +14,7 @@ void prepareTMC4361() {
   pinModeFast(CS_4361_3_PIN,OUTPUT);
 
   //will be released after setup is complete   
-  for (char i=0; i<nr_of_motors; i++) {
+  for (char i=0; i<nr_of_coordinated_motors; i++) {
     pinModeFast(motors[i].target_reached_interrupt_pin,INPUT);
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
   }
@@ -32,7 +32,7 @@ void initialzeTMC4361() {
   digitalWriteFast(CS_4361_3_PIN,LOW);
 
   //will be released after setup is complete   
-  for (char i=0; i<nr_of_motors; i++) {
+  for (char i=0; i<nr_of_coordinated_motors; i++) {
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
   }
   //enable the reset again
@@ -44,7 +44,7 @@ void initialzeTMC4361() {
   SPI.begin();
   //SPI.setClockDivider(SPI_CLOCK_DIV4);
   //preconfigure the TMC4361
-  for (char i=0; i<nr_of_motors;i++) {
+  for (char i=0; i<nr_of_coordinated_motors;i++) {
     write4361(i, TMC4361_GENERAL_CONFIG_REGISTER, 0 | _BV(5)); //we use direct values
     write4361(i, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     write4361(i, TMC4361_SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
@@ -240,7 +240,7 @@ void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax
 
 inline void signal_start() {
   //prepare the pos compr registers
-  for (char i=0; i< nr_of_motors; i++) {
+  for (char i=0; i< nr_of_coordinated_motors; i++) {
     //clear the event register
     read4361(i, TMC4361_EVENTS_REGISTER,0);
     write4361(i, TMC4361_POS_COMP_REGISTER,next_pos_comp[i]);

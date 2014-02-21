@@ -397,7 +397,7 @@ void onConfigureEndStop() {
   }
 
   //TODO this is dummy config - we need specific settings for specific motors 
-  for (char i=0; i<nr_of_motors; i++) {
+  for (char i=0; i<nr_of_coordinated_motors; i++) {
     write4361(i, TMC4361_REFERENCE_CONFIG_REGISTER, 0 
       | _BV(0) //STOP_LEFT enable
     | _BV(2) //positive Stop Left stops motor
@@ -552,16 +552,16 @@ char decodeMotorNumber() {
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(motor,DEC);
     messenger.sendCmdArg(1,DEC);
-    messenger.sendCmdArg(nr_of_motors,DEC);
+    messenger.sendCmdArg(nr_of_coordinated_motors,DEC);
     messenger.sendCmdArg(F("motor number too small"));
     messenger.sendCmdEnd();
     return -1;
   } 
-  else if (motor>nr_of_motors) {
+  else if (motor>nr_of_coordinated_motors) {
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(motor,DEC);
     messenger.sendCmdArg(1,DEC);
-    messenger.sendCmdArg(nr_of_motors,DEC);
+    messenger.sendCmdArg(nr_of_coordinated_motors,DEC);
     messenger.sendCmdArg(F("motor number too big"));
     messenger.sendCmdEnd();
     return -1;
