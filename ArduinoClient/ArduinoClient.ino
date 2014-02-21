@@ -50,7 +50,7 @@ const char nr_of_coordinated_motors = 2;
 #define CS_4361_2_PIN 12
 #define CS_4361_3_PIN 6
 #define START_SIGNAL_PIN A3
-#define TMC5041_PIN 11
+#define CS_5041_PIN 11
 
 #define INT_5041_PIN 8
 #define INT_4361_1_PIN 3
@@ -99,6 +99,8 @@ void setup() {
   analogReference(EXTERNAL);
   
   //set the TMC4361 ipns correctly
+  prepareTMC4361();
+  //set the TMMC5041 pins correctly
   prepareTMC4361();
 
   //at least we should try deactivate the motion drivers
