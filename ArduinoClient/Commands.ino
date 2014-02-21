@@ -138,6 +138,9 @@ void onInvertMotor() {
     return;
   }
   if (invert<0) {
+    messenger.sendCmd (kError,F("not funcion"));
+    return;
+    //TODO somehow the endstops are not reacting as expected at least there is a problem with retract after hitting
     inverted_motors |= _BV(motor);
     //invert endstops
     unsigned long endstop_config = read4361(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
@@ -574,6 +577,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

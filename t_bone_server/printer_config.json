@@ -6,7 +6,8 @@
         "max-speed": 900,
         "max-acceleration": 9000,
         "bow-acceleration": 3000,
-        "inverted":true,
+        "inverted":false,
+        "inverted_comment":"not fully functional yet",
         "end-stops": {
             "left": {
                 "polarity": "positive"
