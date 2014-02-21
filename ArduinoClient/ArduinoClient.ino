@@ -95,6 +95,9 @@ void setup() {
   
   // Analog reference AREF
   analogReference(EXTERNAL);
+  
+  //set the TMC4361 ipns correctly
+  prepareTMC4361();
 
   //at least we should try deactivate the motion drivers
   resetTMC4361(true, true);

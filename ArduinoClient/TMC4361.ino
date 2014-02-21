@@ -1,10 +1,7 @@
 volatile long next_pos_comp[nr_of_motors];
 long last_target[nr_of_motors];
 
-void initialzeTMC4361() {
-  //reset the quirrel
-  resetTMC4361(true,false);
-
+void prepareTMC4361() {
   pinModeFast(START_SIGNAL_PIN,INPUT);
   digitalWriteFast(START_SIGNAL_PIN,LOW);
 
@@ -19,6 +16,23 @@ void initialzeTMC4361() {
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {
     pinModeFast(motors[i].target_reached_interrupt_pin,INPUT);
+    digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
+  }
+}
+
+void initialzeTMC4361() {
+  //reset the quirrel
+  resetTMC4361(true,false);
+
+  digitalWriteFast(START_SIGNAL_PIN,LOW);
+
+  //initialize CS pin
+  digitalWriteFast(CS_4361_1_PIN,LOW);
+  digitalWriteFast(CS_4361_2_PIN,LOW);
+  digitalWriteFast(CS_4361_3_PIN,LOW);
+
+  //will be released after setup is complete   
+  for (char i=0; i<nr_of_motors; i++) {
     digitalWriteFast(motors[i].target_reached_interrupt_pin,LOW);
   }
   //enable the reset again
