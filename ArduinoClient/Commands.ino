@@ -139,11 +139,12 @@ void onInvertMotor() {
   }
   if (invert<0) {
     inversed_motors |= _BV(motor);
+  messenger.sendCmd(kOK,F("Motor inverted"));
   } 
   else {
     inversed_motors &= ~(_BV(motor));
+  messenger.sendCmd(kOK,F("Motor not inverted"));
   }
-  messenger.sendCmd(kOK,F("Motor inverted"));
 }
 
 void onMove() {
