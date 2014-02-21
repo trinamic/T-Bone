@@ -15,19 +15,22 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   unsigned long i_datagram;
 
   //select the TMC driver
-  if (motor_nr==0) {
+  switch(motor_nr) {
+  case 0:
     digitalWriteFast(CS_4361_1_PIN,HIGH);
-  } 
-  else if (motor_nr==1) {
+    break;
+  case 1:
     digitalWriteFast(CS_4361_2_PIN,HIGH);
-  }
-  else if (motor_nr==2) {
+    break;
+  case 2:
     digitalWriteFast(CS_4361_3_PIN,HIGH);
-  }
-  else if (motor_nr==3) {
+    break;
+  case 3:
     digitalWriteFast(CS_5041_PIN,HIGH);
+    break;
+  default:
+    return 0; //jsut do nothing
   }
-  //TODO this won't work  but will be the nost successfuly optimization come up with an idea
 
 #ifdef DEBUG_SPI
   if (tmc4361_register & 0x80) {
@@ -63,21 +66,25 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
 #endif
 
   //deselect the TMC chip
-  if (motor_nr==0) {
+  switch(motor_nr) {
+  case 0:
     digitalWriteFast(CS_4361_1_PIN,LOW);
-  } 
-  else if (motor_nr==1) {
+    break;
+  case 1:
     digitalWriteFast(CS_4361_2_PIN,LOW);
-  }
-  else if (motor_nr==2) {
+    break;
+  case 2:
     digitalWriteFast(CS_4361_3_PIN,LOW);
-  }
-  else if (motor_nr==3) {
+    break;
+  case 3:
     digitalWriteFast(CS_5041_PIN,LOW);
+    break;
   }
 
   return i_datagram;
 }
+
+
 
 
 
