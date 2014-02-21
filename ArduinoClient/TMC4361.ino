@@ -122,7 +122,7 @@ unsigned long homming_jerk)
       else {
         long go_back_to;
         if (homed==0) {
-          long actual = read4361(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
+          long actual = X_TARGET_IN_DIRECTION(motor_nr,read4361(motor_nr, TMC4361_X_ACTUAL_REGISTER,0));
           go_back_to = actual + homing_retraction;
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
