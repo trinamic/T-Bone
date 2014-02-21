@@ -56,7 +56,6 @@
         "steps-per-mm": 5074.590,
         "max-speed": 3,
         "max-acceleration": 1,
-        "bow-acceleration": 0.4,
         "end-stops": {
             "left": {
                 "polarity": "positive"
