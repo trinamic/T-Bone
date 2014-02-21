@@ -78,6 +78,8 @@ TMC4361_info motors[nr_of_motors] = {
 
 
 motion_state current_motion_state = no_motion;
+//this bitfiled store which motors are invesed - _BV(1) means the motor is inversed)
+unsigned char inversed_motors;
 
 //config
 

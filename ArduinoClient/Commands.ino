@@ -6,6 +6,7 @@ enum {
   kMotorCurrent = 1,
   kStepsPerRev = 2,
   kEndStops = 3,
+  kInvertMotor = 4,
   //intitalize all drivers with default values - TODO or preconfigured??
   kInit=9,
   //Kommandos die Aktionen auslösen
@@ -31,6 +32,7 @@ void attachCommandCallbacks() {
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
   messenger.attach(kEndStops,onConfigureEndStop);
   messenger.attach(kStepsPerRev, onStepsPerRevolution); 
+  messenger.attach(kInvertMotor,onInvertMotor);
   messenger.attach(kMove, onMove);
   messenger.attach(kMovement, onMovement);
   messenger.attach(kPos, onPosition);
@@ -115,6 +117,33 @@ void onStepsPerRevolution() {
   else {
     messenger.sendCmd(kError,error);
   }
+}
+
+void onInvertMotor() {
+  char motor = decodeMotorNumber();
+  if (motor<0) {
+    return;
+  }
+  char invert = messenger.readIntArg();
+  if (invert==0) {
+    messenger.sendCmdStart(kInvertMotor);
+    messenger.sendCmdArg(motor+1);
+    if (inversed_motors| _BV(motor)) {
+      messenger.sendCmdArg(-1);
+    } 
+    else {
+      messenger.sendCmdArg(1);
+    }
+    messenger.sendCmdEnd();
+    return;
+  }
+  if (invert<0) {
+    inversed_motors |= _BV(motor);
+  } 
+  else {
+    inversed_motors &= ~(_BV(motor));
+  }
+  messenger.sendCmd(kOK,F("Motor inverted"));
 }
 
 void onMove() {
@@ -459,11 +488,14 @@ void onCommands() {
   Serial.print(ram);
   if (current_motion_state==no_motion) {
     Serial.println(F("\t - not moving"));
-  } else if (current_motion_state==in_motion) {
+  } 
+  else if (current_motion_state==in_motion) {
     Serial.println(F("\t - in motion"));
-  } else if (current_motion_state==finishing_motion) {
+  } 
+  else if (current_motion_state==finishing_motion) {
     Serial.println(F("\t - finishing motion"));
-  } else {
+  } 
+  else {
     Serial.println(F("Unkmown motion"));
   }  
   Serial.println();
@@ -486,11 +518,14 @@ void watchDogPing() {
   Serial.print(ram);
   if (current_motion_state==no_motion) {
     Serial.println(F("\t - not moving"));
-  } else if (current_motion_state==in_motion) {
+  } 
+  else if (current_motion_state==in_motion) {
     Serial.println(F("\t - in motion"));
-  } else if (current_motion_state==finishing_motion) {
+  } 
+  else if (current_motion_state==finishing_motion) {
     Serial.println(F("\t - finishing motion"));
-  } else {
+  } 
+  else {
     Serial.println(F("Unkmown motion"));
   }  
   Serial.println();
@@ -533,6 +568,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 

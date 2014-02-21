@@ -45,7 +45,7 @@ void initialzeTMC4361() {
   //SPI.setClockDivider(SPI_CLOCK_DIV4);
   //preconfigure the TMC4361
   for (char i=0; i<nr_of_motors;i++) {
-    write4361(i, TMC4361_GENERAL_CONFIG_REGISTER, 0); //we use direct values
+    write4361(i, TMC4361_GENERAL_CONFIG_REGISTER, 0 | _BV(5)); //we use direct values
     write4361(i, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     write4361(i, TMC4361_SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     write4361(i,TMC4361_CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
