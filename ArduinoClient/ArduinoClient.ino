@@ -29,7 +29,7 @@
 
 
 //how many motors do we know?
-const char nr_of_coordinated_motors = 2;
+const char nr_of_coordinated_motors = 3;
 
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 40
@@ -67,7 +67,11 @@ TMC4361_info motors[nr_of_coordinated_motors] = {
     INT_4361_2_PIN,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
     DEFAULT_STEPS_PER_REVOLUTION         }
-    //third would be pin 7 
+  ,
+  {
+    INT_4361_3_PIN,4, motor_3_target_reached, 
+    TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
+    DEFAULT_STEPS_PER_REVOLUTION         }
 };
 
 

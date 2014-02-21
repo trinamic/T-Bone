@@ -178,6 +178,10 @@ void motor_2_target_reached() {
   motor_target_reached(1);
 }
 
+void motor_3_target_reached() {
+  motor_target_reached(3);
+}
+
 inline void motor_target_reached(char motor_nr) {
   if (in_motion) {
     //clear the event register
