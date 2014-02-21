@@ -9,11 +9,12 @@ void initialzeTMC4361() {
   digitalWriteFast(START_SIGNAL_PIN,LOW);
 
   //initialize CS pin
-  digitalWriteFast(CS_4361_1_PIN,HIGH);
+  digitalWriteFast(CS_4361_1_PIN,LOW);
   pinModeFast(CS_4361_1_PIN,OUTPUT);
-  //initialize CS pin
-  digitalWriteFast(CS_4361_2_PIN,HIGH);
+  digitalWriteFast(CS_4361_2_PIN,LOW);
   pinModeFast(CS_4361_2_PIN,OUTPUT);
+  digitalWriteFast(CS_4361_3_PIN,LOW);
+  pinModeFast(CS_4361_3_PIN,OUTPUT);
 
   //will be released after setup is complete   
   for (char i=0; i<nr_of_motors; i++) {
@@ -24,9 +25,10 @@ void initialzeTMC4361() {
   delay(1);
   resetTMC4361(false,true);
   delay(10);
+  
   //initialize SPI
-  SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.begin();
+  //SPI.setClockDivider(SPI_CLOCK_DIV4);
   //preconfigure the TMC4361
   for (char i=0; i<nr_of_motors;i++) {
     write4361(i, TMC4361_GENERAL_CONFIG_REGISTER, 0); //we use direct values

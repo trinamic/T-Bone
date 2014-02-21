@@ -32,7 +32,7 @@
 const char nr_of_motors = 2;
 
 //how much space do we have to store commands
-#define COMMAND_QUEUE_LENGTH 70
+#define COMMAND_QUEUE_LENGTH 40
 
 //standards
 #define TMC_260_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
@@ -52,14 +52,19 @@ const char nr_of_motors = 2;
 #define START_SIGNAL_PIN A3
 #define TMC5041_PIN 11
 
+#define INT_5041_PIN 8
+#define INT_4361_1_PIN 3
+#define INT_4361_2_PIN 2
+#define INT_4361_3_PIN 7
+
 TMC4361_info motors[nr_of_motors] = {
   {
-    3,0, motor_1_target_reached, 
+    INT_4361_1_PIN,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
     DEFAULT_STEPS_PER_REVOLUTION        }
   ,
   {
-    2,1, motor_2_target_reached, 
+    INT_4361_2_PIN,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
     DEFAULT_STEPS_PER_REVOLUTION         }
     //third would be pin 7 
@@ -87,6 +92,9 @@ Metro watchDogMetro = Metro(1000);
 void setup() {
   // Use HWBE as Output
   DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
+  
+  // Analog reference AREF
+  analogReference(EXTERNAL);
 
   //at least we should try deactivate the motion drivers
   resetTMC4361(true, true);
@@ -95,6 +103,7 @@ void setup() {
   //initialize the serial port for commands
   Serial1.begin(115200);
   Serial.begin(115200); 
+
   //set the serial as debug output 
   moveQueue.setStream(Serial);
 
@@ -111,6 +120,7 @@ void setup() {
 
   //finally signal that we are ready
   watchDogStart();
+ 
 }
 
 void loop() {

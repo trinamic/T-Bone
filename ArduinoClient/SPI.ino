@@ -16,17 +16,23 @@ long send4361(unsigned const char motor_nr, unsigned const char tmc4361_register
 
   //select the TMC driver
   if (motor_nr==0) {
-    digitalWriteFast(CS_4361_1_PIN,LOW);
-  } else if (motor_nr==1) {
-    digitalWriteFast(CS_4361_2_PIN,LOW);
+    digitalWriteFast(CS_4361_1_PIN,HIGH);
+  } 
+  else if (motor_nr==1) {
+    digitalWriteFast(CS_4361_2_PIN,HIGH);
   }
   //TODO this won't work  but will be the nost successfuly optimization come up with an idea
 
 #ifdef DEBUG_SPI
-  Serial.print(F("Sending "));
+  if (tmc4361_register & 0x80) {
+    Serial.print(F("Writing "));
+  } 
+  else {
+    Serial.print(F("Sending "));
+  }
   Serial.print(datagram,HEX);
   Serial.print(F(" to "));
-  Serial.print(tmc4361_register,HEX);
+  Serial.print(tmc4361_register & (0x80-1),HEX);
   Serial.print(F(" of #"));
   Serial.println(motor_nr,HEX);
 #endif
@@ -52,13 +58,16 @@ long send4361(unsigned const char motor_nr, unsigned const char tmc4361_register
 
   //deselect the TMC chip
   if (motor_nr==0) {
-    digitalWriteFast(CS_4361_1_PIN,HIGH);
-  } else if (motor_nr==1) {
-    digitalWriteFast(CS_4361_2_PIN,HIGH);
+    digitalWriteFast(CS_4361_1_PIN,LOW);
+  } 
+  else if (motor_nr==1) {
+    digitalWriteFast(CS_4361_2_PIN,LOW);
   }
 
   return i_datagram;
 }
+
+
 
 
 
