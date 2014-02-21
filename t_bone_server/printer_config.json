@@ -40,16 +40,7 @@
         "home-speed": 100,
         "home-acceleration": 20000,
         "home-precision-speed": 5
-
-    },
-    "printer": {
-        "print-queue": {
-            "min-length": 20,
-            "max-length": 30
-        },
-        "homing-timeout": 15,
-        "home-retract": 5
-    },
+   },
     "z-axis": {
         "motors": [3,4],
         "current": 0.4,
@@ -68,5 +59,13 @@
         "home-speed": 3,
         "home-acceleration": 1,
         "home-precision-speed": .1
-    }
+   },
+    "printer": {
+        "print-queue": {
+            "min-length": 20,
+            "max-length": 30
+        },
+        "homing-timeout": 15,
+        "home-retract": 5
+     }
 }
