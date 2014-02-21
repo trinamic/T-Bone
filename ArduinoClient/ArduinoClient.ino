@@ -13,7 +13,7 @@
 //##################
 
 //#define DEBUG_MOTOR_CONTFIG
-#define DEBUG_HOMING
+//#define DEBUG_HOMING
 //#define DEBUG_ENDSTOPS
 
 //#define DEBUG_MOTION
@@ -25,7 +25,7 @@
 
 //#define DEBUG_SPI
 
-#define DEBUG_STATUS
+//#define DEBUG_STATUS
 
 
 //how many motors do we know?

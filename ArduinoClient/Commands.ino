@@ -82,7 +82,7 @@ void onConfigMotorCurrent() {
     messenger.sendCmd (kError,F("too low")); 
     return;
   }
-  const __FlashStringHelper* error = setCurrent(motor,newCurrent);
+  const __FlashStringHelper* error = setCurrent260(motor,newCurrent);
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Current set"));
   } 

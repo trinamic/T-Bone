@@ -85,6 +85,13 @@
 #define TMC5041_CHOPPER_CONFIGURATION_REGISTER_2 0x7c
 #define TMC5041_DRIVER_STATUS_REGISTER_2 0x7f
 
+#define I_HOLD_DELAY 2
+#define V_LOW_SENSE 0.325
+#define V_HIGH_SENSE 0.18
+#define SQRT_2 (1.414213562373095)
+#define TMC_5041_R_SENSE 0.27
+
+
 
 
 //some nice calculation s
