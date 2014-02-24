@@ -1,6 +1,5 @@
 //hard coded value
-#define MAX_MOTOR_CURRENT_260 1500
-#define MAX_MOTOR_CURRENT_5041 1500
+#define MAX_MOTOR_CURRENT 1500
 
 //registers for TMC4361
 #define TMC4361_GENERAL_CONFIG_REGISTER 0x0

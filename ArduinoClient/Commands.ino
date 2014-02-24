@@ -54,8 +54,6 @@ void onInit() {
   initialzeTMC4361();
   //start the tmc260 driver
   intializeTMC260();
-  //initialize the 5041 chpi
-  init5041();
   //we stop the motion anyway
   resetMotion();
   //finally clear the command queue if there migth be some entries left
@@ -84,23 +82,13 @@ void onConfigMotorCurrent() {
     messenger.sendCmd (kError,F("too low")); 
     return;
   }
-  if (motor<nr_of_coordinated_motors) {
-    const __FlashStringHelper* error = setCurrent260(motor,newCurrent);
-    if (error==NULL) {
-      messenger.sendCmd(kOK,F("Current set"));
-    } 
-    else {
-      messenger.sendCmd(kError,error);
-    }
-  } else {
-    const __FlashStringHelper* error = setCurrent5041(motor-nr_of_coordinated_motors,newCurrent);
-    if (error==NULL) {
-      messenger.sendCmd(kOK,F("Current set"));
-    } 
-    else {
-      messenger.sendCmd(kError,error);
-    }
-  }   
+  const __FlashStringHelper* error = setCurrent260(motor,newCurrent);
+  if (error==NULL) {
+    messenger.sendCmd(kOK,F("Current set"));
+  } 
+  else {
+    messenger.sendCmd(kError,error);
+  }
 }
 
 //set the steps per revolution 
@@ -589,7 +577,6 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
-
 
 
 
