@@ -18,18 +18,8 @@ class Printer(Thread):
         self.ready = False
         self.printing = False
         self.config = None
-        self.axis = {'x': {}, 'y': {}}
+        self.axis = {'x': {}, 'y': {}, 'z': {}}
         self.homed_axis = []
-        self.axis['x']['motor'] = None
-        self.axis['y']['motor'] = None
-        self.axis['x']['scale'] = None
-        self.axis['y']['scale'] = None
-        self.axis['x']['max_speed'] = None
-        self.axis['y']['max_speed'] = None
-        self.axis['x']['max_acceleration'] = None
-        self.axis['y']['max_acceleration'] = None
-        self.axis['x']['bow'] = None
-        self.axis['y']['bow'] = None
 
         self.printer_thread = None
         self._print_queue = None
@@ -65,6 +55,7 @@ class Printer(Thread):
 
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
+        self._configure_axis(self.axis['z'], config["z-axis"])
         self._postconfig()
 
     def _postconfig(self):
@@ -164,14 +155,22 @@ class Printer(Thread):
     def _configure_axis(self, axis, config):
         axis['steps_per_mm'] = config['steps-per-mm']
 
-        axis['motor'] = config['motor']
+        #let's see if we got one or more motors
+        if 'motor' in config:
+            axis['motor'] = config['motor']
+        elif 'motors' in config:
+            axis['motor'] = None
+            axis['motors'] = config['motors']
+        else:
+            raise PrinterError("you must configure one ('motor') or more 'motors' in the axis configuration")
         axis['scale'] = config['steps-per-mm']
         axis['max_speed'] = config['max-speed']
         axis['max_speed_step'] = _convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
         axis['max_acceleration'] = config['max-acceleration']
         axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
-        axis['bow'] = config['bow-acceleration']
-        axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
+        if 'bow-acceleration' in config:
+            axis['bow'] = config['bow-acceleration']
+            axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
 
         if 'home-speed' in config:
             axis['home_speed'] = config['home-speed']
@@ -212,7 +211,20 @@ class Printer(Thread):
                 end_stop = deepcopy(axis['end-stops'][end_stop_pos])
                 if 'position' in end_stop:
                     end_stop['position'] = _convert_mm_to_steps(end_stop['position'], axis['scale'])
-                self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
+                if axis['motor']:
+                    self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
+                else:
+                    #endstop config is a bit more complicated for multiple motors
+                    if end_stop_config['polarity'] == 'virtual':
+                        for motor in axis['motors']:
+                            self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
+                    else:
+                        if 'motor' in end_stop_config:
+                            motor= end_stop_config['motor']
+                        else:
+                            motor = axis['motors'][0]
+                        self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
+
 
         motor = config["motor"]
         current = config["current"]

@@ -40,16 +40,17 @@
         "home-speed": 100,
         "home-acceleration": 20000,
         "home-precision-speed": 5
-   },
+    },
     "z-axis": {
-        "motors": [3,4],
+        "motors": [3, 4],
         "current": 0.4,
         "steps-per-mm": 5074.590,
         "max-speed": 3,
         "max-acceleration": 1,
         "end-stops": {
             "left": {
-                "polarity": "positive"
+                "polarity": "positive",
+                "motor": 3
             },
             "right": {
                 "polarity": "virtual",
@@ -58,8 +59,8 @@
         },
         "home-speed": 3,
         "home-acceleration": 1,
-        "home-precision-speed": .1
-   },
+        "home-precision-speed": 0.1
+    },
     "printer": {
         "print-queue": {
             "min-length": 20,
@@ -67,5 +68,5 @@
         },
         "homing-timeout": 15,
         "home-retract": 5
-     }
+    }
 }
