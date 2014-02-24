@@ -217,7 +217,7 @@ class Printer(Thread):
                     #endstop config is a bit more complicated for multiple motors
                     if end_stop_config['polarity'] == 'virtual':
                         for motor in axis['motors']:
-                            self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
+                            self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
                     else:
                         if 'motor' in end_stop_config:
                             motor= end_stop_config['motor']
