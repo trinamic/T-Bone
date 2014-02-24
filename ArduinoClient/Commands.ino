@@ -573,7 +573,7 @@ char decodeMotorNumber() {
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(motor,DEC);
     messenger.sendCmdArg(1,DEC);
-    messenger.sendCmdArg(nr_of_coordinated_motors,DEC);
+    messenger.sendCmdArg(nr_of_motors,DEC);
     messenger.sendCmdArg(F("motor number too big"));
     messenger.sendCmdEnd();
     return -1;
