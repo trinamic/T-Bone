@@ -64,6 +64,13 @@ const __FlashStringHelper*  setCurrent5041(unsigned char motor_number, int newCu
   return NULL;
 }
 
+const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active_high) {
+  return F("Not implemented yet");
+}
+
+const __FlashStringHelper* configureVirtualEndstopTMC5041(unsigned char motor_nr, boolean left, long positions) {
+  return NULL; //TODO this has to be implemented ...
+}
 
 // Sense calculation
 unsigned char calculateCurrentValue(int current) {

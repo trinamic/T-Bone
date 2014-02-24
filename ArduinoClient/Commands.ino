@@ -391,9 +391,14 @@ void onConfigureEndStop() {
   case 0: //virtual endstops
     {
       long virtual_pos = messenger.readLongArg();
-      error = configureVirtualEndstopTMC4361(motor, position<0, virtual_pos);
-      break;
+      if (I_COORDINATED_MOTOR(motor)) {
+        error = configureVirtualEndstopTMC4361(motor, position<0, virtual_pos);
+      } 
+      else {
+        error = configureVirtualEndstopTMC5041(motor, position<0, virtual_pos);
+      }
     }
+    break;
   case 1: //real endstop
     {
       int polarity = messenger.readIntArg();
@@ -401,9 +406,14 @@ void onConfigureEndStop() {
         messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
         return;
       }
-      error= configureEndstopTMC4361(motor, position<0, polarity>0);
-      break;
+      if (I_COORDINATED_MOTOR(motor)) {
+        error= configureEndstopTMC4361(motor, position<0, polarity>0);
+      } 
+      else {
+        error= configureEndstopTMC5041(motor, position<0, polarity>0);
+      }     
     }
+    break;
   }
   if (error!=NULL) {
     messenger.sendCmd(kError,error);
@@ -593,6 +603,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 

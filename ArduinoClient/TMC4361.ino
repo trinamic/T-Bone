@@ -328,9 +328,8 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   return NULL;
 }
 
-
 const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
-  return NULL;
+  return NULL; //TODO this has to be implemented ...
 }
 
 inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, boolean left) {
