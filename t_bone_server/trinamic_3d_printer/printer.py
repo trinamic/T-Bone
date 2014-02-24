@@ -226,17 +226,21 @@ class Printer(Thread):
                         self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
 
         current = config["current"]
-        if config["motor"]:
-            self.machine.set_current(config["motor"], current)
+        if axis["motor"]:
+            self.machine.set_current(axis["motor"], current)
         else:
             for motor in axis['motors']:
-                self.machine.set_current(config["motor"], current)
+                self.machine.set_current(motor, current)
 
         if "inverted" in config and config["inverted"]:
             axis['inverted'] = True
         else:
             axis['inverted'] = False
-        self.machine.invert_motor(motor, axis['inverted'])
+        if axis["motor"]:
+            self.machine.invert_motor(axis["motor"], axis['inverted'])
+        else:
+            for motor in axis['motors']:
+                self.machine.invert_motor(motor, axis['inverted'])
 
 
     def _add_movement_calculations(self, movement):
