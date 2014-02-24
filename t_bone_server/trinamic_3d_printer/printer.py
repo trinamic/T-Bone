@@ -220,15 +220,17 @@ class Printer(Thread):
                             self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
                     else:
                         if 'motor' in end_stop_config:
-                            motor= end_stop_config['motor']
+                            motor = end_stop_config['motor']
                         else:
                             motor = axis['motors'][0]
                         self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
 
-
-        motor = config["motor"]
         current = config["current"]
-        self.machine.set_current(motor, current)
+        if config["motor"]:
+            self.machine.set_current(config["motor"], current)
+        else:
+            for motor in axis['motors']:
+                self.machine.set_current(config["motor"], current)
 
         if "inverted" in config and config["inverted"]:
             axis['inverted'] = True
