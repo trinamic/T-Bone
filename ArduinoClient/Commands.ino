@@ -110,7 +110,7 @@ void onStepsPerRevolution() {
   if (motor<0) {
     return;
   }
-  if (motor>= nr_of_coordinated_motors) {
+  if (I_COORDINATED_MOTOR(motor)) {
     messenger.sendCmd (kError,F("Steps per rev only for coordinated motors")); 
   }
   int newSteps = messenger.readIntArg();

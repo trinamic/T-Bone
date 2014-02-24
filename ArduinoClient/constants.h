@@ -100,7 +100,10 @@
 #define FIXED_23_8_MAKE(a)     (int32_t)((a*(1ul << 8ul)))
 #define FIXED_22_2_MAKE(a)     (int32_t)((a*(1ul << 2ul)))
 
+#define X_TARGET_IN_DIRECTION(m,t) ((inverted_motors & _BV(m))? -t:t)
+#define I_COORDINATED_MOTOR(a) (a<=nr_of_coordinated_motors)
+
 //how to mask REFERENCE_CONFIG_REGISTER if you want to configure just one end 
 #define LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(6) | _BV(10) | _BV(11) | _BV(14))
 #define RIGHT_ENDSTOP_REGISTER_PATTERN (_BV(1) | _BV(3) | _BV(7) | _BV(12) | _BV(13) | _BV(15))
-#define X_TARGET_IN_DIRECTION(m,t) ((inverted_motors & _BV(m))? -t:t)
+
