@@ -47,7 +47,7 @@ class Machine():
         init_command.command_number = 9
         reply = self.machine_connection.send_command(init_command)
         if reply.command_number != 0:
-            _logger.error("Unable to start, received %s which is not OK", reply)
+            _logger.fatal("Unable to start, received %s which is not OK", reply)
             raise MachineError("Unable to start")
 
     def disconnect(self):
@@ -63,6 +63,7 @@ class Machine():
         )
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
+            _logger.fatal("Unable to set motor current:%s",reply)
             raise MachineError("Unable to set motor current", reply)
 
     def invert_motor(self, motor=None, inverted=False):
@@ -78,6 +79,7 @@ class Machine():
         )
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
+            _logger.fatal("Unable to set motor current:%s",reply)
             raise MachineError("Unable to invert motor", reply)
 
     def configure_endstop(self, motor, position, end_stop_config):
@@ -115,6 +117,7 @@ class Machine():
         #send the command
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
+            _logger.fatal("Unable to configure end stops :%s", reply)
             raise MachineError("Unable to configure end stops", reply)
 
     def home(self, home_config, timeout):
@@ -134,6 +137,7 @@ class Machine():
         )
         reply = self.machine_connection.send_command(command, timeout)
         if not reply or reply.command_number != 0:
+            _logger.fatal("Unable to home axis %s: %s",home_config, reply)
             raise MachineError("Unable to home axis " + str(home_config), reply)
 
     def start_motion(self):
@@ -143,6 +147,7 @@ class Machine():
         start_command.arguments = [1, _initial_buffer_length]
         reply = self.machine_connection.send_command(start_command)
         if not reply or not reply.command_number == 0:
+            _logger.error("Unable to start motion", reply)
             raise MachineError("Unable to start motion")
         self.batch_mode = True
 
@@ -154,6 +159,7 @@ class Machine():
         stop_command.arguments = [-1]
         reply = self.machine_connection.send_command(stop_command)
         if not reply or not reply.command_number == 0:
+            _logger.error("Unable to stop motion", reply)
             raise MachineError("Unable to stop motion")
         self.batch_mode = False
 
@@ -369,3 +375,8 @@ class MachineError(Exception):
     def __init__(self, msg, additional_info=None):
         self.msg = msg
         self.additional_info = additional_info
+
+    def __str__(self):
+        return super(MachineError, self).__str__()+"["+str(self.additional_info)+"]"
+
+
