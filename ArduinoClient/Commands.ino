@@ -92,7 +92,8 @@ void onConfigMotorCurrent() {
     else {
       messenger.sendCmd(kError,error);
     }
-  } else {
+  } 
+  else {
     const __FlashStringHelper* error = setCurrent5041(motor-nr_of_coordinated_motors,newCurrent);
     if (error==NULL) {
       messenger.sendCmd(kOK,F("Current set"));
@@ -109,6 +110,9 @@ void onStepsPerRevolution() {
   if (motor<0) {
     return;
   }
+  if (motor>= nr_of_coordinated_motors) {
+    messenger.sendCmd (kError,F("Steps per rev only for coordinated motors")); 
+  }
   int newSteps = messenger.readIntArg();
   if (newSteps==0) {
     messenger.sendCmdStart(kStepsPerRev);
@@ -121,7 +125,7 @@ void onStepsPerRevolution() {
     messenger.sendCmd (kError,F("there cannot be negative steps pre revolution")); 
     return;
   }
-  const __FlashStringHelper* error =  setStepsPerRevolution(motor,newSteps);
+  const __FlashStringHelper* error =  setStepsPerRevolutionTMC4361(motor,newSteps);
   motors[motor].steps_per_revolution=newSteps;
   if (error==NULL) {
     messenger.sendCmd(kOK,F("Steps set"));
@@ -387,7 +391,7 @@ void onConfigureEndStop() {
   case 0: //virtual endstops
     {
       long virtual_pos = messenger.readLongArg();
-      error = configureVirtualEndstop(motor, position<0, virtual_pos);
+      error = configureVirtualEndstopTMC4361(motor, position<0, virtual_pos);
       break;
     }
   case 1: //real endstop
@@ -397,7 +401,7 @@ void onConfigureEndStop() {
         messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
         return;
       }
-      error= configureEndstop(motor, position<0, polarity>0);
+      error= configureEndstopTMC4361(motor, position<0, polarity>0);
       break;
     }
   }
@@ -475,7 +479,7 @@ void onHome() {
   Serial.print(jerk);
   Serial.println();
 #endif
-  const __FlashStringHelper* error =  homeMotor(
+  const __FlashStringHelper* error =  homeMotorTMC4361(
   motor,timeout,
   homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
   if (error==NULL) {
@@ -589,6 +593,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

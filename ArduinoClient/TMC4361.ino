@@ -51,12 +51,12 @@ void initialzeTMC4361() {
     writeRegister(i,TMC4361_CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
     writeRegister(i,TMC4361_START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
-    setStepsPerRevolution(i,motors[i].steps_per_revolution);
+    setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
     last_target[i]=0;
   }
 }
 
-const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigned int steps) {
+const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, unsigned int steps) {
 #ifdef DEBUG_MOTOR_CONTFIG
   Serial.print(F("Settings steps per rev for #"));
   Serial.print(motor_nr);
@@ -71,7 +71,7 @@ const __FlashStringHelper* setStepsPerRevolution(unsigned char motor_nr, unsigne
   return NULL;
 }
 
-const __FlashStringHelper* homeMotor(unsigned char motor_nr, unsigned long timeout, 
+const __FlashStringHelper* homeMotorTMC4361(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
 unsigned long homming_accel,
 unsigned long homming_jerk)
@@ -159,13 +159,13 @@ unsigned long homming_jerk)
   return NULL;
 }
 
-inline long getMotorPosition(unsigned char motor_nr) {
+inline long getMotorPositionTMC4361(unsigned char motor_nr) {
   return readRegister(motor_nr, TMC4361_X_TARGET_REGISTER ,0);
   //TODO do we have to take into account that the motor may never have reached the x_target??
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotor(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
+void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
@@ -276,8 +276,8 @@ inline void signal_start() {
 }
 
 
-const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left, boolean active_high) {
-  unsigned long endstop_config = getClearedEndStopConfig(motor_nr, left);
+const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
+  unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
   if (left) {
     if (active_high) {
 #ifdef DEBUG_ENDSTOPS
@@ -329,11 +329,11 @@ const __FlashStringHelper* configureEndstop(unsigned char motor_nr, boolean left
 }
 
 
-const __FlashStringHelper* configureVirtualEndstop(unsigned char motor_nr, boolean left, long positions) {
+const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
   return NULL;
 }
 
-inline unsigned long getClearedEndStopConfig(unsigned char motor_nr, boolean left) {
+inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, boolean left) {
   unsigned long endstop_config = readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
