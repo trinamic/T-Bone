@@ -14,15 +14,15 @@ void init5041() {
   readRegister(CS_5041_PIN, TMC5041_GENERAL_STATUS_REGISTER,0);
   writeRegister(CS_5041_PIN, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
-  setCurrent5041(0,DEFAULT_CURRENT_IN_MA);
+  setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
 
   // motor #2
   //get rid of the 'something happened after reboot' warning
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
-  setCurrent5041(1,DEFAULT_CURRENT_IN_MA);
+  setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
 }
 
-const __FlashStringHelper*  setCurrent5041(unsigned char motor_number, int newCurrent) {
+const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
   //TODO this seems quite strange - the run current is trucated anyway??
   unsigned char run_current = calculateCurrentValue(newCurrent);
   boolean low_sense = run_current & 0x80;

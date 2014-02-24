@@ -84,24 +84,19 @@ void onConfigMotorCurrent() {
     messenger.sendCmd (kError,F("too low")); 
     return;
   }
-  if (motor<nr_of_coordinated_motors) {
-    const __FlashStringHelper* error = setCurrent260(motor,newCurrent);
-    if (error==NULL) {
-      messenger.sendCmd(kOK,F("Current set"));
-    } 
-    else {
-      messenger.sendCmd(kError,error);
-    }
+  const __FlashStringHelper* error;
+  if (I_COORDINATED_MOTOR(motor)) {
+    error = setCurrentTMC260(motor-nr_of_coordinated_motors,newCurrent);
   } 
   else {
-    const __FlashStringHelper* error = setCurrent5041(motor-nr_of_coordinated_motors,newCurrent);
-    if (error==NULL) {
-      messenger.sendCmd(kOK,F("Current set"));
-    } 
-    else {
-      messenger.sendCmd(kError,error);
-    }
-  }   
+    error = setCurrentTMC5041(motor-nr_of_coordinated_motors,newCurrent);
+  }
+  if (error==NULL) {
+    messenger.sendCmd(kOK,F("Current set"));
+  } 
+  else {
+    messenger.sendCmd(kError,error);
+  }
 }
 
 //set the steps per revolution 
@@ -603,6 +598,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 
