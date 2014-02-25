@@ -468,34 +468,37 @@ void onHome() {
     messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
     return;
   }
-  long jerk=0;
+  const __FlashStringHelper* error;
   if (motor<nr_of_controlled_motors) {
-    jerk = messenger.readLongArg();
+    long jerk = messenger.readLongArg();
     if (jerk<0) {
       messenger.sendCmd (kError,F("Jerk cannot be negative")); 
       return;
     }
-  }
 #ifdef DEBUG_HOMING
-  Serial.print(F("Homing for motor "));
-  Serial.print(motor,DEC);
-  Serial.print(F(", timeout="));
-  Serial.print(timeout);
-  Serial.print(F(", fast="));
-  Serial.print(homeFastSpeed);
-  Serial.print(F(", slow="));
-  Serial.print(homeSlowSpeed);
-  Serial.print(F(", retract="));
-  Serial.print(homeRetract);
-  Serial.print(F(", aMax="));
-  Serial.print(aMax);
-  Serial.print(F(": jerk="));
-  Serial.print(jerk);
-  Serial.println();
+    Serial.print(F("Homing for motor "));
+    Serial.print(motor,DEC);
+    Serial.print(F(", timeout="));
+    Serial.print(timeout);
+    Serial.print(F(", fast="));
+    Serial.print(homeFastSpeed);
+    Serial.print(F(", slow="));
+    Serial.print(homeSlowSpeed);
+    Serial.print(F(", retract="));
+    Serial.print(homeRetract);
+    Serial.print(F(", aMax="));
+    Serial.print(aMax);
+    Serial.print(F(": jerk="));
+    Serial.print(jerk);
+    Serial.println();
 #endif
-  const __FlashStringHelper* error =  homeMotorTMC4361(
-  motor,timeout,
-  homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
+    error =  homeMotorTMC4361(
+
+    motor,timeout,
+    homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
+  } else {
+    error=NULL;
+  }
   if (error==NULL) {
     messenger.sendCmdStart(kOK);
     messenger.sendCmdArg(F("homed"));
@@ -607,6 +610,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 
