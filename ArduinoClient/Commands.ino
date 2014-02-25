@@ -469,14 +469,14 @@ void onHome() {
     return;
   }
   const __FlashStringHelper* error;
-  if (motor<nr_of_controlled_motors) {
+  if (motor<nr_of_coordinated_motors) {
     long jerk = messenger.readLongArg();
     if (jerk<0) {
       messenger.sendCmd (kError,F("Jerk cannot be negative")); 
       return;
     }
 #ifdef DEBUG_HOMING
-    Serial.print(F("Homing for motor "));
+    Serial.print(F("Homing for TMC4361 motor "));
     Serial.print(motor,DEC);
     Serial.print(F(", timeout="));
     Serial.print(timeout);
@@ -496,7 +496,34 @@ void onHome() {
 
     motor,timeout,
     homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
-  } else {
+  } 
+  else {
+    const char max_following_motors = nr_of_coordinated_motors -nr_of_controlled_motors - 1;
+    char following_motors[max_following_motors]; //we can only home follow controlled motors
+    for (char i = 0; i<max_following_motors ;i++) {
+      following_motors[i] = messenger.readIntArg();
+    }
+#ifdef DEBUG_HOMING
+    Serial.print(F("Homing for motor "));
+    Serial.print(motor,DEC);
+    Serial.print(F(", timeout="));
+    Serial.print(timeout);
+    Serial.print(F(", fast="));
+    Serial.print(homeFastSpeed);
+    Serial.print(F(", slow="));
+    Serial.print(homeSlowSpeed);
+    Serial.print(F(", retract="));
+    Serial.print(homeRetract);
+    Serial.print(F(", aMax="));
+    Serial.print(aMax);
+    Serial.print(F(": follow=("));
+    for (char i = 0; i< max_following_motors;i++) {
+      Serial.print(following_motors[i],DEC);
+      Serial.print(F(", "));
+    }
+    Serial.print(')');
+    Serial.println();
+#endif
     error=NULL;
   }
   if (error==NULL) {
@@ -610,6 +637,9 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
+
 
 
 
