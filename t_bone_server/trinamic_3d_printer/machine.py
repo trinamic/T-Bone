@@ -127,9 +127,9 @@ class Machine():
             bow = int(home_config['bow'])
         else:
             bow = 0
-        if 'following' in home_config:
+        if 'followers' in home_config:
             #we lazily add the motor in the printer - since it is quite easy to remove it here
-            following = [motor for motor in home_config['following'] if motor != home_config['motor']]
+            following = [motor for motor in home_config['followers'] if motor != home_config['motor']]
         command.arguments = (
             int(home_config['motor']),
             int(home_config['timeout']),

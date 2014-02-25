@@ -50,7 +50,7 @@
         "end-stops": {
             "left": {
                 "polarity": "positive",
-                "motor": 3
+                "motor": 4
             },
             "right": {
                 "polarity": "virtual",
