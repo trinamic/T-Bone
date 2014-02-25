@@ -128,8 +128,9 @@ class Printer(Thread):
                     'acceleration': home_acceleration,
                     'deceleration': home_acceleration,
                     'start_bow': self.axis[home_axis]['bow_step'],
-                    'end_bow': self.axis[home_axis]['bow_step'],
                 }
+                if self.axis[home_axis]['bow_step']:
+                    homing_config['bow'] = self.axis[home_axis]['bow_step']
             else:
                 #todo we should check if there is a motor for the left endstop??
                 homing_config = {
@@ -141,9 +142,10 @@ class Printer(Thread):
                     'home_retract': home_retract,
                     'acceleration': home_acceleration,
                     'deceleration': home_acceleration,
-                    'start_bow': self.axis[home_axis]['bow_step'],
-                    'end_bow': self.axis[home_axis]['bow_step'],
                 }
+                if self.axis[home_axis]['bow_step']:
+                    homing_config['bow'] = self.axis[home_axis]['bow_step']
+
                 #and do the homing
                 self.machine.home(homing_config, timeout=self._homing_timeout)
 

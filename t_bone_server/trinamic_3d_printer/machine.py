@@ -63,7 +63,7 @@ class Machine():
         )
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-            _logger.fatal("Unable to set motor current:%s",reply)
+            _logger.fatal("Unable to set motor current:%s", reply)
             raise MachineError("Unable to set motor current", reply)
 
     def invert_motor(self, motor=None, inverted=False):
@@ -79,7 +79,7 @@ class Machine():
         )
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
-            _logger.fatal("Unable to set motor current:%s",reply)
+            _logger.fatal("Unable to set motor current:%s", reply)
             raise MachineError("Unable to invert motor", reply)
 
     def configure_endstop(self, motor, position, end_stop_config):
@@ -123,6 +123,10 @@ class Machine():
     def home(self, home_config, timeout):
         command = MachineCommand()
         command.command_number = 12
+        if 'bow' in home_config:
+            bow = int(home_config['bow'])
+        else:
+            bow = 0
         command.arguments = (
             int(home_config['motor']),
             int(home_config['timeout']),
@@ -131,13 +135,11 @@ class Machine():
             int(home_config['home_retract']),
             float(home_config['acceleration']),
             float(home_config['deceleration']),
-            int(home_config['start_bow']),
-            int(home_config['end_bow'])
-
+            bow
         )
         reply = self.machine_connection.send_command(command, timeout)
         if not reply or reply.command_number != 0:
-            _logger.fatal("Unable to home axis %s: %s",home_config, reply)
+            _logger.fatal("Unable to home axis %s: %s", home_config, reply)
             raise MachineError("Unable to home axis " + str(home_config), reply)
 
     def start_motion(self):
@@ -377,6 +379,6 @@ class MachineError(Exception):
         self.additional_info = additional_info
 
     def __str__(self):
-        return super(MachineError, self).__str__()+"["+str(self.additional_info)+"]"
+        return super(MachineError, self).__str__() + "[" + str(self.additional_info) + "]"
 
 
