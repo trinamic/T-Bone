@@ -55,7 +55,7 @@ void onInit() {
   //start the tmc260 driver
   intializeTMC260();
   //initialize the 5041 chpi
-  init5041();
+  initialzeTMC5041();
   //we stop the motion anyway
   resetMotion();
   //finally clear the command queue if there migth be some entries left

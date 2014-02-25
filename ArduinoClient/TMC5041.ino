@@ -7,12 +7,11 @@ void prepareTMC5041() {
   digitalWrite(INT_5041_PIN, LOW);
 }
 
-void init5041() {
+void initialzeTMC5041() {
 
   //get rid of the 'something happened after reboot' warning
   readRegister(CS_5041_PIN, TMC5041_GENERAL_STATUS_REGISTER,0);
   writeRegister(CS_5041_PIN, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
-
   // motor #1
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);

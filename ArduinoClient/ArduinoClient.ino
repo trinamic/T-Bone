@@ -107,7 +107,7 @@ void setup() {
   //set the TMC4361 ipns correctly
   prepareTMC4361();
   //set the TMMC5041 pins correctly
-  prepareTMC4361();
+  prepareTMC5041();
 
   //at least we should try deactivate the motion drivers
   resetTMC4361(true, true);
