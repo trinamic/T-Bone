@@ -9,13 +9,13 @@ void prepareTMC5041() {
 
 void init5041() {
 
-  // motor #1
   //get rid of the 'something happened after reboot' warning
   readRegister(CS_5041_PIN, TMC5041_GENERAL_STATUS_REGISTER,0);
   writeRegister(CS_5041_PIN, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
+
+  // motor #1
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
-
   // motor #2
   //get rid of the 'something happened after reboot' warning
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode

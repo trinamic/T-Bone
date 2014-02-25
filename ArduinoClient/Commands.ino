@@ -74,10 +74,16 @@ void onConfigMotorCurrent() {
   }
   int newCurrent = messenger.readIntArg();
   if (newCurrent==0) {
-    messenger.sendCmdStart(kMotorCurrent);
-    messenger.sendCmdArg(motor+1);
-    messenger.sendCmdArg(motors[motor].tmc260.getCurrent());
-    messenger.sendCmdEnd();
+    if (I_COORDINATED_MOTOR(motor)) {
+      messenger.sendCmdStart(kMotorCurrent);
+      messenger.sendCmdArg(motor+1);
+      messenger.sendCmdArg(motors[motor].tmc260.getCurrent());
+      messenger.sendCmdEnd();
+    } 
+    else {
+      messenger.sendCmd (kError,F("not implemented  yet"));
+      //get back the TMC5041 current 
+    }
     return;
   }
   if (newCurrent<0) {
@@ -86,7 +92,7 @@ void onConfigMotorCurrent() {
   }
   const __FlashStringHelper* error;
   if (I_COORDINATED_MOTOR(motor)) {
-    error = setCurrentTMC260(motor-nr_of_coordinated_motors,newCurrent);
+    error = setCurrentTMC260(motor,newCurrent);
   } 
   else {
     error = setCurrentTMC5041(motor-nr_of_coordinated_motors,newCurrent);
@@ -598,6 +604,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
