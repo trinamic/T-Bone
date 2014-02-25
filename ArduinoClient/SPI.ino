@@ -1,17 +1,17 @@
 unsigned char status;
 
 
-void writeRegister(unsigned const char cs_squirrel,unsigned const char tmc4361_register, unsigned const long datagram) {
-  sendRegister(cs_squirrel,tmc4361_register | 0x80,datagram);
+void writeRegister(unsigned const char cs_squirrel,unsigned const char the_register, unsigned const long datagram) {
+  sendRegister(cs_squirrel,the_register | 0x80,datagram);
 }
 
-unsigned long readRegister(unsigned const char cs_squirrel,unsigned const char tmc4361_register, unsigned const long datagram) {
-  sendRegister(cs_squirrel,tmc4361_register, datagram);
-  unsigned long result = sendRegister(cs_squirrel, tmc4361_register, datagram);
+unsigned long readRegister(unsigned const char cs_squirrel,unsigned const char the_register, unsigned const long datagram) {
+  sendRegister(cs_squirrel,the_register, datagram);
+  unsigned long result = sendRegister(cs_squirrel, the_register, datagram);
   return result;
 }
 
-long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_register, unsigned const long datagram) {
+long sendRegister(unsigned const char motor_nr, unsigned const char the_register, unsigned const long datagram) {
   unsigned long i_datagram;
 
   //select the TMC driver
@@ -25,7 +25,7 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   case 2:
     digitalWriteFast(CS_4361_3_PIN,HIGH);
     break;
-  case 3:
+  case TMC5041_MOTORS:
     digitalWriteFast(CS_5041_PIN,HIGH);
     break;
   default:
@@ -33,7 +33,7 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   }
 
 #ifdef DEBUG_SPI
-  if (tmc4361_register & 0x80) {
+  if (the_register & 0x80) {
     Serial.print(F("Writing "));
   } 
   else {
@@ -41,13 +41,13 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   }
   Serial.print(datagram,HEX);
   Serial.print(F(" to "));
-  Serial.print(tmc4361_register & (0x80-1),HEX);
+  Serial.print(the_register & (0x80-1),HEX);
   Serial.print(F(" of #"));
   Serial.println(motor_nr,HEX);
 #endif
 
   //the first value is irgnored
-  status = SPI.transfer(tmc4361_register);
+  status = SPI.transfer(the_register);
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;
@@ -76,7 +76,7 @@ long sendRegister(unsigned const char motor_nr, unsigned const char tmc4361_regi
   case 2:
     digitalWriteFast(CS_4361_3_PIN,LOW);
     break;
-  case 3:
+  case TMC5041_MOTORS:
     digitalWriteFast(CS_5041_PIN,LOW);
     break;
   }

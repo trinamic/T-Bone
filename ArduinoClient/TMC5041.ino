@@ -18,17 +18,17 @@ void prepareTMC5041() {
 void initialzeTMC5041() {
 
   //get rid of the 'something happened after reboot' warning
-  readRegister(CS_5041_PIN, TMC5041_GENERAL_STATUS_REGISTER,0);
-  writeRegister(CS_5041_PIN, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
+  readRegister(TMC5041_MOTORS, TMC5041_GENERAL_STATUS_REGISTER,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
   // motor #1
-  writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
+  writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
-  writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,default_chopper_config);
+  writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,default_chopper_config);
   // motor #2
   //get rid of the 'something happened after reboot' warning
-  writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
+  writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
   setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
-  writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
+  writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
 
 }
 
@@ -43,6 +43,7 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
 
   //TODO this seems quite strange - the run current is trucated anyway??
   unsigned char run_current = calculateCurrentValue(newCurrent);
+  Serial.println(run_current);
   boolean low_sense = run_current & 0x80;
   run_current = run_current & 0x7F;
   unsigned char hold_current;
@@ -58,10 +59,10 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
   current_register |= run_current << 8;
   current_register |= hold_current;
   if (motor_number==0) {
-    writeRegister(CS_5041_PIN, TMC5041_HOLD_RUN_CURRENT_REGISTER_1,current_register);
+    writeRegister(TMC5041_MOTORS, TMC5041_HOLD_RUN_CURRENT_REGISTER_1,current_register);
   } 
   else {
-    writeRegister(CS_5041_PIN, TMC5041_HOLD_RUN_CURRENT_REGISTER_2,current_register);
+    writeRegister(TMC5041_MOTORS, TMC5041_HOLD_RUN_CURRENT_REGISTER_2,current_register);
   }
   unsigned long chopper_config = 0
     | (2<<15) // comparator blank time 2=34
@@ -74,10 +75,10 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
     chopper_config|= _BV(17); //lower v_sense
   } 
   if (motor_number==0) {
-    writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,chopper_config);
+    writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,chopper_config);
   } 
   else {
-    writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
+    writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
   }
   return NULL;
 }
@@ -117,10 +118,10 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
     }
   }
   if (motor_nr == 0) {
-    writeRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,endstop_config);
+    writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,endstop_config);
   } 
   else {
-    writeRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,endstop_config);
+    writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,endstop_config);
   }
   return NULL;
 }
@@ -152,10 +153,10 @@ int calculateCurrentValue(int current, boolean high_sense) {
 unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   unsigned long endstop_config;
   if (motor_nr == 0) {
-    endstop_config = readRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,0);
+    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,0);
   } 
   else {
-    endstop_config = readRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0);
+    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0);
   }
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits

@@ -86,7 +86,9 @@
 #define TMC5041_RAMP_STATUS_REGISTER_2 0x55
 #define TMC5041_CHOPPER_CONFIGURATION_REGISTER_2 0x7c
 #define TMC5041_DRIVER_STATUS_REGISTER_2 0x7f
-
+//a nice define to address the TMC5041
+#define TMC5041_MOTORS 3
+//standard values
 #define I_HOLD_DELAY 2
 #define V_LOW_SENSE 0.325
 #define V_HIGH_SENSE 0.18

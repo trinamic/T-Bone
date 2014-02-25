@@ -23,7 +23,8 @@
 //#define DEBUG_MOTION_STATUS
 //#define DEBUG_X_POS
 
-//#define DEBUG_SPI
+
+#define DEBUG_SPI
 
 //#define DEBUG_STATUS
 
