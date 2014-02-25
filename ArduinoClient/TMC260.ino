@@ -3,7 +3,7 @@ const __FlashStringHelper* setCurrentTMC260(unsigned char motor_number, int newC
   if (newCurrent>MAX_MOTOR_CURRENT_260) {
     return F("Current too high");
   } 
-  #ifdef DEBUG_MOTOR_CONTFIG
+#ifdef DEBUG_MOTOR_CONTFIG
   Serial.print(F("Settings current for #"));
   Serial.print(motor_number);
   Serial.print(F(" to "));
@@ -43,6 +43,7 @@ void set260Register(unsigned char motor_number, unsigned long value) {
   writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
   writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
 }
+
 
 
 

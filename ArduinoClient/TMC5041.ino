@@ -23,6 +23,14 @@ void init5041() {
 }
 
 const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
+  #ifdef DEBUG_MOTOR_CONTFIG
+  Serial.print(F("Settings current for #"));
+  Serial.print(motor_number);
+  Serial.print(F(" to "));
+  Serial.print(newCurrent);
+  Serial.println(F("mA."));
+#endif
+
   //TODO this seems quite strange - the run current is trucated anyway??
   unsigned char run_current = calculateCurrentValue(newCurrent);
   boolean low_sense = run_current & 0x80;
