@@ -49,6 +49,7 @@
 #define TMC4361_COVER_LOW_REGISTER 0x6c
 #define TMC4361_COVER_HIGH_REGISTER 0x6d
 #define TMC4361_START_OUT_ADD_REGISTER 0x11
+
 //registers for TMC5041
 #define TMC5041_GENERAL_CONFIG_REGISTER 0x00
 #define TMC5041_GENERAL_STATUS_REGISTER 0x01
@@ -104,6 +105,7 @@
 #define I_COORDINATED_MOTOR(a) (a<=nr_of_coordinated_motors)
 
 //how to mask REFERENCE_CONFIG_REGISTER if you want to configure just one end 
-#define LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(6) | _BV(10) | _BV(11) | _BV(14))
-#define RIGHT_ENDSTOP_REGISTER_PATTERN (_BV(1) | _BV(3) | _BV(7) | _BV(12) | _BV(13) | _BV(15))
-
+#define TMC4361_LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(6) | _BV(10) | _BV(11) | _BV(14))
+#define TMC4361_RIGHT_ENDSTOP_REGISTER_PATTERN (_BV(1) | _BV(3) | _BV(7) | _BV(12) | _BV(13) | _BV(15))
+#define TMC5041_LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(5) | _BV(6))
+#define TMC5041_RIGHT_ENDSTOP_REGISTER_PATTERN (_BV(1) | _BV(33) | _BV(7) | _BV(8))

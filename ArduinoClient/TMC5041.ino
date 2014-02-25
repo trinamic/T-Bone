@@ -64,11 +64,51 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
   return NULL;
 }
 
-const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active_high) {
-  return F("Not implemented yet");
+const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active, boolean active_high) {
+  unsigned long endstop_config = getClearedEndstopConfigTMC5041(motor_nr, left);
+  if (active) {
+    if (left) {
+      endstop_config |= _BV(0);
+        if (active_high) {
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring left end stop as active high"));
+#endif
+          endstop_config |= _BV(2) | _BV(5);
+      }  
+      else {
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring left end stop as active low"));
+#endif
+          endstop_config |= _BV(6);
+      }
+    } 
+    else {
+      endstop_config |= _BV(1);
+        if (active_high) {
+ #ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring left end stop as active high"));
+#endif
+         endstop_config |= _BV(3) | _BV(7);
+      }  
+      else {
+#ifdef DEBUG_ENDSTOPS
+      Serial.println(F("Configuring right end stop as active low"));
+#endif
+          endstop_config |= _BV(8);
+      }
+    }
+  }
+  if (motor_nr == 0) {
+    writeRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,endstop_config);
+  } 
+  else {
+    writeRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,endstop_config);
+  }
+  return NULL;
 }
 
 const __FlashStringHelper* configureVirtualEndstopTMC5041(unsigned char motor_nr, boolean left, long positions) {
+  //todo also with active
   return NULL; //TODO this has to be implemented ...
 }
 
@@ -90,6 +130,29 @@ int calculateCurrentValue(int current, boolean high_sense) {
   int high_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5041_R_SENSE/(high_sense?V_HIGH_SENSE:V_LOW_SENSE))-1;
   return high_sense_current;
 }
+
+unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
+  unsigned long endstop_config;
+  if (motor_nr == 0) {
+    endstop_config = readRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,0);
+  } 
+  else {
+    endstop_config = readRegister(CS_5041_PIN,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0);
+  }
+  //clear everything
+  unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
+  if (left) {
+    clearing_pattern = TMC5041_LEFT_ENDSTOP_REGISTER_PATTERN;
+  } 
+  else {
+    clearing_pattern = TMC5041_RIGHT_ENDSTOP_REGISTER_PATTERN;
+  }
+  clearing_pattern = ~clearing_pattern;
+  endstop_config |= clearing_pattern;
+  return endstop_config;
+
+}
+
 
 
 

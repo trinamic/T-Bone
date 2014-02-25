@@ -277,6 +277,7 @@ inline void signal_start() {
 
 
 const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
+  //TODO also with active 
   unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
   if (left) {
     if (active_high) {
@@ -329,6 +330,7 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
 }
 
 const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
+  //TODO also with active 
   return NULL; //TODO this has to be implemented ...
 }
 
@@ -337,10 +339,10 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
   if (left) {
-    clearing_pattern = LEFT_ENDSTOP_REGISTER_PATTERN;
+    clearing_pattern = TMC4361_LEFT_ENDSTOP_REGISTER_PATTERN;
   } 
   else {
-    clearing_pattern = RIGHT_ENDSTOP_REGISTER_PATTERN;
+    clearing_pattern = TMC4361_RIGHT_ENDSTOP_REGISTER_PATTERN;
   }
   clearing_pattern = ~clearing_pattern;
   endstop_config |= clearing_pattern;

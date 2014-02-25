@@ -405,7 +405,7 @@ void onConfigureEndStop() {
         error= configureEndstopTMC4361(motor, position<0, polarity>0);
       } 
       else {
-        error= configureEndstopTMC5041(motor, position<0, polarity>0);
+        error= configureEndstopTMC5041(motor, position<0, true, polarity>0);
       }     
     }
     break;
