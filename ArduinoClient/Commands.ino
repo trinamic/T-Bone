@@ -498,7 +498,7 @@ void onHome() {
     homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
   } 
   else {
-    const char max_following_motors = nr_of_coordinated_motors -nr_of_controlled_motors - 1;
+    const char max_following_motors = nr_of_controlled_motors - 1;
     char following_motors[max_following_motors]; //we can only home follow controlled motors
     for (char i = 0; i<max_following_motors ;i++) {
       following_motors[i] = decodeMotorNumber();
