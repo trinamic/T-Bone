@@ -74,7 +74,7 @@ void onConfigMotorCurrent() {
   }
   int newCurrent = messenger.readIntArg();
   if (newCurrent==0) {
-    if (I_COORDINATED_MOTOR(motor)) {
+    if (IS_COORDINATED_MOTOR(motor)) {
       messenger.sendCmdStart(kMotorCurrent);
       messenger.sendCmdArg(motor+1);
       messenger.sendCmdArg(motors[motor].tmc260.getCurrent());
@@ -91,7 +91,7 @@ void onConfigMotorCurrent() {
     return;
   }
   const __FlashStringHelper* error;
-  if (I_COORDINATED_MOTOR(motor)) {
+  if (IS_COORDINATED_MOTOR(motor)) {
     error = setCurrentTMC260(motor,newCurrent);
   } 
   else {
@@ -111,7 +111,7 @@ void onStepsPerRevolution() {
   if (motor<0) {
     return;
   }
-  if (I_COORDINATED_MOTOR(motor)) {
+  if (IS_COORDINATED_MOTOR(motor)) {
     messenger.sendCmd (kError,F("Steps per rev only for coordinated motors")); 
   }
   int newSteps = messenger.readIntArg();
@@ -392,7 +392,7 @@ void onConfigureEndStop() {
   case 0: //virtual endstops
     {
       long virtual_pos = messenger.readLongArg();
-      if (I_COORDINATED_MOTOR(motor)) {
+      if (IS_COORDINATED_MOTOR(motor)) {
         error = configureVirtualEndstopTMC4361(motor, position<0, virtual_pos);
       } 
       else {
@@ -407,7 +407,7 @@ void onConfigureEndStop() {
         messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
         return;
       }
-      if (I_COORDINATED_MOTOR(motor)) {
+      if (IS_COORDINATED_MOTOR(motor)) {
         error= configureEndstopTMC4361(motor, position<0, polarity>0);
       } 
       else {

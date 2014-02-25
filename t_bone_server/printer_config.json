@@ -42,7 +42,7 @@
         "home-precision-speed": 5
     },
     "z-axis": {
-        "motors": [3, 4],
+        "motors": [4, 5],
         "current": 0.4,
         "steps-per-mm": 5074.590,
         "max-speed": 3,

@@ -102,7 +102,7 @@
 #define FIXED_22_2_MAKE(a)     (int32_t)((a*(1ul << 2ul)))
 
 #define X_TARGET_IN_DIRECTION(m,t) ((inverted_motors & _BV(m))? -t:t)
-#define I_COORDINATED_MOTOR(a) (a<=nr_of_coordinated_motors)
+#define IS_COORDINATED_MOTOR(a) (a<nr_of_coordinated_motors)
 
 //how to mask REFERENCE_CONFIG_REGISTER if you want to configure just one end 
 #define TMC4361_LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(6) | _BV(10) | _BV(11) | _BV(14))

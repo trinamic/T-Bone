@@ -34,7 +34,7 @@ void initialzeTMC5041() {
 
 const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
 #ifdef DEBUG_MOTOR_CONTFIG
-  Serial.print(F("Settings current for #"));
+  Serial.print(F("Settings current for TMC5041 #"));
   Serial.print(motor_number);
   Serial.print(F(" to "));
   Serial.print(newCurrent);
