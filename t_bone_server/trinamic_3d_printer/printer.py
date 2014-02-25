@@ -118,23 +118,42 @@ class Printer(Thread):
             home_acceleration = _convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
             home_retract = _convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
             #make a config out of it
-            homing_config = {
-                'motor': self.axis[home_axis]['motor'],
-                'timeout': 0,
-                'home_speed': home_speed,
-                'home_slow_speed': home_precision_speed,
-                'home_retract': home_retract,
-                'acceleration': home_acceleration,
-                'deceleration': home_acceleration,
-                'start_bow': self.axis[home_axis]['bow_step'],
-                'end_bow': self.axis[home_axis]['bow_step'],
-            }
+            if self.axis[home_axis]['motor']:
+                homing_config = {
+                    'motor': self.axis[home_axis]['motor'],
+                    'timeout': 0,
+                    'home_speed': home_speed,
+                    'home_slow_speed': home_precision_speed,
+                    'home_retract': home_retract,
+                    'acceleration': home_acceleration,
+                    'deceleration': home_acceleration,
+                    'start_bow': self.axis[home_axis]['bow_step'],
+                    'end_bow': self.axis[home_axis]['bow_step'],
+                }
+            else:
+                #todo we should check if there is a motor for the left endstop??
+                homing_config = {
+                    'motor': self.axis[home_axis]['endstop']['left']['motor'],
+                    'followers': self.axis[home_axis]['motors'],
+                    'timeout': 0,
+                    'home_speed': home_speed,
+                    'home_slow_speed': home_precision_speed,
+                    'home_retract': home_retract,
+                    'acceleration': home_acceleration,
+                    'deceleration': home_acceleration,
+                    'start_bow': self.axis[home_axis]['bow_step'],
+                    'end_bow': self.axis[home_axis]['bow_step'],
+                }
+                #and do the homing
+                self.machine.home(homing_config, timeout=self._homing_timeout)
+
             #and do the homing
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'
             self.axis[home_axis]['homed'] = True
         self.x_pos = 0
         self.y_pos = 0
+        self.z_pos = 0
 
 
     # tuple with x/y/e coordinates - if left out no change is intended
