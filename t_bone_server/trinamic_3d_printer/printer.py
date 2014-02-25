@@ -59,7 +59,7 @@ class Printer(Thread):
         self._postconfig()
 
     def _postconfig(self):
-        #we need the stepping rations for variuos vcalclutaions later
+        #we need the stepping rations for variuos calclutaions later
         self._x_step_conversion = float(self.axis['x']['scale']) / float(self.axis['y']['scale'])
         self._y_step_conversion = float(self.axis['y']['scale']) / float(self.axis['x']['scale'])
 

@@ -1,3 +1,11 @@
+const unsigned long default_chopper_config = 0
+| (2<<15) // comparator blank time 2=34
+| _BV(13) //random t_off
+| (3 << 7) //hysteresis end time
+| (5 << 4) // hysteresis start time
+| 5 //t OFF
+;
+
 void prepareTMC5041() {
   //configure the cs pin
   pinMode(CS_5041_PIN, OUTPUT);
@@ -15,14 +23,17 @@ void initialzeTMC5041() {
   // motor #1
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
+  writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,default_chopper_config);
   // motor #2
   //get rid of the 'something happened after reboot' warning
   writeRegister(CS_5041_PIN, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
   setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
+  writeRegister(CS_5041_PIN, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
+
 }
 
 const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
-  #ifdef DEBUG_MOTOR_CONTFIG
+#ifdef DEBUG_MOTOR_CONTFIG
   Serial.print(F("Settings current for #"));
   Serial.print(motor_number);
   Serial.print(F(" to "));
@@ -76,32 +87,32 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
   if (active) {
     if (left) {
       endstop_config |= _BV(0);
-        if (active_high) {
+      if (active_high) {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring left end stop as active high"));
+        Serial.println(F("Configuring left end stop as active high"));
 #endif
-          endstop_config |= _BV(2) | _BV(5);
+        endstop_config |= _BV(2) | _BV(5);
       }  
       else {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring left end stop as active low"));
+        Serial.println(F("Configuring left end stop as active low"));
 #endif
-          endstop_config |= _BV(6);
+        endstop_config |= _BV(6);
       }
     } 
     else {
       endstop_config |= _BV(1);
-        if (active_high) {
- #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring left end stop as active high"));
+      if (active_high) {
+#ifdef DEBUG_ENDSTOPS
+        Serial.println(F("Configuring left end stop as active high"));
 #endif
-         endstop_config |= _BV(3) | _BV(7);
+        endstop_config |= _BV(3) | _BV(7);
       }  
       else {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring right end stop as active low"));
+        Serial.println(F("Configuring right end stop as active low"));
 #endif
-          endstop_config |= _BV(8);
+        endstop_config |= _BV(8);
       }
     }
   }
@@ -159,6 +170,8 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 
 }
+
+
 
 
 
