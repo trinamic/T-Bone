@@ -126,10 +126,13 @@ class Machine():
         if 'bow' in home_config:
             bow = int(home_config['bow'])
         else:
-            bow = 0
+            bow = None
         if 'followers' in home_config:
             #we lazily add the motor in the printer - since it is quite easy to remove it here
             following = [motor for motor in home_config['followers'] if motor != home_config['motor']]
+        else:
+            following=None
+            
         command.arguments = (
             int(home_config['motor']),
             int(home_config['timeout']),
@@ -137,9 +140,10 @@ class Machine():
             float(home_config['home_slow_speed']),
             int(home_config['home_retract']),
             float(home_config['acceleration']),
-            float(home_config['deceleration']),
-            bow
+            float(home_config['deceleration'])
         )
+        if bow:
+            command.arguments.append(bow)
         if following:
             for motor in following:
                 command.arguments.append(int(motor))
