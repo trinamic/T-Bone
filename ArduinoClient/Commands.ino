@@ -493,7 +493,6 @@ void onHome() {
     Serial.println();
 #endif
     error =  homeMotorTMC4361(
-
     motor,timeout,
     homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
   } 
@@ -527,7 +526,9 @@ void onHome() {
     Serial.print(')');
     Serial.println();
 #endif
-    error=NULL;
+    error =  homeMotorTMC5041(
+    motor,timeout,
+    homeFastSpeed, homeSlowSpeed,homeRetract,aMax,following_motors);
   }
   if (error==NULL) {
     messenger.sendCmdStart(kOK);

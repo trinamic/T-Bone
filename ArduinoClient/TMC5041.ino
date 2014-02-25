@@ -144,6 +144,26 @@ unsigned char calculateCurrentValue(int current) {
   return low_sense_current | 0x80;
 }
 
+const __FlashStringHelper* homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
+double homing_fast_speed, double homing_low_speed, long homing_retraction,
+unsigned long homming_accel,
+char* followers)
+{
+  //so here is the theoretic trick:
+  /*
+  homing is just a homing the 4361
+  go down a bit until RAMP_STAT velocity_ reached or event_pos_ reached
+  if event_stop_r the x_latch can be read 
+  
+  the following motor is a bit trickier:
+  zero all motors before we start - they will be zerored anyway (x_actual)
+  closely monitor event_stop_r
+  if it is hit stop the motor manually
+  - should be fast enough
+  - and is an excuse to implement the home moving blocking 
+  */
+}
+
 int calculateCurrentValue(int current, boolean high_sense) {
   float real_current = (float)current/1000.0;
   int high_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5041_R_SENSE/(high_sense?V_HIGH_SENSE:V_LOW_SENSE))-1;
