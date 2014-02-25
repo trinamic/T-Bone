@@ -192,6 +192,9 @@ class Printer(Thread):
         if 'bow-acceleration' in config:
             axis['bow'] = config['bow-acceleration']
             axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
+        else:
+            axis['bow'] = None
+            axis['bow_step'] = None
 
         if 'home-speed' in config:
             axis['home_speed'] = config['home-speed']
@@ -228,7 +231,7 @@ class Printer(Thread):
                         'polarity': polarity
                     }
                     if 'motor' in end_stop_config:
-                        axis['end-stops'][end_stop_pos]['motor']= end_stop_config['motor']
+                        axis['end-stops'][end_stop_pos]['motor'] = end_stop_config['motor']
                 else:
                     raise PrinterError("Unknown end stop type " + polarity)
                 end_stop = deepcopy(axis['end-stops'][end_stop_pos])
