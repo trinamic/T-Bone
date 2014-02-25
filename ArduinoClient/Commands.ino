@@ -501,7 +501,10 @@ void onHome() {
     const char max_following_motors = nr_of_coordinated_motors -nr_of_controlled_motors - 1;
     char following_motors[max_following_motors]; //we can only home follow controlled motors
     for (char i = 0; i<max_following_motors ;i++) {
-      following_motors[i] = messenger.readIntArg();
+      following_motors[i] = decodeMotorNumber();
+      if (following_motors[i]==-1) {
+        break;
+      }
     }
 #ifdef DEBUG_HOMING
     Serial.print(F("Homing for motor "));

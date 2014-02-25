@@ -132,8 +132,8 @@ class Machine():
             following = [motor for motor in home_config['followers'] if motor != home_config['motor']]
         else:
             following=None
-            
-        command.arguments = (
+
+        command.arguments = [
             int(home_config['motor']),
             int(home_config['timeout']),
             float(home_config['home_speed']),
@@ -141,7 +141,7 @@ class Machine():
             int(home_config['home_retract']),
             float(home_config['acceleration']),
             float(home_config['deceleration'])
-        )
+        ]
         if bow:
             command.arguments.append(bow)
         if following:
