@@ -468,10 +468,13 @@ void onHome() {
     messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
     return;
   }
-  long jerk = messenger.readLongArg();
-  if (jerk<0) {
-    messenger.sendCmd (kError,F("Jerk cannot be negative")); 
-    return;
+  long jerk=0;
+  if (motor<nr_of_controlled_motors) {
+    jerk = messenger.readLongArg();
+    if (jerk<0) {
+      messenger.sendCmd (kError,F("Jerk cannot be negative")); 
+      return;
+    }
   }
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for motor "));
@@ -604,6 +607,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
