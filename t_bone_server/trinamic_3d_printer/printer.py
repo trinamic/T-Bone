@@ -134,7 +134,7 @@ class Printer(Thread):
             else:
                 #todo we should check if there is a motor for the left endstop??
                 homing_config = {
-                    'motor': self.axis[home_axis]['endstop']['left']['motor'],
+                    'motor': self.axis[home_axis]['end-stops']['left']['motor'],
                     'followers': self.axis[home_axis]['motors'],
                     'timeout': 0,
                     'home_speed': home_speed,
@@ -227,6 +227,8 @@ class Printer(Thread):
                         'type': 'real',
                         'polarity': polarity
                     }
+                    if 'motor' in end_stop_config:
+                        axis['end-stops'][end_stop_pos]['motor']= end_stop_config['motor']
                 else:
                     raise PrinterError("Unknown end stop type " + polarity)
                 end_stop = deepcopy(axis['end-stops'][end_stop_pos])
