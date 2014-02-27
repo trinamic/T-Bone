@@ -43,7 +43,7 @@
     },
     "z-axis": {
         "motors": [4, 5],
-        "current": 0.4,
+        "current": 0.04,
         "steps-per-mm": 5074.590,
         "max-speed": 3,
         "max-acceleration": 1,
