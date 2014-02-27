@@ -232,11 +232,25 @@ char* followers)
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
             break;
-            break;
           case  nr_of_coordinated_motors+1:
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
             break;
+          }
+          for (char i = 0; i< homing_max_following_motors ;i++) {
+            switch (i) 
+            {
+              case (nr_of_coordinated_motors):
+              writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
+              writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
+              break;
+            case  nr_of_coordinated_motors+1:
+              writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+              writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
+              break;
+            default:
+              //we do not move - this filters anything but known 5041 motors - might be handy to add other motor types
+            }
           }
         }
       } 
@@ -280,6 +294,22 @@ char* followers)
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
           break;
         }        
+        for (char i = 0; i< homing_max_following_motors ;i++) {
+          switch (i) 
+          {
+            case (nr_of_coordinated_motors):
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
+            break;
+            break;
+          case  nr_of_coordinated_motors+1:
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
+            break;
+          default:
+            //we do not move - this filters anything but known 5041 motors - might be handy to add other motor types
+          }
+        }
         delay(10ul);
         switch (motor_nr) 
         {
@@ -333,6 +363,10 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 
 }
+
+
+
+
 
 
 
