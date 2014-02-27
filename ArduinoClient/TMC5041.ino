@@ -250,6 +250,7 @@ char* followers)
               break;
             default:
               //we do not move - this filters anything but known 5041 motors - might be handy to add other motor types
+              break;
             }
           }
         }
@@ -308,6 +309,7 @@ char* followers)
             break;
           default:
             //we do not move - this filters anything but known 5041 motors - might be handy to add other motor types
+            break;
           }
         }
         delay(10ul);
