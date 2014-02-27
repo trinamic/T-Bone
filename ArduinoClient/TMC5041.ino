@@ -150,19 +150,22 @@ double homming_accel,
 char* followers)
 {
   //TODO shouldn't we check if there is a motion going on??
+  unsigned long accelerartion_value = (unsigned long) homming_accel;
+  unsigned long fast_velocity_value = (unsigned long) homing_fast_speed;
+  unsigned long slow_velocity_value = (unsigned long) homing_slow_speed;
   #ifdef DEBUG_HOMING
     Serial.print(F("Homing for motor "));
     Serial.print(motor_nr,DEC);
     Serial.print(F(", timeout="));
     Serial.print(timeout);
     Serial.print(F(", fast="));
-    Serial.print(homing_fast_speed);
+    Serial.print(fast_velocity_value);
     Serial.print(F(", slow="));
-    Serial.print(homing_low_speed);
+    Serial.print(slow_velocity_value);
     Serial.print(F(", retract="));
     Serial.print(homing_retraction);
     Serial.print(F(", aMax="));
-    Serial.print(homming_accel);
+    Serial.print(accelerartion_value);
     Serial.print(F(": follow=("));
     for (char i = 0; i< homing_max_following_motors ;i++) {
       Serial.print(followers[i],DEC);
