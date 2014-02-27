@@ -400,7 +400,6 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   else {
     endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0);
   }
-  Serial.println(endstop_config);
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
   if (left) {
@@ -411,7 +410,6 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   }
   clearing_pattern = ~clearing_pattern;
   endstop_config &= clearing_pattern;
-  Serial.println(endstop_config);
   return endstop_config;
 }
 
