@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 
 class Printer(Thread):
-    def __init__(self, serial_port, reset_pin, print_min_length=50, print_max_length=100):
+    def __init__(self, serial_port, reset_pin, print_queue_min_length=50, print_queue_max_length=100):
         Thread.__init__(self)
         self.ready = False
         self.printing = False
@@ -23,8 +23,8 @@ class Printer(Thread):
 
         self.printer_thread = None
         self._print_queue = None
-        self.print_queue_min_length = print_min_length
-        self.print_queue_max_length = print_max_length
+        self.print_queue_min_length = print_queue_min_length
+        self.print_queue_max_length = print_queue_max_length
         self._default_homing_retraction = None
         self._x_step_conversion = None
         self._y_step_conversion = None
