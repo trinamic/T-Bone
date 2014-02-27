@@ -29,7 +29,10 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
   setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
-
+  for (char i=0; i< nr_of_controlled_motors; i++) {
+    configureEndstopTMC5041(i,false,false, false);  
+    configureEndstopTMC5041(i,true,false, false);  
+  }
 }
 
 const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
@@ -213,6 +216,7 @@ char* followers)
         status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
         break;
       }
+      Serial.println(status,HEX);
       if (status & (_BV(10) | _BV(7))) { //not moving or at target
         if (!(status & (_BV(0) | _BV(1))) ){ //reference switches not hit
 #ifdef DEBUG_HOMING
