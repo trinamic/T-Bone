@@ -24,6 +24,7 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,default_chopper_config);
+
   // motor #2
   //get rid of the 'something happened after reboot' warning
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
@@ -34,6 +35,9 @@ void initialzeTMC5041() {
     configureEndstopTMC5041(i,false,false, false);  
     configureEndstopTMC5041(i,true,false, false);  
   }
+  //
+  writeRegister(CS_5041_PIN, TMC5041_X_ACTUAL_REGISTER_1, 0);
+  writeRegister(CS_5041_PIN, TMC5041_X_ACTUAL_REGISTER_2, 0);
 
 }
 
@@ -183,6 +187,7 @@ char* followers)
   writeRegister(CS_5041_PIN, TMC5041_D_MAX_REGISTER_1,accelerartion_value);
   writeRegister(CS_5041_PIN, TMC5041_A_1_REGISTER_1,accelerartion_value);
   writeRegister(CS_5041_PIN, TMC5041_D_1_REGISTER_1,accelerartion_value); //the datahseet says it is needed
+
   writeRegister(CS_5041_PIN, TMC5041_A_MAX_REGISTER_2,accelerartion_value);
   writeRegister(CS_5041_PIN, TMC5041_D_MAX_REGISTER_2,accelerartion_value);
   writeRegister(CS_5041_PIN, TMC5041_A_1_REGISTER_2,accelerartion_value);
@@ -255,11 +260,13 @@ char* followers)
               case (nr_of_coordinated_motors):
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
               writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
+              writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
               writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
               break;
             case  nr_of_coordinated_motors+1:
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
               writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
+              writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
               writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
               break;
             default:
@@ -301,11 +308,13 @@ char* followers)
         {
           case (nr_of_coordinated_motors):
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+          writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
           break;
           break;
         case  nr_of_coordinated_motors+1:
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+          writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
           break;
         }        
@@ -314,11 +323,13 @@ char* followers)
           {
             case (nr_of_coordinated_motors):
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+            writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
             break;
             break;
           case  nr_of_coordinated_motors+1:
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+            writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
             break;
           default:
@@ -379,6 +390,8 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 
 }
+
+
 
 
 
