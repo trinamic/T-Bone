@@ -149,19 +149,42 @@ double homing_fast_speed, double homing_low_speed, long homing_retraction,
 unsigned long homming_accel,
 char* followers)
 {
+  //TODO shouldn't we check if there is a motion going on??
+  #ifdef DEBUG_HOMING
+    Serial.print(F("Homing for motor "));
+    Serial.print(motor_nr,DEC);
+    Serial.print(F(", timeout="));
+    Serial.print(timeout);
+    Serial.print(F(", fast="));
+    Serial.print(homing_fast_speed);
+    Serial.print(F(", slow="));
+    Serial.print(homing_low_speed);
+    Serial.print(F(", retract="));
+    Serial.print(homing_retraction);
+    Serial.print(F(", aMax="));
+    Serial.print(homming_accel);
+    Serial.print(F(": follow=("));
+    for (char i = 0; i< homing_max_following_motors && followers[i] !=-1 ;i++) {
+      Serial.print(followers[i],DEC);
+      Serial.print(F(", "));
+    }
+    Serial.print(')');
+    Serial.println();
+#endif
+
   //so here is the theoretic trick:
   /*
   homing is just a homing the 4361
-  go down a bit until RAMP_STAT velocity_ reached or event_pos_ reached
-  if event_stop_r the x_latch can be read 
-  
-  the following motor is a bit trickier:
-  zero all motors before we start - they will be zerored anyway (x_actual)
-  closely monitor event_stop_r
-  if it is hit stop the motor manually
-  - should be fast enough
-  - and is an excuse to implement the home moving blocking 
-  */
+   go down a bit until RAMP_STAT velocity_ reached or event_pos_ reached
+   if event_stop_r the x_latch can be read 
+   
+   the following motor is a bit trickier:
+   zero all motors before we start - they will be zerored anyway (x_actual)
+   closely monitor event_stop_r
+   if it is hit stop the motor manually
+   - should be fast enough
+   - and is an excuse to implement the home moving blocking 
+   */
 }
 
 int calculateCurrentValue(int current, boolean high_sense) {
@@ -191,6 +214,7 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 
 }
+
 
 
 

@@ -33,6 +33,8 @@
 const char nr_of_coordinated_motors = 3;
 const char nr_of_controlled_motors = 2;
 const char nr_of_motors = nr_of_coordinated_motors + nr_of_controlled_motors;
+const char homing_max_following_motors = nr_of_controlled_motors - 1;
+
 
 //how much space do we have to store commands
 #define COMMAND_QUEUE_LENGTH 40

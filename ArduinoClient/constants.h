@@ -95,9 +95,6 @@
 #define SQRT_2 (1.414213562373095)
 #define TMC_5041_R_SENSE 0.27
 
-
-
-
 //some nice calculation s
 //simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
 #define FIXED_23_8_MAKE(a)     (int32_t)((a*(1ul << 8ul)))
@@ -111,3 +108,4 @@
 #define TMC4361_RIGHT_ENDSTOP_REGISTER_PATTERN (_BV(1) | _BV(3) | _BV(7) | _BV(12) | _BV(13) | _BV(15))
 #define TMC5041_LEFT_ENDSTOP_REGISTER_PATTERN (_BV(0) | _BV(2) | _BV(5) | _BV(6))
 #define TMC5041_RIGHT_ENDSTOP_REGISTER_PATTERN (_BV(1) | _BV(33) | _BV(7) | _BV(8))
+

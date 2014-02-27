@@ -77,6 +77,23 @@ unsigned long homming_accel,
 unsigned long homming_jerk)
 {
   //todo shouldn't we check if there is a movement going??
+#ifdef DEBUG_HOMING
+    Serial.print(F("Homing for TMC4361 motor "));
+    Serial.print(motor_nr,DEC);
+    Serial.print(F(", timeout="));
+    Serial.print(timeout);
+    Serial.print(F(", fast="));
+    Serial.print(homing_fast_speed);
+    Serial.print(F(", slow="));
+    Serial.print(homing_low_speed);
+    Serial.print(F(", retract="));
+    Serial.print(homing_retraction);
+    Serial.print(F(", aMax="));
+    Serial.print(homming_accel);
+    Serial.print(F(": jerk="));
+    Serial.print(homming_jerk);
+    Serial.println();
+#endif
 
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0
     | _BV(10)//immediate start        
