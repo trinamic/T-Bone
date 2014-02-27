@@ -140,13 +140,14 @@ class Machine():
             float(home_config['home_slow_speed']),
             int(home_config['home_retract']),
             float(home_config['acceleration']),
-            float(home_config['deceleration'])
         ]
         if bow:
             command.arguments.append(bow)
         if following:
             for motor in following:
                 command.arguments.append(int(motor))
+
+        command.arguments.append(int(0))
         reply = self.machine_connection.send_command(command, timeout)
         if not reply or reply.command_number != 0:
             _logger.fatal("Unable to home axis %s: %s", home_config, reply)

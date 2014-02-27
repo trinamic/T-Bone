@@ -463,7 +463,7 @@ void onHome() {
     messenger.sendCmd(kError,F("cannot retract beyond home point after homing."));
     return;
   }
-  long aMax = messenger.readLongArg();
+  double aMax = messenger.readFloatArg();
   if (aMax<=0) {
     messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
     return;
@@ -606,62 +606,3 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

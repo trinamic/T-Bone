@@ -73,7 +73,7 @@ const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, 
 
 const __FlashStringHelper* homeMotorTMC4361(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
-unsigned long homming_accel,
+double homming_accel,
 unsigned long homming_jerk)
 {
   //todo shouldn't we check if there is a movement going??
@@ -99,8 +99,11 @@ unsigned long homming_jerk)
     | _BV(10)//immediate start        
   //since we just start 
   );   
-  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,homming_accel); //set maximum acceleration
-  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,homming_accel); //set maximum deceleration
+  
+    long fixed_a_max = FIXED_22_2_MAKE(homming_accel);
+
+  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
   writeRegister(motor_nr,TMC4361_BOW_1_REGISTER,homming_jerk);
   writeRegister(motor_nr,TMC4361_BOW_2_REGISTER,homming_jerk);
   writeRegister(motor_nr,TMC4361_BOW_3_REGISTER,homming_jerk);

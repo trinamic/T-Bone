@@ -146,7 +146,7 @@ unsigned char calculateCurrentValue(int current) {
 
 const __FlashStringHelper* homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
-unsigned long homming_accel,
+double homming_accel,
 char* followers)
 {
   //TODO shouldn't we check if there is a motion going on??
