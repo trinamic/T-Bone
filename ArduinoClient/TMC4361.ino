@@ -78,21 +78,21 @@ unsigned long homming_jerk)
 {
   //todo shouldn't we check if there is a movement going??
 #ifdef DEBUG_HOMING
-    Serial.print(F("Homing for TMC4361 motor "));
-    Serial.print(motor_nr,DEC);
-    Serial.print(F(", timeout="));
-    Serial.print(timeout);
-    Serial.print(F(", fast="));
-    Serial.print(homing_fast_speed);
-    Serial.print(F(", slow="));
-    Serial.print(homing_low_speed);
-    Serial.print(F(", retract="));
-    Serial.print(homing_retraction);
-    Serial.print(F(", aMax="));
-    Serial.print(homming_accel);
-    Serial.print(F(": jerk="));
-    Serial.print(homming_jerk);
-    Serial.println();
+  Serial.print(F("Homing for TMC4361 motor "));
+  Serial.print(motor_nr,DEC);
+  Serial.print(F(", timeout="));
+  Serial.print(timeout);
+  Serial.print(F(", fast="));
+  Serial.print(homing_fast_speed);
+  Serial.print(F(", slow="));
+  Serial.print(homing_low_speed);
+  Serial.print(F(", retract="));
+  Serial.print(homing_retraction);
+  Serial.print(F(", aMax="));
+  Serial.print(homming_accel);
+  Serial.print(F(": jerk="));
+  Serial.print(homming_jerk);
+  Serial.println();
 #endif
 
   //comfigure homing movement
@@ -100,8 +100,8 @@ unsigned long homming_jerk)
     | _BV(10)//immediate start        
   //since we just start 
   );   
-  
-    long fixed_a_max = FIXED_22_2_MAKE(homming_accel);
+
+  long fixed_a_max = FIXED_22_2_MAKE(homming_accel);
 
   //comfigire homing movement config - acceleration & jerk
   writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
@@ -304,7 +304,9 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   if (left) {
     if (active_high) {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring left end stop as active high"));
+      Serial.print(F("TMC4361 motor "));
+      Serial.print(motor_nr);
+      Serial.println(F(" - configuring left end stop as active high"));
 #endif
       endstop_config |= 0 
         | _BV(0) //STOP_LEFT enable
@@ -314,7 +316,9 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
     } 
     else {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring left end stop as active low"));
+      Serial.print(F("TMC4361 motor "));
+      Serial.print(motor_nr);
+      Serial.println(F(" - configuring left end stop as active low"));
 #endif
       endstop_config |= 0 
         | _BV(0) //STOP_LEFT enable
@@ -325,7 +329,9 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   else {
     if (active_high) {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring right end stop as active high"));
+      Serial.print(F("TMC4361 motor "));
+      Serial.print(motor_nr);
+      Serial.println(F(" - cConfiguring right end stop as active high"));
 #endif
       endstop_config |= 0 
         | _BV(1) //STOP_RIGHT enable
@@ -335,7 +341,9 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
     } 
     else {
 #ifdef DEBUG_ENDSTOPS
-      Serial.println(F("Configuring right end stop as active low"));
+      Serial.print(F("TMC4361 motor "));
+      Serial.print(motor_nr);
+      Serial.println(F(" - configuring right end stop as active low"));
 #endif
       endstop_config |= 0 
         | _BV(0) //STOP_LEFT enable
@@ -370,6 +378,7 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 

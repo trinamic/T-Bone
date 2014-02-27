@@ -30,14 +30,13 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
   setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
+
   //configure reference switches (to nothing)
-  for (char i=0; i< nr_of_controlled_motors; i++) {
-    configureEndstopTMC5041(i,false,false, false);  
-    configureEndstopTMC5041(i,true,false, false);  
-  }
+  writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, 0x0);
+  writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2, 0x0);
   //
-  writeRegister(CS_5041_PIN, TMC5041_X_ACTUAL_REGISTER_1, 0);
-  writeRegister(CS_5041_PIN, TMC5041_X_ACTUAL_REGISTER_2, 0);
+  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1, 0);
+  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2, 0);
 
 }
 
@@ -52,7 +51,6 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
 
   //TODO this seems quite strange - the run current is trucated anyway??
   unsigned char run_current = calculateCurrentValue(newCurrent);
-  Serial.println(run_current);
   boolean low_sense = run_current & 0x80;
   run_current = run_current & 0x7F;
   unsigned char hold_current;
@@ -99,13 +97,17 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
       endstop_config |= _BV(0);
       if (active_high) {
 #ifdef DEBUG_ENDSTOPS
-        Serial.println(F("Configuring left end stop as active high"));
+        Serial.print(F("TMC5041 motor "));
+        Serial.print(motor_nr);
+        Serial.println(F(" - configuring left end stop as active high"));
 #endif
         endstop_config |= _BV(2) | _BV(5);
       }  
       else {
 #ifdef DEBUG_ENDSTOPS
-        Serial.println(F("Configuring left end stop as active low"));
+        Serial.print(F("TMC5041 motor "));
+        Serial.print(motor_nr);
+        Serial.println(F(" - configuring left end stop as active low"));
 #endif
         endstop_config |= _BV(6);
       }
@@ -114,13 +116,17 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
       endstop_config |= _BV(1);
       if (active_high) {
 #ifdef DEBUG_ENDSTOPS
-        Serial.println(F("Configuring left end stop as active high"));
+        Serial.print(F("TMC5041 motor "));
+        Serial.print(motor_nr);
+        Serial.println(F(" - configuring left end stop as active high"));
 #endif
         endstop_config |= _BV(3) | _BV(7);
       }  
       else {
 #ifdef DEBUG_ENDSTOPS
-        Serial.println(F("Configuring right end stop as active low"));
+        Serial.print(F("TMC5041 motor "));
+        Serial.print(motor_nr);
+        Serial.println(F(" - configuring right end stop as active low"));
 #endif
         endstop_config |= _BV(8);
       }
@@ -128,9 +134,11 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
   }
   if (motor_nr == 0) {
     writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,endstop_config);
+    Serial.println(readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,0));
   } 
   else {
     writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,endstop_config);
+    Serial.println(readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0));
   }
   return NULL;
 }
@@ -227,6 +235,7 @@ char* followers)
         status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
         break;
       }
+      Serial.print("Status ");
       Serial.println(status,HEX);
       if (status & (_BV(10) | _BV(7))) { //not moving or at target
         if (!(status & (_BV(0) | _BV(1))) ){ //reference switches not hit
@@ -308,12 +317,14 @@ char* followers)
         {
           case (nr_of_coordinated_motors):
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+          writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
           writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
           break;
           break;
         case  nr_of_coordinated_motors+1:
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+          writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
           writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
           break;
@@ -323,6 +334,7 @@ char* followers)
           {
             case (nr_of_coordinated_motors):
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
             writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
             break;
@@ -330,6 +342,7 @@ char* followers)
           case  nr_of_coordinated_motors+1:
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
             writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
+            writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
             break;
           default:
@@ -347,8 +360,18 @@ char* followers)
           status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
           break;
         }
+        Serial.print("Status ");
+        Serial.println(status,HEX);
         while (!(status & _BV(9))) { //are we there yet??
-          status = readRegister(motor_nr, TMC4361_STATUS_REGISTER,0);
+          switch (motor_nr) 
+          {
+            case (nr_of_coordinated_motors):
+            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1,0);
+            break;
+          case  nr_of_coordinated_motors+1:
+            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
+            break;
+          }
         }
         if (homed==0) {
           homed = 1;
@@ -377,6 +400,7 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   else {
     endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0);
   }
+  Serial.println(endstop_config);
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
   if (left) {
@@ -386,10 +410,12 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
     clearing_pattern = TMC5041_RIGHT_ENDSTOP_REGISTER_PATTERN;
   }
   clearing_pattern = ~clearing_pattern;
-  endstop_config |= clearing_pattern;
+  endstop_config &= clearing_pattern;
+  Serial.println(endstop_config);
   return endstop_config;
-
 }
+
+
 
 
 
