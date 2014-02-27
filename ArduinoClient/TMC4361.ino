@@ -122,8 +122,8 @@ unsigned long homming_jerk)
       }  
       unsigned long status = readRegister(motor_nr, TMC4361_STATUS_REGISTER,0);
       unsigned long events = readRegister(motor_nr, TMC4361_EVENTS_REGISTER,0);
-      if (!(status & (_BV(7) | _BV(9)))) {
-        if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) {
+      if (!(status & (_BV(7) | _BV(9)))) { //not accelerarting
+        if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) { //at target or not moving
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
           Serial.print(target);
