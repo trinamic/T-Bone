@@ -164,7 +164,7 @@ char* followers)
     Serial.print(F(", aMax="));
     Serial.print(homming_accel);
     Serial.print(F(": follow=("));
-    for (char i = 0; i< homing_max_following_motors && followers[i] !=-1 ;i++) {
+    for (char i = 0; i< homing_max_following_motors ;i++) {
       Serial.print(followers[i],DEC);
       Serial.print(F(", "));
     }

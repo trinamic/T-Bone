@@ -68,7 +68,7 @@ void onInit() {
 
 //Motor Strom einstellen
 void onConfigMotorCurrent() {
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -107,7 +107,7 @@ void onConfigMotorCurrent() {
 
 //set the steps per revolution 
 void onStepsPerRevolution() {
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -137,7 +137,7 @@ void onStepsPerRevolution() {
 }
 
 void onInvertMotor() {
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -173,7 +173,7 @@ void onInvertMotor() {
 }
 
 void onMove() {
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -363,7 +363,7 @@ void onMovement() {
 }
 
 void onPosition() {
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -374,7 +374,7 @@ void onPosition() {
 }
 
 void onConfigureEndStop() {
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -440,7 +440,7 @@ void onConfigureEndStop() {
 
 void onHome() {
   //TODO wew will need a timeout afte which we have to stop homing 
-  char motor = decodeMotorNumber();
+  char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
   }
@@ -482,7 +482,7 @@ void onHome() {
   else {
     char following_motors[homing_max_following_motors]; //we can only home follow controlled motors
     for (char i = 0; i<homing_max_following_motors ;i++) {
-      following_motors[i] = decodeMotorNumber();
+      following_motors[i] = decodeMotorNumber(false);
       if (following_motors[i]==-1) {
         break;
       }
@@ -571,24 +571,28 @@ void watchDogStart() {
   watchDogPing();
 }
 
-char decodeMotorNumber() {
+char decodeMotorNumber(const boolean complaint) {
   char motor = messenger.readIntArg();
   if (motor<1) {
-    messenger.sendCmdStart(kError);
-    messenger.sendCmdArg(motor,DEC);
-    messenger.sendCmdArg(1,DEC);
-    messenger.sendCmdArg(nr_of_coordinated_motors,DEC);
-    messenger.sendCmdArg(F("motor number too small"));
-    messenger.sendCmdEnd();
+    if (complaint) {
+      messenger.sendCmdStart(kError);
+      messenger.sendCmdArg(motor,DEC);
+      messenger.sendCmdArg(1,DEC);
+      messenger.sendCmdArg(nr_of_coordinated_motors,DEC);
+      messenger.sendCmdArg(F("motor number too small"));
+      messenger.sendCmdEnd();
+    }
     return -1;
   } 
   else if (motor>nr_of_motors) {
-    messenger.sendCmdStart(kError);
-    messenger.sendCmdArg(motor,DEC);
-    messenger.sendCmdArg(1,DEC);
-    messenger.sendCmdArg(nr_of_motors,DEC);
-    messenger.sendCmdArg(F("motor number too big"));
-    messenger.sendCmdEnd();
+    if (complaint) {
+      messenger.sendCmdStart(kError);
+      messenger.sendCmdArg(motor,DEC);
+      messenger.sendCmdArg(1,DEC);
+      messenger.sendCmdArg(nr_of_motors,DEC);
+      messenger.sendCmdArg(F("motor number too big"));
+      messenger.sendCmdEnd();
+    }
     return -1;
   } 
   else {
@@ -602,6 +606,8 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 
