@@ -95,6 +95,7 @@ unsigned long homming_jerk)
     Serial.println();
 #endif
 
+  //comfigure homing movement
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0
     | _BV(10)//immediate start        
   //since we just start 
@@ -102,6 +103,7 @@ unsigned long homming_jerk)
   
     long fixed_a_max = FIXED_22_2_MAKE(homming_accel);
 
+  //comfigire homing movement config - acceleration & jerk
   writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
   writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
   writeRegister(motor_nr,TMC4361_BOW_1_REGISTER,homming_jerk);

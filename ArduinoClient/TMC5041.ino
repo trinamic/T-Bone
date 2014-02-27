@@ -152,28 +152,35 @@ char* followers)
   //TODO shouldn't we check if there is a motion going on??
   unsigned long accelerartion_value = (unsigned long) homming_accel;
   unsigned long fast_velocity_value = (unsigned long) homing_fast_speed;
-  unsigned long slow_velocity_value = (unsigned long) homing_slow_speed;
-  #ifdef DEBUG_HOMING
-    Serial.print(F("Homing for motor "));
-    Serial.print(motor_nr,DEC);
-    Serial.print(F(", timeout="));
-    Serial.print(timeout);
-    Serial.print(F(", fast="));
-    Serial.print(fast_velocity_value);
-    Serial.print(F(", slow="));
-    Serial.print(slow_velocity_value);
-    Serial.print(F(", retract="));
-    Serial.print(homing_retraction);
-    Serial.print(F(", aMax="));
-    Serial.print(accelerartion_value);
-    Serial.print(F(": follow=("));
-    for (char i = 0; i< homing_max_following_motors ;i++) {
-      Serial.print(followers[i],DEC);
-      Serial.print(F(", "));
-    }
-    Serial.print(')');
-    Serial.println();
+  unsigned long slow_velocity_value = (unsigned long) homing_low_speed;
+  
+#ifdef DEBUG_HOMING
+  Serial.print(F("Homing for motor "));
+  Serial.print(motor_nr,DEC);
+  Serial.print(F(", timeout="));
+  Serial.print(timeout);
+  Serial.print(F(", fast="));
+  Serial.print(fast_velocity_value);
+  Serial.print(F(", slow="));
+  Serial.print(slow_velocity_value);
+  Serial.print(F(", retract="));
+  Serial.print(homing_retraction);
+  Serial.print(F(", aMax="));
+  Serial.print(accelerartion_value);
+  Serial.print(F(": follow=("));
+  for (char i = 0; i< homing_max_following_motors ;i++) {
+    Serial.print(followers[i],DEC);
+    Serial.print(F(", "));
+  }
+  Serial.print(')');
+  Serial.println();
 #endif
+  //configure acceleration for homing
+  writeRegister(CS_5041_PIN, TMC5041_A_MAX_REGISTER_2,accelerartion_value);
+  writeRegister(CS_5041_PIN, TMC5041_D_MAX_REGISTER_2,accelerartion_value);
+  writeRegister(CS_5041_PIN, TMC5041_A_1_REGISTER_2,accelerartion_value);
+  writeRegister(CS_5041_PIN, TMC5041_D_1_REGISTER_2,accelerartion_value); //the datahseet says it is needed
+
 
   //so here is the theoretic trick:
   /*
@@ -217,6 +224,7 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 
 }
+
 
 
 
