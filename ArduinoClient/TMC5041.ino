@@ -92,6 +92,7 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
 
 const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active, boolean active_high) {
   unsigned long endstop_config = getClearedEndstopConfigTMC5041(motor_nr, left);
+
   if (active) {
     if (left) {
       endstop_config |= _BV(0);
@@ -134,11 +135,9 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
   }
   if (motor_nr == 0) {
     writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,endstop_config);
-    Serial.println(readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,0));
   } 
   else {
     writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,endstop_config);
-    Serial.println(readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0));
   }
   return NULL;
 }
@@ -412,6 +411,7 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
 
 
 
