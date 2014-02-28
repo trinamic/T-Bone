@@ -14,6 +14,7 @@
 
 //#define DEBUG_MOTOR_CONTFIG
 #define DEBUG_HOMING
+#define DEBUG_HOMING_STATUS
 #define DEBUG_ENDSTOPS
 
 //#define DEBUG_MOTION
@@ -42,7 +43,7 @@ const char homing_max_following_motors = nr_of_controlled_motors - 1;
 #define TMC_260_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define CLOCK_FREQUENCY 16000000ul
-#define DEFAULT_CURRENT_IN_MA 1
+#define DEFAULT_CURRENT_IN_MA 10
 #define DEFAULT_STEPS_PER_REVOLUTION 200
 
 #define DEFAULT_ACCELERATION 1

@@ -190,15 +190,15 @@ char* followers)
   Serial.println();
 #endif
   //configure acceleration for homing
-  writeRegister(CS_5041_PIN, TMC5041_A_MAX_REGISTER_1,accelerartion_value);
-  writeRegister(CS_5041_PIN, TMC5041_D_MAX_REGISTER_1,accelerartion_value);
-  writeRegister(CS_5041_PIN, TMC5041_A_1_REGISTER_1,accelerartion_value);
-  writeRegister(CS_5041_PIN, TMC5041_D_1_REGISTER_1,accelerartion_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,accelerartion_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,accelerartion_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,accelerartion_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,accelerartion_value); //the datahseet says it is needed
 
-  writeRegister(CS_5041_PIN, TMC5041_A_MAX_REGISTER_2,accelerartion_value);
-  writeRegister(CS_5041_PIN, TMC5041_D_MAX_REGISTER_2,accelerartion_value);
-  writeRegister(CS_5041_PIN, TMC5041_A_1_REGISTER_2,accelerartion_value);
-  writeRegister(CS_5041_PIN, TMC5041_D_1_REGISTER_2,accelerartion_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,accelerartion_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,accelerartion_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,accelerartion_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,accelerartion_value); //the datahseet says it is needed
 
 
   //so here is the theoretic trick:
@@ -214,6 +214,7 @@ char* followers)
    - should be fast enough
    - and is an excuse to implement the home moving blocking 
    */
+  unsigned long old_status = 0;
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
@@ -234,8 +235,13 @@ char* followers)
         status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
         break;
       }
-      Serial.print("Status ");
-      Serial.println(status,HEX);
+#ifdef DEBUG_HOMING_STATUS
+      if (status!=old_status) {
+        Serial.print("Status1 ");
+        Serial.println(status,HEX);
+        old_status=status;
+      }
+#endif
       if (status & (_BV(10) | _BV(7))) { //not moving or at target
         if (!(status & (_BV(0) | _BV(1))) ){ //reference switches not hit
 #ifdef DEBUG_HOMING
@@ -247,18 +253,30 @@ char* followers)
           Serial.println(status,HEX);
           Serial.print(F(" phase "));
           Serial.println(homed,DEC);
+          Serial.print(F("Position "));
+          Serial.print(readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
+          Serial.print(F(", Velocity "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
+          Serial.print(F(", A max "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,0));
+          Serial.print(F(", D MAX "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,0));
+          Serial.print(F(", A 1 "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,0));
+          Serial.print(F(", D 1 "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0));
 #endif
           target -= 1000l;
           switch (motor_nr) 
           {
             case (nr_of_coordinated_motors):
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
-            writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
+            writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
             break;
           case  nr_of_coordinated_motors+1:
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
-            writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
+            writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
             break;
           }
@@ -267,13 +285,13 @@ char* followers)
             {
               case (nr_of_coordinated_motors):
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
-              writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
+              writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,homing_speed);
               writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
               writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
               break;
             case  nr_of_coordinated_motors+1:
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
-              writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
+              writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,homing_speed);
               writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
               writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
               break;
@@ -316,14 +334,14 @@ char* followers)
         {
           case (nr_of_coordinated_motors):
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
-          writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
+          writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,homing_speed);
           writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
           break;
           break;
         case  nr_of_coordinated_motors+1:
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
-          writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
+          writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,homing_speed);
           writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
           break;
@@ -359,9 +377,14 @@ char* followers)
           status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
           break;
         }
-        Serial.print("Status ");
-        Serial.println(status,HEX);
         while (!(status & _BV(9))) { //are we there yet??
+#ifdef DEBUG_HOMING_STATUS
+          if (status!=old_status) {
+            Serial.print("Status2 ");
+            Serial.println(status,HEX);
+            old_status=status;
+          }
+#endif
           switch (motor_nr) 
           {
             case (nr_of_coordinated_motors):
@@ -411,6 +434,13 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
+
+
+
+
+
+
 
 
 
