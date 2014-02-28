@@ -197,6 +197,7 @@ class Printer(Thread):
             axis['clock-referenced'] = False
 
         axis['max_speed'] = config['max-speed']
+        #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
         axis['max_speed_step'] = convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
         axis['max_acceleration'] = config['max-acceleration']
         axis['max_step_acceleration'] = convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
@@ -286,6 +287,7 @@ class Printer(Thread):
             'y': convert_mm_to_steps(movement['y'], self.axis['y']['scale'])
         }
         step_speed_vector = {
+            #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
             'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
             'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
         }
