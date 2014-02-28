@@ -22,25 +22,22 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
   // motor #1
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
-  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0);
   writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0);
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,default_chopper_config);
 
   // motor #2
   //get rid of the 'something happened after reboot' warning
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
-  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,0);
   writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,0);
   setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
 
   //configure reference switches (to nothing)
   writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, 0x0);
   writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2, 0x0);
-  //
-  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1, 0);
-  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2, 0);
 
 }
 
@@ -221,12 +218,12 @@ char* followers)
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
+#ifdef DEBUG_HOMING_STATUS
+    unsigned long old_status = -1;
+#endif
 
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
-    unsigned long status;
-#ifdef DEBUG_HOMING_STATUS
-    unsigned long old_status = 0;
-#endif
+    unsigned long status=0;
     if (homed==0 || homed==1) {
       unsigned long homing_speed=(unsigned long) homing_fast_speed; 
       if (homed==1) {
@@ -249,7 +246,7 @@ char* followers)
       }
 #endif
       if (status & (_BV(10) | _BV(9))) { //not moving or at target
-        if (!(status & (_BV(5) | _BV(4))) ){ //reference switches not hit
+        if ((status & _BV(4))==0){ //reference switches not hit
           target -= 1000l;
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
@@ -300,7 +297,7 @@ char* followers)
           }
         }
       } 
-      else {
+      else if(status & _BV(4)){ //reference switches hit
         long actual;
         switch (motor_nr) 
         {

@@ -317,17 +317,17 @@ void setup()
   // ---------------------TMC5041---ENDE---------------------------
   // --------------------------------------------------------------
 
-  //writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
-  //writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_2, 10000ul);
-  //writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_2, 200000);
+  writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
+  writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_2, 10000ul);
+  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_2, 200000);
   
-  //writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
-  //writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_1, 10000ul);
-  //writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 9999999);
+  writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
+  writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_1, 10000ul);
+  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 9999999);
   
   // Fahrbefehele
-  writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
-  writeRegister(CS_4361_1_PIN, X_TARGET_REGISTER, 9999999);
+  //writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
+  //writeRegister(CS_4361_1_PIN, X_TARGET_REGISTER, 9999999);
   //writeRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   //writeRegister(CS_4361_2_PIN, X_TARGET_REGISTER, 9999999);
   //writeRegister(CS_4361_3_PIN, X_ACTUAL_REGISTER, 0);
@@ -349,8 +349,9 @@ void loop()
   readRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   Serial.println("4361_3: ");
   readRegister(CS_4361_3_PIN, X_ACTUAL_REGISTER, 0);
+  */
   Serial.println("5041: ");
-  readRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);*/
+  readRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
   delay(100);
   
   // PWM Test
