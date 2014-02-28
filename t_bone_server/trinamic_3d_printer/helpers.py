@@ -12,7 +12,7 @@ def convert_mm_to_steps(millimeters, conversion_factor):
 
 def convert_velocity_clock_ref_to_realtime_ref(velocity):
     #see datasheet 9.1: v[5031] * ( fCLK[Hz]/2 / 2^23 )
-    return velocity * machine.clock_frequency / (2 ** 23)
+    return velocity * machine.clock_frequency / 2 / (2 ** 23)
 
 def convert_acceleration_clock_ref_to_realtime_ref(acceleration):
     #see datasheet 9.1: a[5031] * fCLK[Hz]^2 / (512*256) / 2^24

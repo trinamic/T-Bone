@@ -167,7 +167,7 @@ double homming_accel,
 char* followers)
 {
   //TODO shouldn't we check if there is a motion going on??
-  unsigned long acceleration_value = min((unsigned long) homming_accel,0xFFFFul);
+  unsigned long acceleration_value = 1000;// min((unsigned long) homming_accel,0xFFFFul);
 
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for motor "));
@@ -195,11 +195,13 @@ char* followers)
   writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,acceleration_value);
   writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,acceleration_value);
   writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,acceleration_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_1, 0);
 
   writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,acceleration_value);
   writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,acceleration_value);
   writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,acceleration_value);
   writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,acceleration_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_2, 0);
 
   //so here is the theoretic trick:
   /*
@@ -243,7 +245,9 @@ char* followers)
         Serial.print("Status1 ");
         Serial.println(status,HEX);
           Serial.print(F("Position "));
-          Serial.print(readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
+          Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
+          Serial.print(F(", Targe "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0));
           Serial.print(F(", Velocity "));
           Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
         old_status=status;
@@ -251,7 +255,7 @@ char* followers)
 #endif
       if (status & (_BV(10) | _BV(9))) { //not moving or at target
         if ((status & _BV(4))==0){ //reference switches not hit
-          target -= 1000l;
+          target -= 9999999l;
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
           Serial.print(target);

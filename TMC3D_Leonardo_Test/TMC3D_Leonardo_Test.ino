@@ -272,6 +272,7 @@ void setup()
   current_register |= I_HOLD_DELAY << 16;
   current_register |= run_current << 8;
   current_register |= hold_current;
+  writeRegister(CS_5041_PIN, TMC5031_HOLD_RUN_CURRENT_REGISTER_1,current_register);
   writeRegister(CS_5041_PIN, TMC5031_HOLD_RUN_CURRENT_REGISTER_2,current_register);
   chopper_config = 0
     | (2<<15) // comparator blank time 2=34
@@ -283,8 +284,10 @@ void setup()
   if (!low_sense) {
     chopper_config|= _BV(17); //lower v_sense
   } 
+  writeRegister(CS_5041_PIN, TMC5031_CHOPPER_CONFIGURATION_REGISTER_1,chopper_config);
   writeRegister(CS_5041_PIN, TMC5031_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
   //configure reference switches
+  writeRegister(CS_5041_PIN, TMC5031_REFERENCE_SWITCH_CONFIG_REGISTER_1, 0x0);
   writeRegister(CS_5041_PIN, TMC5031_REFERENCE_SWITCH_CONFIG_REGISTER_2, 0x0);
   //Set the basic config parameters 
   unsigned long acceleration = vmax/10;
@@ -323,7 +326,7 @@ void setup()
   
   writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
   writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_1, 10000ul);
-  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 9999999);
+  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 200000);
   
   // Fahrbefehele
   //writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
@@ -341,17 +344,18 @@ unsigned long target=0;
 
 void loop()
 {
-  Serial.println("4361_1: ");
+  /*Serial.println("4361_1: ");
   readRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
   Serial.println("4361_1_ENC_POS: ");
   readRegister(CS_4361_1_PIN, ENC_POS, 0);              // Read encoder position register
-  /*Serial.println("4361_2: ");
+  Serial.println("4361_2: ");
   readRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   Serial.println("4361_3: ");
   readRegister(CS_4361_3_PIN, X_ACTUAL_REGISTER, 0);
   */
   Serial.println("5041: ");
   readRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
+  readRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
   delay(100);
   
   // PWM Test
