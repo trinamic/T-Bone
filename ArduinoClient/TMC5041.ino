@@ -22,12 +22,16 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
   // motor #1
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
+  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0);
   setCurrentTMC5041(0,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_1,default_chopper_config);
 
   // motor #2
   //get rid of the 'something happened after reboot' warning
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_2,0); //enforce positioing mode
+  writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,0);
   setCurrentTMC5041(1,DEFAULT_CURRENT_IN_MA);
   writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,default_chopper_config);
 
@@ -275,7 +279,7 @@ char* followers)
             break;
           }
           for (char i = 0; i< homing_max_following_motors ;i++) {
-            switch (i) 
+            switch (followers[i]) 
             {
               case (nr_of_coordinated_motors):
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
@@ -341,7 +345,7 @@ char* followers)
           break;
         }        
         for (char i = 0; i< homing_max_following_motors ;i++) {
-          switch (i) 
+          switch (followers[i]) 
           {
             case (nr_of_coordinated_motors):
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);

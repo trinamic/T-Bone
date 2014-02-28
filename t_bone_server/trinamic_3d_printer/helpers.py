@@ -16,7 +16,7 @@ def convert_velocity_clock_ref_to_realtime_ref(velocity):
 
 def convert_acceleration_clock_ref_to_realtime_ref(acceleration):
     #see datasheet 9.1: a[5031] * fCLK[Hz]^2 / (512*256) / 2^24
-    return acceleration * machine.clock_frequency / (2 ** 23)
+    return acceleration * machine.clock_frequency**2 / (512*256) / (2**24)
 
 
 def calculate_relative_vector(delta_x, delta_y):
