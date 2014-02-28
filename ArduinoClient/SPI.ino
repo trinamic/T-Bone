@@ -1,4 +1,4 @@
-unsigned char status;
+unsigned char spi_status;
 
 
 void writeRegister(unsigned const char cs_squirrel,unsigned const char the_register, unsigned const long datagram) {
@@ -47,7 +47,7 @@ long sendRegister(unsigned const char motor_nr, unsigned const char the_register
 #endif
 
   //the first value is irgnored
-  status = SPI.transfer(the_register);
+  spi_status = SPI.transfer(the_register);
   //write/read the values
   i_datagram = SPI.transfer((datagram >> 24) & 0xff);
   i_datagram <<= 8;

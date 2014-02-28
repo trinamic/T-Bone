@@ -166,7 +166,7 @@ double homming_accel,
 char* followers)
 {
   //TODO shouldn't we check if there is a motion going on??
-  unsigned long accelerartion_value = (unsigned long) homming_accel;
+  unsigned long acceleration_value = (unsigned long) homming_accel;
 
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for motor "));
@@ -180,7 +180,7 @@ char* followers)
   Serial.print(F(", retract="));
   Serial.print(homing_retraction);
   Serial.print(F(", aMax="));
-  Serial.print(accelerartion_value);
+  Serial.print(acceleration_value);
   Serial.print(F(": follow=("));
   for (char i = 0; i< homing_max_following_motors ;i++) {
     Serial.print(followers[i],DEC);
@@ -190,15 +190,15 @@ char* followers)
   Serial.println();
 #endif
   //configure acceleration for homing
-  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,accelerartion_value);
-  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,accelerartion_value);
-  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,accelerartion_value);
-  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,accelerartion_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,acceleration_value); //the datahseet says it is needed
 
-  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,accelerartion_value);
-  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,accelerartion_value);
-  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,accelerartion_value);
-  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,accelerartion_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,acceleration_value); //the datahseet says it is needed
 
 
   //so here is the theoretic trick:
@@ -214,18 +214,21 @@ char* followers)
    - should be fast enough
    - and is an excuse to implement the home moving blocking 
    */
-  unsigned long old_status = 0;
 
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
+
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
+    unsigned long status;
+#ifdef DEBUG_HOMING_STATUS
+    unsigned long old_status = 0;
+#endif
     if (homed==0 || homed==1) {
       unsigned long homing_speed=(unsigned long) homing_fast_speed; 
       if (homed==1) {
         homing_speed = (unsigned long) homing_low_speed;
       }  
-      unsigned long status;
       switch (motor_nr) 
       {
         case (nr_of_coordinated_motors):
@@ -242,8 +245,9 @@ char* followers)
         old_status=status;
       }
 #endif
-      if (status & (_BV(10) | _BV(7))) { //not moving or at target
-        if (!(status & (_BV(0) | _BV(1))) ){ //reference switches not hit
+      if (status & (_BV(10) | _BV(9))) { //not moving or at target
+        if (!(status & (_BV(5) | _BV(4))) ){ //reference switches not hit
+          target -= 1000l;
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
           Serial.print(target);
@@ -266,7 +270,6 @@ char* followers)
           Serial.print(F(", D 1 "));
           Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0));
 #endif
-          target -= 1000l;
           switch (motor_nr) 
           {
             case (nr_of_coordinated_motors):
@@ -434,6 +437,9 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
+
+
 
 
 
