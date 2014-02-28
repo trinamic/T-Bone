@@ -15,6 +15,7 @@ _min_command_buffer_free_space = 5  # how much arduino buffer to preserve
 _initial_buffer_length = 20  #how much buffer do we need befoer starting to print
 _buffer_empyting_wait_time = 0.1
 _buffer_warn_waittime = 10
+clock_frequency = 16000000
 
 _logger = logging.getLogger(__name__)
 

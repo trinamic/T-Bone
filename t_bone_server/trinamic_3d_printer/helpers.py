@@ -1,14 +1,25 @@
 from numpy import sqrt
+from trinamic_3d_printer import machine
 
 __author__ = 'marcus'
 
-def _convert_mm_to_steps(millimeters, conversion_factor):
+
+def convert_mm_to_steps(millimeters, conversion_factor):
     if millimeters is None:
         return None
     return int(float(millimeters) * float(conversion_factor))
 
 
-def _calculate_relative_vector(delta_x, delta_y):
+def convert_velocity_clock_ref_to_realtime_ref(velocity):
+    #see datasheet 9.1: v[5031] * ( fCLK[Hz]/2 / 2^23 )
+    return velocity * machine.clock_frequency / (2 ** 23)
+
+def convert_acceleration_clock_ref_to_realtime_ref(acceleration):
+    #see datasheet 9.1: a[5031] * fCLK[Hz]^2 / (512*256) / 2^24
+    return acceleration * machine.clock_frequency / (2 ** 23)
+
+
+def calculate_relative_vector(delta_x, delta_y):
     length = sqrt(delta_x ** 2 + delta_y ** 2)
     if length == 0:
         return {
@@ -38,8 +49,9 @@ def find_shortest_vector(vector_list):
             y_square = find_list[shortest_vector]['y'] ** 2
     return find_list[shortest_vector]
 
+
 def file_len(fname):
-    i=0
+    i = 0
     with open(fname) as f:
         for i, l in enumerate(f):
             pass

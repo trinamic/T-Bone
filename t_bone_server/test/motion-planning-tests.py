@@ -4,7 +4,7 @@ from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equ
 from math import sqrt
 from threading import Thread
 import unittest
-from trinamic_3d_printer.printer import _calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
+from trinamic_3d_printer.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
 
 
 class VectorTests(unittest.TestCase):
@@ -222,25 +222,25 @@ class VectorTests(unittest.TestCase):
 
 
     def test_vector_math(self):
-        result = _calculate_relative_vector(1, 1)
+        result = calculate_relative_vector(1, 1)
         assert_that(result, not_none())
         assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['l'], close_to(1.4, 0.1))
 
-        result = _calculate_relative_vector(23, 23)
+        result = calculate_relative_vector(23, 23)
         assert_that(result, not_none())
         assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['l'], close_to(32.5, 0.1))
 
-        result = _calculate_relative_vector(0, 0)
+        result = calculate_relative_vector(0, 0)
         assert_that(result, not_none())
         assert_that(result['x'], equal_to(0))
         assert_that(result['y'], equal_to(0))
         assert_that(result['l'], equal_to(0))
 
-        result = _calculate_relative_vector(0, 20)
+        result = calculate_relative_vector(0, 20)
         assert_that(result, not_none())
         assert_that(result['x'], equal_to(0))
         assert_that(result['y'], equal_to(1))

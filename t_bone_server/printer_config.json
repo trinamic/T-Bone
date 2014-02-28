@@ -6,6 +6,7 @@
         "max-speed": 900,
         "max-acceleration": 3000,
         "bow-acceleration": 20.0,
+        "time-reference":"time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
         "end-stops": {
@@ -28,6 +29,7 @@
         "max-speed": 900,
         "max-acceleration": 3000,
         "bow-acceleration": 20.0,
+        "time-reference":"time",
         "end-stops": {
             "left": {
                 "polarity": "positive"
@@ -47,6 +49,7 @@
         "steps-per-mm": 5074.590,
         "max-speed": 3,
         "max-acceleration": 1,
+        "time-reference":"clock signal",
         "end-stops": {
             "left": {
                 "polarity": "positive",

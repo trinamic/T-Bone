@@ -6,7 +6,8 @@ from math import sqrt, copysign
 from numpy import sign
 from threading import Thread
 from trinamic_3d_printer.machine import Machine
-from trinamic_3d_printer.helpers import _convert_mm_to_steps, find_shortest_vector, _calculate_relative_vector
+from trinamic_3d_printer.helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
+    convert_velocity_clock_ref_to_realtime_ref, convert_acceleration_clock_ref_to_realtime_ref
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
@@ -113,10 +114,14 @@ class Printer(Thread):
             home_acceleration = self.axis[home_axis]['home_acceleration']
             home_retract = self.axis[home_axis]['home_retract']
             #convert everything from mm to steps
-            home_speed = _convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
-            home_precision_speed = _convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
-            home_acceleration = _convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
-            home_retract = _convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
+            home_speed = convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
+            home_precision_speed = convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
+            home_acceleration = convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
+            if self.axis[home_axis]['clock-referenced']:
+                home_speed = convert_velocity_clock_ref_to_realtime_ref(home_speed)
+                home_precision_speed = convert_velocity_clock_ref_to_realtime_ref(home_precision_speed)
+                home_acceleration = convert_acceleration_clock_ref_to_realtime_ref(home_acceleration)
+            home_retract = convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
             #make a config out of it
             if self.axis[home_axis]['motor']:
                 homing_config = {
@@ -184,14 +189,20 @@ class Printer(Thread):
             axis['motors'] = config['motors']
         else:
             raise PrinterError("you must configure one ('motor') or more 'motors' in the axis configuration")
+
         axis['scale'] = config['steps-per-mm']
+        if 'time-reference' in axis and 'time-reference' == 'clock signal':
+            axis['clock-referenced'] = True
+        else:
+            axis['clock-referenced'] = False
+
         axis['max_speed'] = config['max-speed']
-        axis['max_speed_step'] = _convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
+        axis['max_speed_step'] = convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
         axis['max_acceleration'] = config['max-acceleration']
-        axis['max_step_acceleration'] = _convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
+        axis['max_step_acceleration'] = convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         if 'bow-acceleration' in config:
             axis['bow'] = config['bow-acceleration']
-            axis['bow_step'] = _convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
+            axis['bow_step'] = convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
         else:
             axis['bow'] = None
             axis['bow_step'] = None
@@ -236,7 +247,7 @@ class Printer(Thread):
                     raise PrinterError("Unknown end stop type " + polarity)
                 end_stop = deepcopy(axis['end-stops'][end_stop_pos])
                 if 'position' in end_stop:
-                    end_stop['position'] = _convert_mm_to_steps(end_stop['position'], axis['scale'])
+                    end_stop['position'] = convert_mm_to_steps(end_stop['position'], axis['scale'])
                 if axis['motor']:
                     self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
                 else:
@@ -271,12 +282,12 @@ class Printer(Thread):
 
     def _add_movement_calculations(self, movement):
         step_pos = {
-            'x': _convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
-            'y': _convert_mm_to_steps(movement['y'], self.axis['y']['scale'])
+            'x': convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
+            'y': convert_mm_to_steps(movement['y'], self.axis['y']['scale'])
         }
         step_speed_vector = {
-            'x': _convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
-            'y': _convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
+            'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
+            'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
         }
         delta_x = movement['delta_x']
         delta_y = movement['delta_y']
@@ -438,7 +449,7 @@ class PrintQueue():
 
         move['delta_x'] = move['x'] - last_x
         move['delta_y'] = move['y'] - last_y
-        move_vector = _calculate_relative_vector(move['delta_x'], move['delta_y'])
+        move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'])
         #save the move vector for later use …
         move['relative_move_vector'] = move_vector
 
