@@ -200,7 +200,6 @@ char* followers)
   writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,acceleration_value);
   writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,acceleration_value); //the datahseet says it is needed
 
-
   //so here is the theoretic trick:
   /*
   homing is just a homing the 4361
@@ -261,14 +260,6 @@ char* followers)
           Serial.print(readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
           Serial.print(F(", Velocity "));
           Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
-          Serial.print(F(", A max "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,0));
-          Serial.print(F(", D MAX "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,0));
-          Serial.print(F(", A 1 "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,0));
-          Serial.print(F(", D 1 "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0));
 #endif
           switch (motor_nr) 
           {

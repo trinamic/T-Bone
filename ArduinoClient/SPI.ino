@@ -59,7 +59,7 @@ long sendRegister(unsigned const char motor_nr, unsigned const char the_register
 
 #ifdef DEBUG_SPI
   Serial.print(F("Status :"));
-  Serial.println(status,BIN);
+  Serial.println(spi_status,BIN);
   Serial.print(F("Received "));
   Serial.println(i_datagram,HEX);
   Serial.println();
