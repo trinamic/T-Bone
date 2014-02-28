@@ -191,7 +191,7 @@ class Printer(Thread):
             raise PrinterError("you must configure one ('motor') or more 'motors' in the axis configuration")
 
         axis['scale'] = config['steps-per-mm']
-        if 'time-reference' in axis and 'time-reference' == 'clock signal':
+        if 'time-reference' in config and config['time-reference'] == 'clock signal':
             axis['clock-referenced'] = True
         else:
             axis['clock-referenced'] = False
