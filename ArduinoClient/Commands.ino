@@ -170,7 +170,7 @@ void onInvertMotor() {
        */
     } 
     else {
-      if (invertMotorTMC5041(motor-motor-nr_of_coordinated_motors,true)) {
+      if (invertMotorTMC5041(motor-nr_of_coordinated_motors,true)) {
         messenger.sendCmd(kOK,F("Motor inverted"));
       } 
       else {
@@ -185,7 +185,7 @@ void onInvertMotor() {
       messenger.sendCmd(kOK,F("Motor not inverted"));
     } 
     else {
-      if (invertMotorTMC5041(motor-motor-nr_of_coordinated_motors,false)) {
+      if (invertMotorTMC5041(motor-nr_of_coordinated_motors,false)) {
         messenger.sendCmd(kError,F("Motor inverted"));
       } 
       else {
