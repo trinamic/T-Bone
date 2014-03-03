@@ -231,14 +231,11 @@ char* followers)
       if (homed==1) {
         homing_speed = (unsigned long) homing_low_speed;
       }  
-      switch (motor_nr) 
-      {
-        case (nr_of_coordinated_motors):
+      if (motor_nr==0) {
         status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
-        break;
-      case  nr_of_coordinated_motors+1:
+      } 
+      else {
         status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
-        break;
       }
 #ifdef DEBUG_HOMING_STATUS
       if (status!=old_status) {
@@ -255,7 +252,7 @@ char* followers)
 #endif
       if ((status & _BV(4))==0){ //reference switches not hit
         if (status & (_BV(12) | _BV(10) | _BV(9))) { //not moving or at or beyond target
-          target -= 9999999l;
+          target -= 999999l;
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
           Serial.print(target);
@@ -270,37 +267,28 @@ char* followers)
           Serial.print(F(", Velocity "));
           Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
 #endif
-          switch (motor_nr) 
-          {
-            case (nr_of_coordinated_motors):
+          if (motor_nr==0) {
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
-            break;
-          case  nr_of_coordinated_motors+1:
+          } 
+          else {            
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
-            break;
           }
           for (char i = 0; i< homing_max_following_motors ;i++) {
-            switch (followers[i]) 
-            {
-              case (nr_of_coordinated_motors):
+            if (followers[i]==0) {
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
               writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
               writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
               writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
-              break;
-            case  nr_of_coordinated_motors+1:
+            } 
+            else if (followers[i]==1) {
               writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
               writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
               writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
               writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
-              break;
-            default:
-              //we do not move - this filters anything but known 5041 motors - might be handy to add other motor types
-              break;
             }
           }
         }
@@ -371,14 +359,11 @@ char* followers)
           }
         }
         delay(10ul);
-        switch (motor_nr) 
-        {
-          case (nr_of_coordinated_motors):
+        if (motor_nr==0) {
           status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
-          break;
-        case  nr_of_coordinated_motors+1:
+        } 
+        else {
           status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
-          break;
         }
         while (!(status & _BV(9))) { //are we there yet??
 #ifdef DEBUG_HOMING_STATUS
@@ -388,14 +373,11 @@ char* followers)
             old_status=status;
           }
 #endif
-          switch (motor_nr) 
-          {
-            case (nr_of_coordinated_motors):
+          if (motor_nr==0) {
             status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
-            break;
-          case  nr_of_coordinated_motors+1:
+          } 
+          else {
             status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
-            break;
           }
         }
         if (homed==0) {
@@ -460,6 +442,10 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
+
+
+
 
 
 

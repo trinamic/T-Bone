@@ -514,10 +514,13 @@ void onHome() {
       following_motors[i] = decodeMotorNumber(false);
       if (following_motors[i]==-1) {
         break;
+      } 
+      else {
+        following_motors[i] -= nr_of_coordinated_motors;
       }
     }
     error =  homeMotorTMC5041(
-    motor,timeout,
+    motor-nr_of_coordinated_motors,timeout,
     homeFastSpeed, homeSlowSpeed,homeRetract,aMax,following_motors);
   }
   if (error==NULL) {
@@ -635,6 +638,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
