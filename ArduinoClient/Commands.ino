@@ -155,20 +155,31 @@ void onInvertMotor() {
     return;
   }
   if (invert<0) {
-    messenger.sendCmd (kError,F("not funcion"));
-    return;
-    //TODO somehow the endstops are not reacting as expected at least there is a problem with retract after hitting
-    inverted_motors |= _BV(motor);
-    //invert endstops
-    unsigned long endstop_config = readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
-    endstop_config |= _BV(4);
-    readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+    if (IS_COORDINATED_MOTOR(motor)) {
+      messenger.sendCmd (kError,F("not funcion"));
+      return;
+      //TODO somehow the endstops are not reacting as expected at least there is a problem with retract after hitting
+      inverted_motors |= _BV(motor);
+      //invert endstops
+      unsigned long endstop_config = readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
+      endstop_config |= _BV(4);
+      readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
 
-    messenger.sendCmd(kOK,F("Motor inverted"));
+      messenger.sendCmd(kOK,F("Motor inverted"));
+    } 
+    else {
+      messenger.sendCmd (kError,F("not implemented yet"));
+    }
   } 
   else {
-    inverted_motors &= ~(_BV(motor));
-    messenger.sendCmd(kOK,F("Motor not inverted"));
+    if (IS_COORDINATED_MOTOR(motor)) {
+
+      inverted_motors &= ~(_BV(motor));
+      messenger.sendCmd(kOK,F("Motor not inverted"));
+    } 
+    else {
+      messenger.sendCmd (kError,F("not implemented yet"));
+    }
   }
 }
 
@@ -367,10 +378,16 @@ void onPosition() {
   if (motor<0) {
     return;
   }
-  unsigned long position = readRegister(motor,TMC4361_X_ACTUAL_REGISTER,0);
-  messenger.sendCmdStart(kPos);
-  messenger.sendCmdArg(position);
-  messenger.sendCmdEnd();
+  if (IS_COORDINATED_MOTOR(motor)) {
+
+    unsigned long position = readRegister(motor,TMC4361_X_ACTUAL_REGISTER,0);
+    messenger.sendCmdStart(kPos);
+    messenger.sendCmdArg(position);
+    messenger.sendCmdEnd();
+  } 
+  else {
+    messenger.sendCmd(kError,F("not implemented yet"));
+  }
 }
 
 void onConfigureEndStop() {
@@ -606,3 +623,5 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
