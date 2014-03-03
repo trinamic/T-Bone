@@ -18,7 +18,7 @@ void prepareTMC5041() {
 void initialzeTMC5041() {
 
   //get rid of the 'something happened after reboot' warning
-  readRegister(TMC5041_MOTORS, TMC5041_GENERAL_STATUS_REGISTER,0);
+  readRegister(TMC5041_MOTORS, TMC5041_GENERAL_STATUS_REGISTER);
   writeRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER, _BV(3)); //int/PP are outputs
   // motor #1
   writeRegister(TMC5041_MOTORS, TMC5041_RAMP_MODE_REGISTER_1,0); //enforce positioing mode
@@ -234,10 +234,10 @@ char* followers)
       switch (motor_nr) 
       {
         case (nr_of_coordinated_motors):
-        status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1,0);
+        status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
         break;
       case  nr_of_coordinated_motors+1:
-        status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
+        status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
         break;
       }
 #ifdef DEBUG_HOMING_STATUS
@@ -245,11 +245,11 @@ char* followers)
         Serial.print("Status1 ");
         Serial.println(status,HEX);
         Serial.print(F("Position "));
-        Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
+        Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
         Serial.print(F(", Targe "));
-        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1));
         Serial.print(F(", Velocity "));
-        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
         old_status=status;
       }
 #endif
@@ -266,9 +266,9 @@ char* followers)
           Serial.print(F(" phase "));
           Serial.println(homed,DEC);
           Serial.print(F("Position "));
-          Serial.print(readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
+          Serial.print(readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
           Serial.print(F(", Velocity "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
 #endif
           switch (motor_nr) 
           {
@@ -310,10 +310,10 @@ char* followers)
         switch (motor_nr) 
         {
         case nr_of_coordinated_motors:
-          actual = readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0);
+          actual = readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
           break;
         case nr_of_coordinated_motors+1:
-          actual = readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,0);
+          actual = readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
           break;
         }
         long go_back_to;
@@ -374,10 +374,10 @@ char* followers)
         switch (motor_nr) 
         {
           case (nr_of_coordinated_motors):
-          status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1,0);
+          status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
           break;
         case  nr_of_coordinated_motors+1:
-          status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
+          status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
           break;
         }
         while (!(status & _BV(9))) { //are we there yet??
@@ -391,10 +391,10 @@ char* followers)
           switch (motor_nr) 
           {
             case (nr_of_coordinated_motors):
-            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1,0);
+            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
             break;
           case  nr_of_coordinated_motors+1:
-            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2,0);
+            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
             break;
           }
         }
@@ -412,7 +412,7 @@ char* followers)
 }
 
 boolean invertMotorTMC5041(char motor_nr, boolean inverted) {
-  unsigned long general_conf= readRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER,0);
+  unsigned long general_conf= readRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER);
   unsigned long pattern; //used for deletion and setting of the bit
   if (motor_nr==0) {
     pattern = _BV(8);
@@ -429,7 +429,7 @@ boolean invertMotorTMC5041(char motor_nr, boolean inverted) {
     general_conf &= ~pattern;
   }
   writeRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER,general_conf); 
-  general_conf= readRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER,0);
+  general_conf= readRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER);
   //finally return if the bit iss set 
   return general_conf & pattern;
 }
@@ -443,10 +443,10 @@ int calculateCurrentValue(int current, boolean high_sense) {
 unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   unsigned long endstop_config;
   if (motor_nr == 0) {
-    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,0);
+    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1);
   } 
   else {
-    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,0);
+    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2);
   }
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits

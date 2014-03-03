@@ -392,7 +392,7 @@ void onPosition() {
   }
   if (IS_COORDINATED_MOTOR(motor)) {
 
-    unsigned long position = readRegister(motor,TMC4361_X_ACTUAL_REGISTER,0);
+    unsigned long position = readRegister(motor,TMC4361_X_ACTUAL_REGISTER);
     messenger.sendCmdStart(kPos);
     messenger.sendCmdArg(position);
     messenger.sendCmdEnd();

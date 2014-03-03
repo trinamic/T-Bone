@@ -120,8 +120,8 @@ unsigned long homming_jerk)
       if (homed==1) {
         homing_speed = homing_low_speed;
       }  
-      unsigned long status = readRegister(motor_nr, TMC4361_STATUS_REGISTER,0);
-      unsigned long events = readRegister(motor_nr, TMC4361_EVENTS_REGISTER,0);
+      unsigned long status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+      unsigned long events = readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
       if (!(status & (_BV(7) | _BV(9)))) { //not accelerarting
         if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) { //at target or not moving
 #ifdef DEBUG_HOMING
@@ -144,7 +144,7 @@ unsigned long homming_jerk)
       else {
         long go_back_to;
         if (homed==0) {
-          long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0));
+          long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER));
           go_back_to = actual + homing_retraction;
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
@@ -154,7 +154,7 @@ unsigned long homming_jerk)
 #endif
         } 
         else {
-          long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_LATCH_REGISTER,0));
+          long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_LATCH_REGISTER));
           go_back_to = actual;
 #ifdef DEBUG_HOMING
           Serial.println(F("homed at "));
@@ -164,9 +164,9 @@ unsigned long homming_jerk)
         writeRegister(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_fast_speed));
         writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, X_TARGET_IN_DIRECTION(motor_nr,go_back_to));
         delay(10ul);
-        status = readRegister(motor_nr, TMC4361_STATUS_REGISTER,0);
+        status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
         while (!(status & _BV(0))) {
-          status = readRegister(motor_nr, TMC4361_STATUS_REGISTER,0);
+          status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
         }
         if (homed==0) {
           homed = 1;
@@ -182,7 +182,7 @@ unsigned long homming_jerk)
 }
 
 inline long getMotorPositionTMC4361(unsigned char motor_nr) {
-  return readRegister(motor_nr, TMC4361_X_TARGET_REGISTER ,0);
+  return readRegister(motor_nr, TMC4361_X_TARGET_REGISTER);
   //TODO do we have to take into account that the motor may never have reached the x_target??
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
@@ -264,10 +264,10 @@ inline void signal_start() {
   //prepare the pos compr registers
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     //clear the event register
-    readRegister(i, TMC4361_EVENTS_REGISTER,0);
+    readRegister(i, TMC4361_EVENTS_REGISTER);
     writeRegister(i, TMC4361_POS_COMP_REGISTER,next_pos_comp[i]);
     if (target_motor_status & _BV(i)) {
-      unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER,0);
+      unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
       if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
         || (direction[i]==-1 && motor_pos<=next_pos_comp[i])) {
         motor_target_reached(i);
@@ -365,7 +365,7 @@ const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr
 }
 
 inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, boolean left) {
-  unsigned long endstop_config = readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
+  unsigned long endstop_config = readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER);
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
   if (left) {
