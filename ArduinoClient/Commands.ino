@@ -158,17 +158,24 @@ void onInvertMotor() {
     if (IS_COORDINATED_MOTOR(motor)) {
       messenger.sendCmd (kError,F("not funcion"));
       return;
+      /*
       //TODO somehow the endstops are not reacting as expected at least there is a problem with retract after hitting
-      inverted_motors |= _BV(motor);
-      //invert endstops
-      unsigned long endstop_config = readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
-      endstop_config |= _BV(4);
-      readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
-
-      messenger.sendCmd(kOK,F("Motor inverted"));
+       inverted_motors |= _BV(motor);
+       //invert endstops
+       unsigned long endstop_config = readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, 0);
+       endstop_config |= _BV(4);
+       readRegister(motor, TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+       
+       messenger.sendCmd(kOK,F("Motor inverted"));
+       */
     } 
     else {
-      messenger.sendCmd (kError,F("not implemented yet"));
+      if (invertMotorTMC5041(motor-motor-nr_of_coordinated_motors,true)) {
+        messenger.sendCmd(kOK,F("Motor inverted"));
+      } 
+      else {
+        messenger.sendCmd (kError,F("Motor not inverted"));
+      }
     }
   } 
   else {
@@ -178,7 +185,12 @@ void onInvertMotor() {
       messenger.sendCmd(kOK,F("Motor not inverted"));
     } 
     else {
-      messenger.sendCmd (kError,F("not implemented yet"));
+      if (invertMotorTMC5041(motor-motor-nr_of_coordinated_motors,false)) {
+        messenger.sendCmd(kError,F("Motor inverted"));
+      } 
+      else {
+        messenger.sendCmd (kOK,F("Motor not inverted"));
+      }
     }
   }
 }
@@ -623,5 +635,6 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 

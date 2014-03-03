@@ -411,6 +411,29 @@ char* followers)
   return NULL;
 }
 
+boolean invertMotorTMC5041(char motor_nr, boolean inverted) {
+  unsigned long general_conf= readRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER,0);
+  unsigned long pattern; //used for deletion and setting of the bit
+  if (motor_nr==0) {
+    pattern = _BV(8);
+  } 
+  else {
+    pattern = _BV(9);
+  }
+  if (inverted) {
+    //set the bit
+    general_conf|= pattern;
+  } 
+  else {
+    //clear the bit
+    general_conf &= ~pattern;
+  }
+  writeRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER,general_conf); 
+  general_conf= readRegister(TMC5041_MOTORS, TMC5041_GENERAL_CONFIG_REGISTER,0);
+  //finally return if the bit iss set 
+  return general_conf & pattern;
+}
+
 int calculateCurrentValue(int current, boolean high_sense) {
   float real_current = (float)current/1000.0;
   int high_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5041_R_SENSE/(high_sense?V_HIGH_SENSE:V_LOW_SENSE))-1;
@@ -437,6 +460,8 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
+
 
 
 
