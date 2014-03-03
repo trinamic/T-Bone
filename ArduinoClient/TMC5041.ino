@@ -221,7 +221,7 @@ char* followers)
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
 #ifdef DEBUG_HOMING_STATUS
-    unsigned long old_status = -1;
+  unsigned long old_status = -1;
 #endif
 
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
@@ -244,17 +244,17 @@ char* followers)
       if (status!=old_status) {
         Serial.print("Status1 ");
         Serial.println(status,HEX);
-          Serial.print(F("Position "));
-          Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
-          Serial.print(F(", Targe "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0));
-          Serial.print(F(", Velocity "));
-          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
+        Serial.print(F("Position "));
+        Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0));
+        Serial.print(F(", Targe "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0));
+        Serial.print(F(", Velocity "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1,0));
         old_status=status;
       }
 #endif
-      if (status & (_BV(10) | _BV(9))) { //not moving or at target
-        if ((status & _BV(4))==0){ //reference switches not hit
+      if ((status & _BV(4))==0){ //reference switches not hit
+        if (status & (_BV(12) | _BV(10) | _BV(9))) { //not moving or at or beyond target
           target -= 9999999l;
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
@@ -437,6 +437,7 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
 
 
 
