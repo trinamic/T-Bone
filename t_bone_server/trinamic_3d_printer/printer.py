@@ -270,15 +270,20 @@ class Printer(Thread):
             for motor in axis['motors']:
                 self.machine.set_current(motor, current)
 
-        if "inverted" in config and config["inverted"]:
-            axis['inverted'] = True
-        else:
-            axis['inverted'] = False
-        if axis["motor"]:
+        #let's see if there are any inverted motors
+        if 'motor' in config:
+            if "inverted" in config and config["inverted"]:
+                axis['inverted'] = True
+            else:
+                axis['inverted'] = False
             self.machine.invert_motor(axis["motor"], axis['inverted'])
         else:
-            for motor in axis['motors']:
-                self.machine.invert_motor(motor, axis['inverted'])
+            #todo this is ok - but no perfect structure
+            if "inverted" in config:
+                axis['inverted'] = config["inverted"]
+                for motor in axis['motors']:
+                    if str(motor) in config['inverted'] and config['inverted'][str(motor)]:
+                        self.machine.invert_motor(motor, True)
 
 
     def _add_movement_calculations(self, movement):
