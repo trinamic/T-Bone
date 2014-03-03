@@ -52,7 +52,7 @@
         "time-reference":"clock signal",
         "end-stops": {
             "left": {
-                "polarity": "positive",
+                "polarity": "negative",
                 "motor": 4
             },
             "right": {
