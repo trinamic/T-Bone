@@ -390,16 +390,21 @@ void onPosition() {
   if (motor<0) {
     return;
   }
+  long position;
   if (IS_COORDINATED_MOTOR(motor)) {
 
-    unsigned long position = readRegister(motor,TMC4361_X_ACTUAL_REGISTER);
+    position = (long)readRegister(motor,TMC4361_X_ACTUAL_REGISTER);
+  } 
+  else {
+    if (motor == nr_of_coordinated_motors) {
+       position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+    } else {
+       position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+    }
+  }
     messenger.sendCmdStart(kPos);
     messenger.sendCmdArg(position);
     messenger.sendCmdEnd();
-  } 
-  else {
-    messenger.sendCmd(kError,F("not implemented yet"));
-  }
 }
 
 void onConfigureEndStop() {
