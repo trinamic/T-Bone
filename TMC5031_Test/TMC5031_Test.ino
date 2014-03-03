@@ -149,9 +149,6 @@ void setup()
   // --------------------------------------------------------------
   // ---------------------TMC5041---ANFANG-------------------------
   // --------------------------------------------------------------
-  writeRegister(CS_5041_PIN, TMC5031_CHOPPER_CONFIGURATION_REGISTER_1,chopper_config);
-  //configure reference switches
-  writeRegister(CS_5041_PIN, TMC5031_REFERENCE_SWITCH_CONFIG_REGISTER_1, 0x0);
   //Set the basic config parameters 
   writeRegister(CS_5041_PIN, TMC5031_A_MAX_REGISTER_1,acceleration);
   writeRegister(CS_5041_PIN, TMC5031_D_MAX_REGISTER_1,acceleration);
