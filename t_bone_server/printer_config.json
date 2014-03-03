@@ -46,7 +46,7 @@
     "z-axis": {
         "motors": [4, 5],
         "current": 0.2,
-        "steps-per-mm": 5074.590,
+        "steps-per-mm": 40596.72,
         "max-speed": 3,
         "max-acceleration": 1,
         "time-reference":"clock signal",
@@ -60,7 +60,7 @@
                 "position": 20.2
             }
         },
-        "home-speed": 3,
+        "home-speed": 5,
         "home-acceleration": 1,
         "home-precision-speed": 0.1
     },
