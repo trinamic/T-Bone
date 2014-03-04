@@ -67,8 +67,7 @@
         },
         "home-speed": 5,
         "home-acceleration": 1,
-        "home-precision-speed": 0.1,
-        "home-retract": 10
+        "home-precision-speed": 0.5
     },
     "printer": {
         "print-queue": {
