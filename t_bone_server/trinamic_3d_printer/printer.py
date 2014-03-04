@@ -151,9 +151,6 @@ class Printer(Thread):
                 if self.axis[home_axis]['bow_step']:
                     homing_config['bow'] = self.axis[home_axis]['bow_step']
 
-                #and do the homing
-                self.machine.home(homing_config, timeout=self._homing_timeout)
-
             #and do the homing
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'

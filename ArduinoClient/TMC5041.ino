@@ -294,15 +294,15 @@ char* followers)
         }
       } 
       else if(status & _BV(4)){ //reference switches hit
-        long actual;
-        if (motor_nr==0) {
-          actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
-        } 
-        else {          
-          actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
-        }
         long go_back_to;
         if (homed==0) {
+          long actual;
+          if (motor_nr==0) {
+            actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+          } 
+          else {          
+            actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+          }
           go_back_to = actual + homing_retraction;
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
@@ -312,10 +312,24 @@ char* followers)
 #endif
         } 
         else {
-          go_back_to = actual;
+          if (motor_nr==0) {
+            go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_LATCH_REGISTER_1);
+          } 
+          else {          
+            go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_LATCH_REGISTER_2);
+          }
+          if (go_back_to==0) {
+            //&we need some kiond of backu if there is something wrong with x_latch 
+            if (motor_nr==0) {
+              go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+            } 
+            else {          
+              go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+            }
+          }
 #ifdef DEBUG_HOMING
           Serial.println(F("homed at "));
-          Serial.println(actual);
+          Serial.println(go_back_to);
 #endif
         }
         if (motor_nr==0) {
@@ -323,20 +337,22 @@ char* followers)
           writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
           writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
-        } else {
+        } 
+        else {
           writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
           writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
           writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
           writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
         }        
         for (char i = 0; i< homing_max_following_motors ;i++) {
-        if (followers[i]==0) {
+          if (followers[i]==0) {
             writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
             writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
             writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
-        } else if (followers[i]==1) {
-          writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+          } 
+          else if (followers[i]==1) {
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
             writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
             writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
             writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
@@ -350,13 +366,6 @@ char* followers)
           status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
         }
         while (!(status & _BV(9))) { //are we there yet??
-#ifdef DEBUG_HOMING_STATUS
-          if (status!=old_status) {
-            Serial.print("Status2 ");
-            Serial.println(status,HEX);
-            old_status=status;
-          }
-#endif
           if (motor_nr==0) {
             status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
           } 
@@ -368,7 +377,24 @@ char* followers)
           homed = 1;
         } 
         else {
-          writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
+          if (motor_nr==0) {
+            writeRegister(motor_nr, TMC5041_X_ACTUAL_REGISTER_1,0);
+            writeRegister(motor_nr, TMC5041_X_TARGET_REGISTER_1,0);
+          } 
+          else {
+            writeRegister(motor_nr, TMC5041_X_ACTUAL_REGISTER_1,0);
+            writeRegister(motor_nr, TMC5041_X_TARGET_REGISTER_1,0);
+          }        
+          for (char i = 0; i< homing_max_following_motors ;i++) {
+            if (followers[i]==0) {
+              writeRegister(motor_nr, TMC5041_X_ACTUAL_REGISTER_1,0);
+              writeRegister(motor_nr, TMC5041_X_TARGET_REGISTER_1,0);
+            } 
+            else if (followers[i]==1) {
+              writeRegister(motor_nr, TMC5041_X_ACTUAL_REGISTER_1,0);
+              writeRegister(motor_nr, TMC5041_X_TARGET_REGISTER_1,0);
+            }
+          }
           homed=0xff;
         }     
       } 
@@ -426,6 +452,13 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   endstop_config &= clearing_pattern;
   return endstop_config;
 }
+
+
+
+
+
+
+
 
 
 
