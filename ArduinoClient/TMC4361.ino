@@ -157,7 +157,7 @@ unsigned long homming_jerk)
           long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_LATCH_REGISTER));
           go_back_to = actual;
 #ifdef DEBUG_HOMING
-          Serial.println(F("homed at "));
+          Serial.print(F("homed at "));
           Serial.println(actual);
 #endif
         }

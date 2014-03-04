@@ -328,7 +328,7 @@ char* followers)
             }
           }
 #ifdef DEBUG_HOMING
-          Serial.println(F("homed at "));
+          Serial.print(F("homed at "));
           Serial.println(go_back_to);
 #endif
         }
