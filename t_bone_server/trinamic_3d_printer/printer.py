@@ -170,8 +170,8 @@ class Printer(Thread):
                 #get the next movement from stack
                 movement = self._print_queue.next_movement(self._print_queue_wait_time)
                 step_pos, step_speed_vector = self._add_movement_calculations(movement)
-                x_move_config, y_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
-                self._move(movement, step_pos, x_move_config, y_move_config)
+                x_move_config, y_move_config, z_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
+                self._move(movement, step_pos, x_move_config, y_move_config, z_move_config)
             except Empty:
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
 
@@ -286,16 +286,19 @@ class Printer(Thread):
     def _add_movement_calculations(self, movement):
         step_pos = {
             'x': convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
-            'y': convert_mm_to_steps(movement['y'], self.axis['y']['scale'])
+            'y': convert_mm_to_steps(movement['y'], self.axis['y']['scale']),
+            'z': convert_mm_to_steps(movement['z'], self.axis['z']['scale'])
         }
         step_speed_vector = {
             #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
             'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
-            'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
+            'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale']),
+            'z': convert_mm_to_steps(movement['z'], self.axis['z']['scale'])
         }
         return step_pos, step_speed_vector
 
     def _generate_move_config(self, movement, step_pos, step_speed_vector):
+        #todo can't we null movements if there is no delta??
         def _axis_movement_template(axis):
             return {
                 'motor': axis['motor'],
@@ -318,28 +321,42 @@ class Printer(Thread):
             y_move_config['type'] = 'stop'
         else:
             y_move_config['type'] = 'way'
+        z_move_config = [
+            {
+                'motor': self.axis['z']['motors']['0'],
+                'acceleration': self.axis['z']['max_step_acceleration'],
+                'speed': abs(step_speed_vector['z'])
+            },
+            {
+                'motor': self.axis['z']['motors']['0'],
+                'acceleration': self.axis['z']['max_step_acceleration'],
+                'speed': abs(step_speed_vector['y'])
+            }
+        ]
 
-        return x_move_config, y_move_config
+        return x_move_config, y_move_config, z_move_config
 
-    def _move(self, movement, step_pos, x_move_config, y_move_config):
+    def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config):
         delta_x = movement['delta_x']
         delta_y = movement['delta_y']
+        delta_z = movement['delta_z']
         move_vector = movement['relative_move_vector']
+        move_commands = []
         if delta_x and not delta_y:  #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to %s", step_pos['x'])
 
-            self.machine.move_to([
+            move_commands = [
                 x_move_config
-            ])
+            ]
 
         elif delta_y and not delta_x:  # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to %s", step_pos['y'])
 
-            self.machine.move_to([
+            move_commands = [
                 y_move_config
-            ])
+            ]
         elif delta_x and delta_y:
             #ok we have to see which axis has bigger movement
             if abs(delta_x) > abs(delta_y):
@@ -363,10 +380,13 @@ class Printer(Thread):
                 x_move_config['startBow'] = y_move_config['startBow'] * x_factor
 
             #move
-            self.machine.move_to([
+            move_commands = [
                 x_move_config,
                 y_move_config
-            ])
+            ]
+        if delta_z:
+            move_commands.append(z_move_config)
+        self.machine.move_to(move_commands)
 
 
 class PrintQueue():
