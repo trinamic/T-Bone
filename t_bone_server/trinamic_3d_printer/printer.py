@@ -170,7 +170,8 @@ class Printer(Thread):
                 #get the next movement from stack
                 movement = self._print_queue.next_movement(self._print_queue_wait_time)
                 step_pos, step_speed_vector = self._add_movement_calculations(movement)
-                x_move_config, y_move_config, z_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
+                x_move_config, y_move_config, z_move_config = self._generate_move_config(movement, step_pos,
+                                                                                         step_speed_vector)
                 self._move(movement, step_pos, x_move_config, y_move_config, z_move_config)
             except Empty:
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
@@ -323,12 +324,12 @@ class Printer(Thread):
             y_move_config['type'] = 'way'
         z_move_config = [
             {
-                'motor': self.axis['z']['motors']['0'],
+                'motor': self.axis['z']['motors'][0],
                 'acceleration': self.axis['z']['max_step_acceleration'],
                 'speed': abs(step_speed_vector['z'])
             },
             {
-                'motor': self.axis['z']['motors']['0'],
+                'motor': self.axis['z']['motors'][1],
                 'acceleration': self.axis['z']['max_step_acceleration'],
                 'speed': abs(step_speed_vector['y'])
             }
@@ -385,7 +386,7 @@ class Printer(Thread):
                 y_move_config
             ]
         if delta_z:
-            move_commands.append(z_move_config)
+            move_commands.extend(z_move_config)
         self.machine.move_to(move_commands)
 
 
