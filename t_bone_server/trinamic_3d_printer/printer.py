@@ -325,11 +325,13 @@ class Printer(Thread):
         z_move_config = [
             {
                 'motor': self.axis['z']['motors'][0],
+                'target':step_pos['z'],
                 'acceleration': self.axis['z']['max_step_acceleration'],
                 'speed': abs(step_speed_vector['z'])
             },
             {
                 'motor': self.axis['z']['motors'][1],
+                'target':step_pos['z'],
                 'acceleration': self.axis['z']['max_step_acceleration'],
                 'speed': abs(step_speed_vector['y'])
             }
