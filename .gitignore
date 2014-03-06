@@ -9,3 +9,7 @@
 
 #the bootstrap distfile
 bootstrap-3.0.3/dist
+
+#on the other hand the designs are getting out of hand …
+reference\ designs/*.gcode
+reference\ designs/*.stl
