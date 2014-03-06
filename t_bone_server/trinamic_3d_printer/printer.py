@@ -328,14 +328,16 @@ class Printer(Thread):
                 'target':step_pos['z'],
                 'acceleration': self.axis['z']['max_step_acceleration'],
                 'speed': abs(step_speed_vector['z']),
-                'type':'stop'
+                'type':'stop',
+                'startBow':0
             },
             {
                 'motor': self.axis['z']['motors'][1],
                 'target':step_pos['z'],
                 'acceleration': self.axis['z']['max_step_acceleration'],
                 'speed': abs(step_speed_vector['y']),
-                'type':'stop'
+                'type':'stop',
+                'startBow':0
             }
         ]
 
