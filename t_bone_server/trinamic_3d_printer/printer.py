@@ -169,9 +169,9 @@ class Printer(Thread):
             try:
                 #get the next movement from stack
                 movement = self._print_queue.next_movement(self._print_queue_wait_time)
-                delta_x, delta_y, move_vector, step_pos, step_speed_vector = self._add_movement_calculations(movement)
+                step_pos, step_speed_vector = self._add_movement_calculations(movement)
                 x_move_config, y_move_config = self._generate_move_config(movement, step_pos, step_speed_vector)
-                self._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+                self._move(movement, step_pos, x_move_config, y_move_config)
             except Empty:
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
 
@@ -293,10 +293,7 @@ class Printer(Thread):
             'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
             'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale'])
         }
-        delta_x = movement['delta_x']
-        delta_y = movement['delta_y']
-        move_vector = movement['relative_move_vector']
-        return delta_x, delta_y, move_vector, step_pos, step_speed_vector
+        return step_pos, step_speed_vector
 
     def _generate_move_config(self, movement, step_pos, step_speed_vector):
         def _axis_movement_template(axis):
@@ -324,7 +321,10 @@ class Printer(Thread):
 
         return x_move_config, y_move_config
 
-    def _move(self, delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config):
+    def _move(self, movement, step_pos, x_move_config, y_move_config):
+        delta_x = movement['delta_x']
+        delta_y = movement['delta_y']
+        move_vector = movement['relative_move_vector']
         if delta_x and not delta_y:  #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to %s", step_pos['x'])
