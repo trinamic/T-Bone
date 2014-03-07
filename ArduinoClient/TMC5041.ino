@@ -161,6 +161,11 @@ unsigned char calculateCurrentValue(int current) {
   return low_sense_current | 0x80;
 }
 
+void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean prepare_shaddow_registers, boolean isWayPoint) {
+  //TODO implement me
+}
+
+
 const __FlashStringHelper* homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
 double homming_accel,
