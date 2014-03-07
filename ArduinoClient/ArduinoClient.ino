@@ -80,10 +80,10 @@ TMC4361_info motors[nr_of_coordinated_motors] = {
 };
 
 
-#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_coordinated_motors)
+#define DEFAULT_COMMAND_BUFFER_DEPTH (nr_of_motors)
 
 //how many otors can be theoretically geared together
-#define MAX_FOLLOWING_MOTORS (nr_of_coordinated_motors-1)
+#define MAX_FOLLOWING_MOTORS (nr_of_motors-1)
 
 
 motion_state current_motion_state = no_motion;
