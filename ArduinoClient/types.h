@@ -33,6 +33,12 @@ struct TMC4361_info{
   int steps_per_revolution;
 };
 
+struct TMC5041_motion_info {
+  long target;
+  double vMax;
+  double aMax;
+};
+
 enum endstop_position {
   left=1,
   right=2,

@@ -6,6 +6,8 @@ const unsigned long default_chopper_config = 0
 | 5 //t OFF
 ;
 
+TMC5041_motion_info tmc5031_next_movement[2];
+
 void prepareTMC5041() {
   //configure the cs pin
   pinMode(CS_5041_PIN, OUTPUT);
@@ -164,8 +166,39 @@ unsigned char calculateCurrentValue(int current) {
   return low_sense_current | 0x80;
 }
 
-void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean prepare_shaddow_registers, boolean isWayPoint) {
-  //TODO implement me
+void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean prepare_next_movement, boolean isWayPoint) {
+  if (prepare_next_movement) {
+    tmc5031_next_movement[motor].target = target;
+    tmc5031_next_movement[motor].vMax = vMax;
+    tmc5031_next_movement[motor].aMax = aMax;
+  } 
+  else {
+    if (motor==0) {
+      writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,aMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,aMax);
+      //TODO this is static for the motion??!
+      writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,0);
+      writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0); //the datahseet says it is needed
+      writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_1, 0);
+      writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
+      writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
+      //end of todo
+      writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, vMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
+    } else {
+      writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,aMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,aMax);
+      //TODO this is static for the motion??!
+      writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,0);
+      writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,0); //the datahseet says it is needed
+      writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_2, 0);
+      writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
+      writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
+      //end of todo
+      writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, vMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
+    }
+  }
 }
 
 
@@ -455,61 +488,6 @@ ISR(PCINT0_vect)
 {
   motor_target_reached(nr_of_coordinated_motors);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
