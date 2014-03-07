@@ -214,7 +214,7 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
     Serial.print(" to");
   }
   Serial.print(F(": pos="));
-  Serial.print(pos);
+  Serial.print(target_pos);
   Serial.print(F(" ["));
   Serial.print(last_target[motor_nr]);
   Serial.print(F(" -> "));
