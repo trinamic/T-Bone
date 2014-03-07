@@ -59,6 +59,7 @@ void checkMotion() {
 #endif
       motor_status=0;
       target_motor_status = next_target_motor_status;
+      tmc5041_prepare_next_motion();
       signal_start();
       next_move_prepared=false;
     }
@@ -114,11 +115,11 @@ void checkMotion() {
         //TODO this move_over looks really suspicious!
         if (move.motor<nr_of_coordinated_motors) {
           moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
-        moving_motors |= _BV(move.motor);
+          moving_motors |= _BV(move.motor);
         } 
         else {
           moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
-        moving_motors |= _BV(nr_of_coordinated_motors);
+          moving_motors |= _BV(nr_of_coordinated_motors);
         }          
 
         movement follower;
@@ -136,11 +137,11 @@ void checkMotion() {
 #endif
               if (move.motor<nr_of_coordinated_motors) {
                 moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
-              moving_motors |= _BV(follower.motor);
+                moving_motors |= _BV(follower.motor);
               } 
               else {
                 moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
-              moving_motors |= _BV(nr_of_coordinated_motors);
+                moving_motors |= _BV(nr_of_coordinated_motors);
               }          
             }
           }
@@ -218,6 +219,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 

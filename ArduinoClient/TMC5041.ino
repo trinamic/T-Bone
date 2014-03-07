@@ -202,6 +202,24 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
   }
 }
 
+void tmc5041_prepare_next_motion() {
+    if (tmc5031_next_movement[0].vMax!=0) {
+      writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,tmc5031_next_movement[0].aMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,tmc5031_next_movement[0].aMax);
+
+      writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, tmc5031_next_movement[0].vMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,tmc5031_next_movement[0].target);
+      tmc5031_next_movement[0].vMax=0;
+    }
+    if (tmc5031_next_movement[1].vMax!=0) {
+      writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,tmc5031_next_movement[1].aMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,tmc5031_next_movement[1].aMax);
+
+      writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, tmc5031_next_movement[1].vMax);
+      writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,tmc5031_next_movement[1].target);
+      tmc5031_next_movement[1].vMax=0;
+    }
+}
 
 const __FlashStringHelper* homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
