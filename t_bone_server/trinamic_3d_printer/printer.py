@@ -307,49 +307,57 @@ class Printer(Thread):
                 'startBow': axis['bow_step'],
             }
 
-        x_move_config = _axis_movement_template(self.axis['x'])
-        x_move_config['target'] = step_pos['x']
-        x_move_config['speed'] = abs(step_speed_vector['x'])
-        if 'x_stop' in movement:
-            x_move_config['type'] = 'stop'
+        if movement['delta_x']:
+            x_move_config = _axis_movement_template(self.axis['x'])
+            x_move_config['target'] = step_pos['x']
+            x_move_config['speed'] = abs(step_speed_vector['x'])
+            if 'x_stop' in movement:
+                x_move_config['type'] = 'stop'
+            else:
+                x_move_config['type'] = 'way'
         else:
-            x_move_config['type'] = 'way'
+            x_move_config = None
 
-        y_move_config = _axis_movement_template(self.axis['y'])
-        y_move_config['target'] = step_pos['y']
-        y_move_config['speed'] = abs(step_speed_vector['y'])
-        if 'y_stop' in movement:
-            y_move_config['type'] = 'stop'
+        if movement['delta_y']:
+            y_move_config = _axis_movement_template(self.axis['y'])
+            y_move_config['target'] = step_pos['y']
+            y_move_config['speed'] = abs(step_speed_vector['y'])
+            if 'y_stop' in movement:
+                y_move_config['type'] = 'stop'
+            else:
+                y_move_config['type'] = 'way'
         else:
-            y_move_config['type'] = 'way'
-        z_move_config = [
-            {
-                'motor': self.axis['z']['motors'][0],
-                'target':step_pos['z'],
-                'acceleration': self.axis['z']['max_step_acceleration'],
-                'speed': abs(step_speed_vector['z']),
-                'type':'stop',
-                'startBow':0
-            },
-            {
-                'motor': self.axis['z']['motors'][1],
-                'target':step_pos['z'],
-                'acceleration': self.axis['z']['max_step_acceleration'],
-                'speed': abs(step_speed_vector['y']),
-                'type':'stop',
-                'startBow':0
-            }
-        ]
+            y_move_config = None
+
+
+        if movement['delta_y']:
+            z_move_config = [
+                {
+                    'motor': self.axis['z']['motors'][0],
+                    'target':step_pos['z'],
+                    'acceleration': self.axis['z']['max_step_acceleration'],
+                    'speed': abs(step_speed_vector['z']),
+                    'type':'stop',
+                    'startBow':0
+                },
+                {
+                    'motor': self.axis['z']['motors'][1],
+                    'target':step_pos['z'],
+                    'acceleration': self.axis['z']['max_step_acceleration'],
+                    'speed': abs(step_speed_vector['y']),
+                    'type':'stop',
+                    'startBow':0
+                }
+            ]
+        else:
+            z_move_config = None
 
         return x_move_config, y_move_config, z_move_config
 
     def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config):
-        delta_x = movement['delta_x']
-        delta_y = movement['delta_y']
-        delta_z = movement['delta_z']
         move_vector = movement['relative_move_vector']
         move_commands = []
-        if delta_x and not delta_y:  #silly, but simpler to understand
+        if x_move_config and not y_move_config:  #silly, but simpler to understand
             #move x motor
             _logger.debug("Moving X axis to %s", step_pos['x'])
 
@@ -357,16 +365,16 @@ class Printer(Thread):
                 x_move_config
             ]
 
-        elif delta_y and not delta_x:  # still silly, but stil easier to understand
+        elif y_move_config and not x_move_config:  # still silly, but stil easier to understand
             #move y motor to position
             _logger.debug("Moving Y axis to %s", step_pos['y'])
 
             move_commands = [
                 y_move_config
             ]
-        elif delta_x and delta_y:
+        elif x_move_config and y_move_config:
             #ok we have to see which axis has bigger movement
-            if abs(delta_x) > abs(delta_y):
+            if abs(movement['delta_x']) > abs(movement['delta_y']):
                 y_factor = abs(move_vector['y'] / move_vector['x'] * self._y_step_conversion)
                 _logger.debug(
                     "Moving X axis to %s gearing Y by %s to %s"
@@ -391,9 +399,12 @@ class Printer(Thread):
                 x_move_config,
                 y_move_config
             ]
-        if delta_z:
+        if z_move_config:
             move_commands.extend(z_move_config)
-        self.machine.move_to(move_commands)
+
+        if move_commands:
+            #we move only if ther eis something to move …
+            self.machine.move_to(move_commands)
 
 
 class PrintQueue():
