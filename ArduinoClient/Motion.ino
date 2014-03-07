@@ -114,11 +114,12 @@ void checkMotion() {
         //TODO this move_over looks really suspicious!
         if (move.motor<nr_of_coordinated_motors) {
           moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
+        moving_motors |= _BV(move.motor);
         } 
         else {
           moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
+        moving_motors |= _BV(nr_of_coordinated_motors);
         }          
-        moving_motors |= _BV(move.motor);
 
         movement follower;
         do {
@@ -135,11 +136,12 @@ void checkMotion() {
 #endif
               if (move.motor<nr_of_coordinated_motors) {
                 moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
+              moving_motors |= _BV(follower.motor);
               } 
               else {
                 moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
+              moving_motors |= _BV(nr_of_coordinated_motors);
               }          
-              moving_motors |= _BV(follower.motor);
             }
           }
         } 

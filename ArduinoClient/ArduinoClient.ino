@@ -1,3 +1,4 @@
+#include <avr/interrupt.h>
 #include <digitalIOPerformance.h>
 #include <SPI.h>
 #include <QueueArray.h>

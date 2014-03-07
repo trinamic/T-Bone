@@ -13,6 +13,9 @@ void prepareTMC5041() {
   // configure the interrupt pin
   pinMode(INT_5041_PIN, INPUT);
   digitalWrite(INT_5041_PIN, LOW);
+  //enabl the pin change interrupts
+  PCICR |= _BV(0); //PCIE0 - there are no others 
+  PCMSK0 = _BV(4); //we want jsut to lsiten to the INT 5031
 }
 
 void initialzeTMC5041() {
@@ -448,7 +451,10 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 }
 
-
+ISR(PCINT0_vect)
+{
+  motor_target_reached(nr_of_coordinated_motors);
+}
 
 
 
