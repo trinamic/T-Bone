@@ -575,19 +575,22 @@ class PrintQueue():
 
 
     def _recalculate_move_speeds(self, move):
+        x_bow_ = self.axis['x']['bow']
+        y_bow_ = self.axis['y']['bow']
+
         max_speed = move['speed']
         for movement in reversed(self.planning_list):
             #todo in theory we can stop somewhere …
             delta_x = movement['delta_x']
             if sign(delta_x) == sign(max_speed['x']):
-                max_speed_x = get_target_velocity(max_speed['x'], delta_x, self.axis['x']['bow'])
+                max_speed_x = get_target_velocity(max_speed['x'], delta_x, x_bow_)
             else:
-                max_speed_x = get_target_velocity(0, delta_x, self.axis['x']['bow'])
+                max_speed_x = get_target_velocity(0, delta_x, x_bow_)
             delta_y = movement['delta_y']
             if sign(delta_y) == sign(max_speed['y']):
-                max_speed_y = get_target_velocity(max_speed['y'], delta_y, self.axis['y']['bow'])
+                max_speed_y = get_target_velocity(max_speed['y'], delta_y, y_bow_)
             else:
-                max_speed_y = get_target_velocity(0, delta_y, self.axis['y']['bow'])
+                max_speed_y = get_target_velocity(0, delta_y, y_bow_)
             speed_vectors = [
                 movement['speed']
             ]
