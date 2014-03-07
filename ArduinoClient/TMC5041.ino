@@ -44,6 +44,18 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, 0x0);
   writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2, 0x0);
 
+  //thos values are static and will anyway reside in the tmc5041 settings
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_1, 0);
+  writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
+  writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,0);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,0); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_2, 0);
+  writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
+  writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
+
 }
 
 const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
@@ -176,25 +188,14 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
     if (motor==0) {
       writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,aMax);
       writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,aMax);
-      //TODO this is static for the motion??!
-      writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,0);
-      writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0); //the datahseet says it is needed
-      writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_1, 0);
-      writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
-      writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
-      //end of todo
+
       writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, vMax);
       writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
-    } else {
+    } 
+    else {
       writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,aMax);
       writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,aMax);
-      //TODO this is static for the motion??!
-      writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,0);
-      writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,0); //the datahseet says it is needed
-      writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_2, 0);
-      writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
-      writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
-      //end of todo
+
       writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, vMax);
       writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
     }
@@ -488,6 +489,7 @@ ISR(PCINT0_vect)
 {
   motor_target_reached(nr_of_coordinated_motors);
 }
+
 
 
 
