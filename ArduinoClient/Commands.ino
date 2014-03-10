@@ -224,12 +224,8 @@ void onMove() {
   Serial.print(move.vMax);
   Serial.print(F(", aMax="));
   Serial.print(move.aMax);
-  Serial.print(F(", dMax="));
-  Serial.print(move.dMax);
-  Serial.print(F(": startBow="));
-  Serial.print(move.startBow);
-  Serial.print(F(", endBow="));
-  Serial.print(move.endBow);
+  Serial.print(F(": jerk="));
+  Serial.print(move.jerk);
 #endif    
 #endif
 
@@ -257,10 +253,8 @@ void onMove() {
       Serial.print(followers[following_motors].vMax);
       Serial.print(F(", aMax="));
       Serial.print(followers[following_motors].aMax);
-      Serial.print(F(", dMax="));
-      Serial.print(followers[following_motors].dMax);
-      Serial.print(F(": startBow="));
-      Serial.print(followers[following_motors].startBow);
+      Serial.print(F(": jerk="));
+      Serial.print(followers[following_motors].jerk);
       Serial.print(F(", endBow="));
       Serial.print(followers[following_motors].endBow);
 #endif    
