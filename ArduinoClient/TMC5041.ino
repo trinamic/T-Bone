@@ -186,6 +186,13 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
   } 
   else {
     if (motor==0) {
+#ifdef DEBUG_MOTION
+      Serial.print(F("5041 #1 is going to"));
+      Serial.print(target,DEC);
+      Serial.print(F(" @ "));
+      Serial.print(vMax,DEC);
+#endif
+
       writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,aMax);
       writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,aMax);
 
@@ -193,6 +200,12 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
       writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
     } 
     else {
+#ifdef DEBUG_MOTION
+      Serial.print(F("5041 #2 is going to"));
+      Serial.print(target,DEC);
+      Serial.print(F(" @ "));
+      Serial.print(vMax,DEC);
+#endif
       writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,aMax);
       writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,aMax);
 
@@ -208,7 +221,7 @@ void tmc5041_prepare_next_motion() {
     Serial.print(F("5041 #1 is going to"));
     Serial.print(tmc5031_next_movement[0].target,DEC);
     Serial.print(F(" @ "));
-    Serial.print(tmc5031_next_movement[0].vMax,DEC);
+    Serial.println(tmc5031_next_movement[0].vMax,DEC);
 #endif
     writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,tmc5031_next_movement[0].aMax);
     writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,tmc5031_next_movement[0].aMax);
@@ -222,7 +235,7 @@ void tmc5041_prepare_next_motion() {
     Serial.print(F("5041 #2 is going to"));
     Serial.print(tmc5031_next_movement[1].target,DEC);
     Serial.print(F(" @ "));
-    Serial.print(tmc5031_next_movement[1].vMax,DEC);
+    Serial.println(tmc5031_next_movement[1].vMax,DEC);
 #endif
     writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,tmc5031_next_movement[1].aMax);
     writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,tmc5031_next_movement[1].aMax);
@@ -519,6 +532,7 @@ ISR(PCINT0_vect)
 {
   motor_target_reached(nr_of_coordinated_motors);
 }
+
 
 
 

@@ -326,7 +326,7 @@ class Printer(Thread):
             y_move_config = None
 
 
-        if movement['delta_y']:
+        if movement['delta_z']:
             z_move_config = [
                 {
                     'motor': self.axis['z']['motors'][0],
@@ -340,7 +340,7 @@ class Printer(Thread):
                     'motor': self.axis['z']['motors'][1],
                     'target':step_pos['z'],
                     'acceleration': self.axis['z']['max_step_acceleration'],
-                    'speed': abs(step_speed_vector['y']),
+                    'speed': abs(step_speed_vector['z']),
                     'type':'stop',
                     'startBow':0
                 }
