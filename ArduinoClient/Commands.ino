@@ -255,8 +255,6 @@ void onMove() {
       Serial.print(followers[following_motors].aMax);
       Serial.print(F(": jerk="));
       Serial.print(followers[following_motors].jerk);
-      Serial.print(F(", endBow="));
-      Serial.print(followers[following_motors].endBow);
 #endif    
 #endif
       following_motors++;
