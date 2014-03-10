@@ -61,8 +61,8 @@ class Printer(Thread):
 
     def _postconfig(self):
         #we need the stepping rations for variuos calclutaions later
-        self._x_step_conversion = float(self.axis['x']['scale']) / float(self.axis['y']['scale'])
-        self._y_step_conversion = float(self.axis['y']['scale']) / float(self.axis['x']['scale'])
+        self._x_step_conversion = float(self.axis['x']['steps_per_mm']) / float(self.axis['y']['steps_per_mm'])
+        self._y_step_conversion = float(self.axis['y']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
 
         self._extract_homing_information()
 
@@ -92,7 +92,7 @@ class Printer(Thread):
             axis_config = self.axis[axis_name]
             motor = axis_config['motor']
             position = self.machine.read_positon(motor)
-            positions[axis_name] = position * axis_config['scale']
+            positions[axis_name] = position * axis_config['steps_per_mm']
         return positions
 
     def _extract_homing_information(self):
@@ -186,7 +186,7 @@ class Printer(Thread):
         else:
             raise PrinterError("you must configure one ('motor') or more 'motors' in the axis configuration")
 
-        axis['scale'] = config['steps-per-mm']
+        axis['steps_per_mm'] = config['steps-per-mm']
         if 'time-reference' in config and config['time-reference'] == 'clock signal':
             axis['clock-referenced'] = True
         else:
@@ -244,7 +244,7 @@ class Printer(Thread):
                     raise PrinterError("Unknown end stop type " + polarity)
                 end_stop = deepcopy(axis['end-stops'][end_stop_pos])
                 if 'position' in end_stop:
-                    end_stop['position'] = convert_mm_to_steps(end_stop['position'], axis['scale'])
+                    end_stop['position'] = convert_mm_to_steps(end_stop['position'], axis['steps_per_mm'])
                 if axis['motor']:
                     self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
                 else:
@@ -284,15 +284,15 @@ class Printer(Thread):
 
     def _add_movement_calculations(self, movement):
         step_pos = {
-            'x': convert_mm_to_steps(movement['x'], self.axis['x']['scale']),
-            'y': convert_mm_to_steps(movement['y'], self.axis['y']['scale']),
-            'z': convert_mm_to_steps(movement['z'], self.axis['z']['scale'])
+            'x': convert_mm_to_steps(movement['x'], self.axis['x']['steps_per_mm']),
+            'y': convert_mm_to_steps(movement['y'], self.axis['y']['steps_per_mm']),
+            'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm'])
         }
         step_speed_vector = {
             #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
-            'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['scale']),
-            'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['scale']),
-            'z': convert_mm_to_steps(movement['z'], self.axis['z']['scale'])
+            'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),
+            'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']),
+            'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm'])
         }
         return step_pos, step_speed_vector
 
