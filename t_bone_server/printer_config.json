@@ -3,9 +3,9 @@
         "motor": 1,
         "current": 0.2,
         "steps-per-mm": 1420.8984,
-        "max-speed": 400,
+        "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 20.0,
+        "bow-acceleration": 200.0,
         "time-reference":"time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
@@ -18,7 +18,7 @@
                 "position": 20.2
             }
         },
-        "home-speed": 100,
+        "home-speed": 300,
         "home-acceleration": 2000,
         "home-precision-speed": 5
     },
@@ -26,9 +26,9 @@
         "motor": 2,
         "current": 0.2,
         "steps-per-mm": 1420.8984,
-        "max-speed": 400,
+        "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 20.0,
+        "bow-acceleration": 200.0,
         "time-reference":"time",
         "end-stops": {
             "left": {
@@ -39,7 +39,7 @@
                 "position": 20.2
             }
         },
-        "home-speed": 100,
+        "home-speed": 300,
         "home-acceleration": 2000,
         "home-precision-speed": 5
     },
@@ -52,7 +52,7 @@
         },
         "inverted_comment": "TMC5041 is easier to invert ...",
         "steps-per-mm": 40596.72,
-        "max-speed": 3,
+        "max-speed": 10,
         "max-acceleration": 1,
         "time-reference":"clock signal",
         "end-stops": {
@@ -65,9 +65,9 @@
                 "position": 20.2
             }
         },
-        "home-speed": 5,
-        "home-acceleration": 1,
-        "home-precision-speed": 0.5
+        "home-speed": 10,
+        "home-acceleration": 10,
+        "home-precision-speed": 1
     },
     "printer": {
         "print-queue": {

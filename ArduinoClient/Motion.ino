@@ -135,7 +135,7 @@ void checkMotion() {
               Serial.print(F(" to "));
               Serial.println(follower.target,DEC);
 #endif
-              if (move.motor<nr_of_coordinated_motors) {
+              if (follower.motor<nr_of_coordinated_motors) {
                 moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
                 moving_motors |= _BV(follower.motor);
               } 
