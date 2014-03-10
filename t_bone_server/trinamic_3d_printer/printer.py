@@ -177,8 +177,6 @@ class Printer(Thread):
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
 
     def _configure_axis(self, axis, config):
-        axis['steps_per_mm'] = config['steps-per-mm']
-
         #let's see if we got one or more motors
         if 'motor' in config:
             axis['motor'] = config['motor']
