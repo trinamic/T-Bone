@@ -14,7 +14,7 @@
 //##################
 
 //#define DEBUG_MOTOR_CONTFIG
-//#define DEBUG_HOMING
+#define DEBUG_HOMING
 //#define DEBUG_HOMING_STATUS
 //#define DEBUG_ENDSTOPS
 
@@ -50,7 +50,7 @@ const char homing_max_following_motors = nr_of_controlled_motors - 1;
 #define DEFAULT_ACCELERATION 1
 #define DEFAULT_BOW 1
 
-//#define CALCULATE_OUTPUT 13
+//#define CALCULATE_OUTPUT TXLED
 //the CS pins have to be defines for digitalWriteFast 
 #define CS_4361_1_PIN 4
 #define CS_4361_2_PIN 12

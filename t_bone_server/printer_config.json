@@ -2,8 +2,8 @@
     "x-axis": {
         "motor": 1,
         "current": 0.2,
-        "steps-per-mm": 1420.8984,
-        "max-speed": 900,
+        "steps-per-mm": 2841.7968,
+        "max-speed": 400,
         "max-acceleration": 3000,
         "bow-acceleration": 20.0,
         "time-reference":"time",
@@ -25,8 +25,8 @@
     "y-axis": {
         "motor": 2,
         "current": 0.2,
-        "steps-per-mm": 1420.8984,
-        "max-speed": 900,
+        "steps-per-mm": 2841.7968,
+        "max-speed": 400,
         "max-acceleration": 3000,
         "bow-acceleration": 20.0,
         "time-reference":"time",
@@ -51,7 +51,7 @@
             "5":true
         },
         "inverted_comment": "TMC5041 is easier to invert ...",
-        "steps-per-mm": 40596.72,
+        "steps-per-mm": 81193.44,
         "max-speed": 3,
         "max-acceleration": 1,
         "time-reference":"clock signal",

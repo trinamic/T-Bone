@@ -164,6 +164,8 @@ void checkMotion() {
           next_move_prepared = true;
         }
 #ifdef DEBUG_MOTION
+        Serial.print(F("Next move : "));
+        Serial.println(next_target_motor_status,BIN);
         Serial.println();
 #endif
 #ifdef CALCULATE_OUTPUT
