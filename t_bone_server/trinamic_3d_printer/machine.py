@@ -124,10 +124,10 @@ class Machine():
     def home(self, home_config, timeout):
         command = MachineCommand()
         command.command_number = 12
-        if 'bow' in home_config:
-            bow = int(home_config['bow'])
+        if 'jerk' in home_config:
+            jerk = int(home_config['jerk'])
         else:
-            bow = None
+            jerk = None
         if 'followers' in home_config:
             #we lazily add the motor in the printer - since it is quite easy to remove it here
             following = [motor for motor in home_config['followers'] if motor != home_config['motor']]
@@ -142,8 +142,8 @@ class Machine():
             int(home_config['home_retract']),
             float(home_config['acceleration']),
         ]
-        if bow:
-            command.arguments.append(bow)
+        if jerk:
+            command.arguments.append(jerk)
         if following:
             for motor in following:
                 command.arguments.append(int(motor))

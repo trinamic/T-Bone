@@ -19,7 +19,7 @@
             }
         },
         "home-speed": 100,
-        "home-acceleration": 20000,
+        "home-acceleration": 2000,
         "home-precision-speed": 5
     },
     "y-axis": {
@@ -40,7 +40,7 @@
             }
         },
         "home-speed": 100,
-        "home-acceleration": 20000,
+        "home-acceleration": 2000,
         "home-precision-speed": 5
     },
     "z-axis": {

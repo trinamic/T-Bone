@@ -121,6 +121,7 @@ class Printer(Thread):
                 home_speed = convert_velocity_clock_ref_to_realtime_ref(home_speed)
                 home_precision_speed = convert_velocity_clock_ref_to_realtime_ref(home_precision_speed)
                 home_acceleration = convert_acceleration_clock_ref_to_realtime_ref(home_acceleration)
+                #no home jerk - since this only applies to 5041 axis w/o jerk control
             home_retract = convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
             #make a config out of it
             if self.axis[home_axis]['motor']:
@@ -131,11 +132,9 @@ class Printer(Thread):
                     'home_slow_speed': home_precision_speed,
                     'home_retract': home_retract,
                     'acceleration': home_acceleration,
-                    'deceleration': home_acceleration,
-                    'start_bow': self.axis[home_axis]['bow_step'],
                 }
                 if self.axis[home_axis]['bow_step']:
-                    homing_config['bow'] = self.axis[home_axis]['bow_step']
+                    homing_config['jerk'] = self.axis[home_axis]['bow_step']
             else:
                 #todo we should check if there is a motor for the left endstop??
                 homing_config = {
@@ -146,7 +145,6 @@ class Printer(Thread):
                     'home_slow_speed': home_precision_speed,
                     'home_retract': home_retract,
                     'acceleration': home_acceleration,
-                    'deceleration': home_acceleration,
                 }
                 if self.axis[home_axis]['bow_step']:
                     homing_config['bow'] = self.axis[home_axis]['bow_step']
@@ -492,7 +490,7 @@ class PrintQueue():
 
         move['delta_x'] = move['x'] - last_x
         move['delta_y'] = move['y'] - last_y
-        move['delta_z'] = move['y'] - last_z
+        move['delta_z'] = move['z'] - last_z
         move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'])
         #save the move vector for later use …
         move['relative_move_vector'] = move_vector
