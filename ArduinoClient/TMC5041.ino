@@ -198,7 +198,7 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
       Serial.print(F("5041 #1 is first going to "));
       Serial.print(target,DEC);
       Serial.print(F(" @ "));
-      Serial.print(vMax,DEC);
+      Serial.println(vMax,DEC);
 #endif
 
       writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,aMax);
@@ -212,7 +212,7 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
       Serial.print(F("5041 #2 is first going to "));
       Serial.print(target,DEC);
       Serial.print(F(" @ "));
-      Serial.print(vMax,DEC);
+      Serial.println(vMax,DEC);
 #endif
       writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,aMax);
       writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,aMax);

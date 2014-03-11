@@ -48,10 +48,10 @@ void resetMotion() {
 }
 
 void checkMotion() {
-    checkTMC5041Motion();
+  checkTMC5041Motion();
 
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
-    
+
     if (target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
@@ -137,13 +137,15 @@ void checkMotion() {
               Serial.print(follower.motor,DEC);
               Serial.print(F(" to "));
               Serial.println(follower.target,DEC);
+              Serial.print(F(" at "));
+              Serial.println(follower.vMax);
 #endif
               if (follower.motor<nr_of_coordinated_motors) {
                 moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
                 moving_motors |= _BV(follower.motor);
               } 
               else {
-                moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
+                moveMotorTMC5041(follower.motor-nr_of_coordinated_motors, follower.target, follower.vMax, follower.aMax, prepare_shaddow_registers, follower.type==move_over);
                 moving_motors |= _BV(nr_of_coordinated_motors);
               }          
             }
@@ -224,6 +226,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 
