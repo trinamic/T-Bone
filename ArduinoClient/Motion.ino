@@ -136,7 +136,7 @@ void checkMotion() {
               Serial.print(F("Following motor "));
               Serial.print(follower.motor,DEC);
               Serial.print(F(" to "));
-              Serial.println(follower.target,DEC);
+              Serial.print(follower.target,DEC);
               Serial.print(F(" at "));
               Serial.println(follower.vMax);
 #endif

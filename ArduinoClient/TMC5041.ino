@@ -249,7 +249,7 @@ void tmc5041_prepare_next_motion() {
     writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,tmc5031_next_movement[1].aMax);
 
     writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, tmc5031_next_movement[1].vMax);
-    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,tmc5031_next_movement[1].target);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,tmc5031_next_movement[1].target);
     tmc5031_next_movement[1].vMax=0;
   }
 }
