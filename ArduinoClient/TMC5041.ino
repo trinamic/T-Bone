@@ -6,6 +6,8 @@ const unsigned long default_chopper_config = 0
 | 5 //t OFF
 ;
 
+volatile boolean tmc5041_read_position_read_status = true;
+
 TMC5041_motion_info tmc5031_next_movement[2];
 
 void prepareTMC5041() {
@@ -529,11 +531,28 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 }
 
+void checkTMC5041Motion() {
+  if (tmc5041_read_position_read_status) {
+    tmc5041_read_position_read_status=false;
+    //We are only interested in the first 8 bits 
+    unsigned char events0 = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
+    unsigned char events1 = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
+    if ((events0 | events1) & _BV(7)) {
+      //we are only interested in target reached
+      //TODO is that enough?? should not we track each motor??
+      motor_target_reached(nr_of_coordinated_motors);
+    }
+  }  
+}
+
 ISR(PCINT0_vect)
 {
-  Serial.println('.');
-  motor_target_reached(nr_of_coordinated_motors);
+  tmc5041_read_position_read_status = true;
 }
+
+
+
+
 
 
 
