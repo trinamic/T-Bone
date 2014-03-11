@@ -286,11 +286,12 @@ class Printer(Thread):
             'y': convert_mm_to_steps(movement['y'], self.axis['y']['steps_per_mm']),
             'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm'])
         }
+        max_z_speed = min(movement['target_speed'], self.axis['z']['max_speed'])
         step_speed_vector = {
             #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
             'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),
             'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']),
-            'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm'])
+            'z': convert_mm_to_steps(max_z_speed, self.axis['z']['steps_per_mm'])
         }
         return step_pos, step_speed_vector
 
@@ -470,7 +471,7 @@ class PrintQueue():
             else:
                 move['z'] = 0
         if 'f' in target_position:
-            move['target_speed'] = target_position['f']
+            move['target_speed'] = target_position['target_speed']
         elif self.previous_movement:
             move['target_speed'] = self.previous_movement['target_speed']
         elif self.default_target_speed:

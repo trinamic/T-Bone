@@ -46,7 +46,7 @@ def read_gcode_to_printer(line, printer):
     if not gcode:
         #nothing to do fine!
         pass
-    elif "G0" == gcode.code or "G1" == gcode.code: #TODO G1 & G0 is different
+    elif "G0" == gcode.code or "G1" == gcode.code:  #TODO G1 & G0 is different
         #we simply interpret the arguments as positions
         positions = {}
         for argument in gcode.options:
@@ -55,6 +55,8 @@ def read_gcode_to_printer(line, printer):
                 positions[position[0].lower()] = position[1]
             else:
                 _logger.warn("Unable to interpret position %s in %s", argument, line)
+        if 'f' in positions:
+            positions['target_speed'] = positions['f'] / 60.0
         printer.move_to(positions)
     else:
         _logger.warn("Unknown GCODE %s ignored", gcode)
@@ -83,7 +85,7 @@ def decode_gcode_line(line):
     # does it contain a comment??
     if ";" in line:
         line = line.split(";", 1)[0]
-    parts = line.split() # split by space
+    parts = line.split()  # split by space
     #filter only the relevant parts
     relevant_parts = []
     for part in parts:
