@@ -58,6 +58,18 @@ def read_gcode_to_printer(line, printer):
         if 'f' in positions:
             positions['target_speed'] = positions['f'] / 60.0
         printer.move_to(positions)
+    elif "G20" == gcode.code:
+        #panic we do not support inches
+        pass
+    elif "G21" == gcode.code:
+        ##say we did already
+        pass
+    elif "G28" == gcode.code:
+        #we could home
+        pass
+    elif "G92" == gcode.code:
+        #set XPOS
+        pass
     else:
         _logger.warn("Unknown GCODE %s ignored", gcode)
 
