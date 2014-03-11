@@ -40,9 +40,6 @@ void initialzeTMC4361() {
   resetTMC4361(false,true);
   delay(10);
 
-  //initialize SPI
-  SPI.begin();
-  //SPI.setClockDivider(SPI_CLOCK_DIV4);
   //preconfigure the TMC4361
   for (char i=0; i<nr_of_coordinated_motors;i++) {
     writeRegister(i, TMC4361_GENERAL_CONFIG_REGISTER, 0 | _BV(5)); //we use direct values

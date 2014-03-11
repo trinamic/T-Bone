@@ -195,7 +195,7 @@ void motor_2_target_reached() {
 }
 
 void motor_3_target_reached() {
-  motor_target_reached(3);
+  motor_target_reached(2);
 }
 
 inline void motor_target_reached(char motor_nr) {

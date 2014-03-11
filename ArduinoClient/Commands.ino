@@ -359,7 +359,9 @@ void onMovement() {
     } 
     else {
       //TODO should we handle double finishing ??
+#ifdef DEBUG_MOTION_STATUS
       Serial.println(F("motion will finish"));
+#endif
       messenger.sendCmd(kOK,F("motion finishing"));
       finishMotion();
     }
@@ -389,14 +391,15 @@ void onPosition() {
   } 
   else {
     if (motor == nr_of_coordinated_motors) {
-       position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
-    } else {
-       position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+      position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+    } 
+    else {
+      position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
     }
   }
-    messenger.sendCmdStart(kPos);
-    messenger.sendCmdArg(position);
-    messenger.sendCmdEnd();
+  messenger.sendCmdStart(kPos);
+  messenger.sendCmdArg(position);
+  messenger.sendCmdEnd();
 }
 
 void onConfigureEndStop() {
@@ -593,6 +596,13 @@ void watchDogPing() {
   }  
   Serial.println();
 #endif
+#ifdef DEBUG_TMC5041_STATUS
+  Serial.print(F("#1: "));
+  Serial.print(readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1),HEX);
+  Serial.print(F("\t#2: "));
+  Serial.println(readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2),HEX);
+  Serial.println();
+#endif
 }
 
 void watchDogStart() {
@@ -635,6 +645,9 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
+
 
 
 

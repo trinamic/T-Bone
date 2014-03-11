@@ -18,17 +18,18 @@
 //#define DEBUG_HOMING_STATUS
 //#define DEBUG_ENDSTOPS
 
-#define DEBUG_MOTION
-#define DEBUG_MOTION_TRACE
-#define DEBUG_MOTION_TRACE_SHORT
+//#define DEBUG_MOTION
+//#define DEBUG_MOTION_TRACE
+//#define DEBUG_MOTION_TRACE_SHORT
 //#define DEBUG_MOTOR_QUEUE
-#define DEBUG_MOTION_STATUS
+//#define DEBUG_MOTION_STATUS
 //#define DEBUG_X_POS
 
 
 //#define DEBUG_SPI
 
 //#define DEBUG_STATUS
+//#define DEBUG_TMC5041_STATUS
 
 
 //how many motors do we know?
@@ -102,6 +103,10 @@ CmdMessenger messenger = CmdMessenger(Serial1);
 Metro watchDogMetro = Metro(1000); 
 
 void setup() {
+  //initialize SPI
+  SPI.begin();
+  //SPI.setClockDivider(SPI_CLOCK_DIV4);
+
   // Use HWBE as Output
   DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
   
