@@ -47,7 +47,7 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, 0x0);
   writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2, 0x0);
 
-  //thos values are static and will anyway reside in the tmc5041 settings
+  //those values are static and will anyway reside in the tmc5041 settings
   writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,0);
   writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,0); //the datahseet says it is needed
   writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_1, 0);
@@ -59,6 +59,9 @@ void initialzeTMC5041() {
   writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
   writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
 
+  //and ensure that the event register are emtpy 
+  readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
+  readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
 }
 
 const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
@@ -188,9 +191,11 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
     tmc5031_next_movement[motor].aMax = aMax;
   } 
   else {
+    tmc5031_next_movement[0].vMax=0;
+    tmc5031_next_movement[1].vMax=0;
     if (motor==0) {
 #ifdef DEBUG_MOTION
-      Serial.print(F("5041 #1 is going to"));
+      Serial.print(F("5041 #1 is first going to "));
       Serial.print(target,DEC);
       Serial.print(F(" @ "));
       Serial.print(vMax,DEC);
@@ -204,7 +209,7 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
     } 
     else {
 #ifdef DEBUG_MOTION
-      Serial.print(F("5041 #2 is going to"));
+      Serial.print(F("5041 #2 is first going to "));
       Serial.print(target,DEC);
       Serial.print(F(" @ "));
       Serial.print(vMax,DEC);
@@ -221,7 +226,7 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
 void tmc5041_prepare_next_motion() {
   if (tmc5031_next_movement[0].vMax!=0) {
 #ifdef DEBUG_MOTION
-    Serial.print(F("5041 #1 is going to"));
+    Serial.print(F("5041 #1 is going to "));
     Serial.print(tmc5031_next_movement[0].target,DEC);
     Serial.print(F(" @ "));
     Serial.println(tmc5031_next_movement[0].vMax,DEC);
@@ -235,7 +240,7 @@ void tmc5041_prepare_next_motion() {
   }
   if (tmc5031_next_movement[1].vMax!=0) {
 #ifdef DEBUG_MOTION
-    Serial.print(F("5041 #2 is going to"));
+    Serial.print(F("5041 #2 is going to "));
     Serial.print(tmc5031_next_movement[1].target,DEC);
     Serial.print(F(" @ "));
     Serial.println(tmc5031_next_movement[1].vMax,DEC);
