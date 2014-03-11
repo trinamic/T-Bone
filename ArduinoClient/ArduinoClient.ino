@@ -28,7 +28,7 @@
 
 //#define DEBUG_SPI
 
-//#define DEBUG_STATUS
+#define DEBUG_STATUS
 //#define DEBUG_TMC5041_STATUS
 
 
