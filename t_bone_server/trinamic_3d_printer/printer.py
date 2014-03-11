@@ -57,6 +57,7 @@ class Printer(Thread):
         self._configure_axis(self.axis['x'], config["x-axis"])
         self._configure_axis(self.axis['y'], config["y-axis"])
         self._configure_axis(self.axis['z'], config["z-axis"])
+        self._configure_axis(self.axis['e'], config["extruder"])
         self._postconfig()
 
     def _postconfig(self):
