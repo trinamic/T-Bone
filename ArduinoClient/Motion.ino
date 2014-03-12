@@ -107,72 +107,98 @@ void checkMotion() {
         movement move = moveQueue.pop();
         //check out which momtors are geared with this
 
+        if (move.type == move_to || move.type== move_over) {
 #ifdef DEBUG_MOTION
-        Serial.print(F("Moving motor "));
-        Serial.print(move.motor,DEC);
-        Serial.print(F(" to "));
-        Serial.print(move.target);
-        Serial.print(F(" at "));
-        Serial.println(move.vMax);
+          Serial.print(F("Moving motor "));
+          Serial.print(move.motor,DEC);
+          Serial.print(F(" to "));
+          Serial.print(move.target);
+          Serial.print(F(" at "));
+          Serial.println(move.vMax);
 #endif
-        //TODO this move_over looks really suspicious!
-        if (move.motor<nr_of_coordinated_motors) {
-          moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
-          moving_motors |= _BV(move.motor);
-        } 
-        else {
-          moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
-          moving_motors |= _BV(nr_of_coordinated_motors);
-        }          
+          //TODO this move_over looks really suspicious!
+          if (move.motor<nr_of_coordinated_motors) {
+            moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
+            moving_motors |= _BV(move.motor);
+          } 
+          else {
+            moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
+            moving_motors |= _BV(nr_of_coordinated_motors);
+          }          
 
-        movement follower;
-        do {
-          follower.type=uninitialized;
-          if (!moveQueue.isEmpty()) {
-            follower = moveQueue.peek();
-            if (follower.type==follow_over || follower.type==follow_to) {  
-              moveQueue.pop();
+          movement follower;
+          do {
+            follower.type=uninitialized;
+            if (!moveQueue.isEmpty()) {
+              follower = moveQueue.peek();
+              if (follower.type==follow_over || follower.type==follow_to) {  
+                moveQueue.pop();
 #ifdef DEBUG_MOTION
-              Serial.print(F("Following motor "));
-              Serial.print(follower.motor,DEC);
-              Serial.print(F(" to "));
-              Serial.print(follower.target,DEC);
-              Serial.print(F(" at "));
-              Serial.println(follower.vMax);
+                Serial.print(F("Following motor "));
+                Serial.print(follower.motor,DEC);
+                Serial.print(F(" to "));
+                Serial.print(follower.target,DEC);
+                Serial.print(F(" at "));
+                Serial.println(follower.vMax);
 #endif
-              if (follower.motor<nr_of_coordinated_motors) {
-                moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
-                moving_motors |= _BV(follower.motor);
-              } 
-              else {
-                moveMotorTMC5041(follower.motor-nr_of_coordinated_motors, follower.target, follower.vMax, follower.aMax, prepare_shaddow_registers, follower.type==move_over);
-                moving_motors |= _BV(nr_of_coordinated_motors);
-              }          
+                if (follower.motor<nr_of_coordinated_motors) {
+                  moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
+                  moving_motors |= _BV(follower.motor);
+                } 
+                else {
+                  moveMotorTMC5041(follower.motor-nr_of_coordinated_motors, follower.target, follower.vMax, follower.aMax, prepare_shaddow_registers, follower.type==move_over);
+                  moving_motors |= _BV(nr_of_coordinated_motors);
+                }          
+              }
             }
+          } 
+          while (follower.type == follow_over || follower.type == follow_to);
+
+          //in the end all moviong motorts must have apssed pos_comp
+          next_target_motor_status = moving_motors;
+          //for the first move we need to configure everything a bit 
+          if (!prepare_shaddow_registers) {
+            target_motor_status = next_target_motor_status;
+            motor_status=0;
+            signal_start();
+            //and we need to prepare the next move for the shadow registers
+            prepare_shaddow_registers = true;
+            next_move_prepared = false;
+          } 
+          else {
+            //ok normally we can relax until the enxt start event occured
+            next_move_prepared = true;
+          }
+#ifdef DEBUG_MOTION
+          Serial.print(F("Next move : "));
+          Serial.println(next_target_motor_status,BIN);
+          Serial.println();
+#endif
+        } 
+        else if (move.type == set_position) {
+#ifdef DEBUG_SET_POS
+  Serial.print(F("Setting motor "));
+  Serial.print(move.motor,DEC);
+  Serial.print(F(" to position "));
+  Serial.print(move.target,DEC);
+#endif  
+         if (IS_COORDINATED_MOTOR(move.motor)) {
+#ifdef DEBUG_SET_POS
+  Serial.println(F(" on TMC4361"));
+#endif  
+            setMotorPositionTMC4361(move.motor,move.target);
+          } 
+          else {
+#ifdef DEBUG_SET_POS
+  Serial.print(F(" on TMC5041 as #"));
+  Serial.print(move.motor-nr_of_coordinated_motors,DEC);
+#endif
+            setMotorPositionTMC5041(move.motor-nr_of_coordinated_motors,move.target);
           }
         } 
-        while (follower.type == follow_over || follower.type == follow_to);
-
-        //in the end all moviong motorts must have apssed pos_comp
-        next_target_motor_status = moving_motors;
-        //for the first move we need to configure everything a bit 
-        if (!prepare_shaddow_registers) {
-          target_motor_status = next_target_motor_status;
-          motor_status=0;
-          signal_start();
-          //and we need to prepare the next move for the shadow registers
-          prepare_shaddow_registers = true;
-          next_move_prepared = false;
-        } 
         else {
-          //ok normally we can relax until the enxt start event occured
-          next_move_prepared = true;
+          Serial.print(F("ignored move"));
         }
-#ifdef DEBUG_MOTION
-        Serial.print(F("Next move : "));
-        Serial.println(next_target_motor_status,BIN);
-        Serial.println();
-#endif
 #ifdef CALCULATE_OUTPUT
         digitalWriteFast(CALCULATE_OUTPUT,LOW);
 #endif
@@ -226,6 +252,9 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
+
+
 
 
 

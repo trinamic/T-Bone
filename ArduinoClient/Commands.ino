@@ -275,7 +275,7 @@ void onMove() {
   for (char i=0; i<following_motors; i++) {
     moveQueue.push(followers[i]);
   }
-  
+
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
@@ -392,13 +392,18 @@ void onSetPosition() {
     messenger.sendCmd (kError,F("cannot move beyond home"));
     return;
   }
-
+#ifdef DEBUG_SET_POS
+  Serial.print(F("Enqueing setting motor "));
+  Serial.print(motor,DEC);
+  Serial.print(F(" to position "));
+  Serial.println(newPos,DEC);
+#endif  
   //configure a movement
   movement move;
   move.type = set_position;
   move.motor=motor;
   moveQueue.push(move);
-  
+
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
@@ -670,6 +675,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

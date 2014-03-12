@@ -294,6 +294,12 @@ inline void signal_start() {
 #endif
 }
 
+void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
+  //we write x_actual, x_target and pos_comp to the same value to be safe 
+  writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,position);
+  writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,position);
+  writeRegister(motor_nr, TMC4361_POS_COMP_REGISTER,position);
+}
 
 const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
   //TODO also with active 

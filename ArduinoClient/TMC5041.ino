@@ -509,6 +509,19 @@ boolean invertMotorTMC5041(char motor_nr, boolean inverted) {
   return ((general_conf & pattern)==pattern);
 }
 
+void setMotorPositionTMC5041(unsigned char motor_nr, long position) {
+  //we write x_actual an x_target to the same value to be safe 
+  if (motor_nr==0) {
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,position);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,position);
+  } 
+  else {
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,position);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,position);
+  }
+}
+
+
 int calculateCurrentValue(int current, boolean high_sense) {
   float real_current = (float)current/1000.0;
   int high_sense_current = (int)(real_current*32.0*SQRT_2*TMC_5041_R_SENSE/(high_sense?V_HIGH_SENSE:V_LOW_SENSE))-1;
@@ -554,6 +567,7 @@ ISR(PCINT0_vect)
 {
   tmc5041_read_position_read_status = true;
 }
+
 
 
 
