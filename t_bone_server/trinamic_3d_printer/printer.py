@@ -435,7 +435,7 @@ class Printer(Thread):
                     x_move_config
                 ]
         if e_move_config:
-            move_commands.extend(e_move_config)
+            move_commands.append(e_move_config)
         if z_move_config:
             move_commands.extend(z_move_config)
 
@@ -544,7 +544,10 @@ class PrintQueue():
         move['delta_z'] = move['z'] - last_z
         move['delta_e'] = move['e'] - last_e
         move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_z'], move['delta_e'])
-        move_vector['v'] = move['target_speed'] / move_vector['l']
+        try:
+            move_vector['v'] = move['target_speed'] / move_vector['l']
+        except ZeroDivisionError:
+            move_vector['v'] = 0
         #save the move vector for later use ...
         move['relative_move_vector'] = move_vector
 
