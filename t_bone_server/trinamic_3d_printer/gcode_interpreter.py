@@ -2,6 +2,7 @@ import logging
 import re
 from threading import Thread
 from trinamic_3d_printer.helpers import file_len
+from trinamic_3d_printer.printer import PrinterError
 
 __author__ = 'marcus'
 
@@ -59,11 +60,10 @@ def read_gcode_to_printer(line, printer):
             positions['target_speed'] = positions['f'] / 60.0
         printer.move_to(positions)
     elif "G20" == gcode.code:
-        #panic we do not support inches
-        pass
+        #we cannot switch to inches - sorry folks
+        raise PrinterError("Currently only metric units are supported!")
     elif "G21" == gcode.code:
-        ##say we did already
-        pass
+        _logger.info("Using metric units according to the g code")
     elif "G28" == gcode.code:
         #we could home
         pass
