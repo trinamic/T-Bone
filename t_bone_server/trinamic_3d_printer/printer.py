@@ -180,7 +180,7 @@ class Printer(Thread):
                 step_pos, step_speed_vector = self._add_movement_calculations(movement)
                 x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement, step_pos,
                                                                                          step_speed_vector)
-                self._move(movement, step_pos, x_move_config, y_move_config, z_move_config)
+                self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
             except Empty:
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
 
@@ -386,7 +386,7 @@ class Printer(Thread):
 
         return x_move_config, y_move_config, z_move_config, e_move_config
 
-    def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config):
+    def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config):
         move_vector = movement['relative_move_vector']
         move_commands = []
         if x_move_config and not y_move_config:  #silly, but simpler to understand
@@ -434,6 +434,8 @@ class Printer(Thread):
                     y_move_config,
                     x_move_config
                 ]
+        if e_move_config:
+            move_commands.extend(e_move_config)
         if z_move_config:
             move_commands.extend(z_move_config)
 
