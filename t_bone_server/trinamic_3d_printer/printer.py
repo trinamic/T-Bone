@@ -530,7 +530,7 @@ class PrintQueue():
             last_x = self.previous_movement['x']
             last_y = self.previous_movement['y']
             last_z = self.previous_movement['z']
-            last_e = self.previous_movement['z']
+            last_e = self.previous_movement['e']
         else:
             last_x = 0
             last_y = 0
