@@ -15,7 +15,7 @@ _axis_config = {
     #maps axis name to config entry
     'x': 'x-axis',
     'y': 'x-axis',
-    'z': 'x-axis',
+    'z': 'z-axis',
     'e': 'extruder',
 }
 
