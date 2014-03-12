@@ -493,7 +493,14 @@ class PrintQueue():
                 move['z'] = self.previous_movement['z']
             else:
                 move['z'] = 0
-        if 'f' in target_position:
+        if 'e' in target_position:
+            move['e'] = target_position['e']
+        else:
+            if self.previous_movement:
+                move['e'] = self.previous_movement['e']
+            else:
+                move['e'] = 0
+        if 'target_speed' in target_position:
             move['target_speed'] = target_position['target_speed']
         elif self.previous_movement:
             move['target_speed'] = self.previous_movement['target_speed']
@@ -505,17 +512,20 @@ class PrintQueue():
             last_x = self.previous_movement['x']
             last_y = self.previous_movement['y']
             last_z = self.previous_movement['z']
+            last_e = self.previous_movement['z']
         else:
             last_x = 0
             last_y = 0
             last_z = 0
+            last_e = 0
             #logg this move
         _logger.debug("moving to: X:%s, Y:%s, Z:%s", move['x'], move['z'], move['z'])
 
         move['delta_x'] = move['x'] - last_x
         move['delta_y'] = move['y'] - last_y
         move['delta_z'] = move['z'] - last_z
-        move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'])
+        move['delta_e'] = move['e'] - last_e
+        move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_e'])
         #save the move vector for later use …
         move['relative_move_vector'] = move_vector
 
