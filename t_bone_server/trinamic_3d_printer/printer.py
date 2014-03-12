@@ -13,10 +13,10 @@ __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
 _axis_config = {
     #maps axis name to config entry
-    'x':'x-axis',
-    'y':'x-axis',
-    'z':'x-axis',
-    'e':'extruder',
+    'x': 'x-axis',
+    'y': 'x-axis',
+    'z': 'x-axis',
+    'e': 'extruder',
 }
 
 
@@ -64,8 +64,9 @@ class Printer(Thread):
         for axis_name, config_name in _axis_config.iteritems():
             _logger.info("Configuring axis \'%s\' according to conf \'%s\'", axis_name, config_name)
             axis = {}
+            axis['name'] = axis_name
             self.axis[axis_name] = axis
-            self._configure_axis(axis, config["config_name"])
+            self._configure_axis(axis, config[config_name])
         self._postconfig()
 
     def _postconfig(self):
@@ -229,42 +230,53 @@ class Printer(Thread):
             axis['home_retract'] = self._default_homing_retraction
 
         axis['end-stops'] = {}
-        end_stops_config = config['end-stops']
-        for end_stop_pos in ('left', 'right'):
-            if end_stop_pos in end_stops_config:
-                end_stop_config = end_stops_config[end_stop_pos]
-                polarity = end_stop_config['polarity']
-                if 'virtual' == polarity:
-                    position = float(end_stop_config['position'])
-                    axis['end-stops'][end_stop_pos] = {
-                        'type': 'virtual',
-                        'position': position
-                    }
-                elif polarity in ('positive', 'negative'):
-                    axis['end-stops'][end_stop_pos] = {
-                        'type': 'real',
-                        'polarity': polarity
-                    }
-                    if 'motor' in end_stop_config:
-                        axis['end-stops'][end_stop_pos]['motor'] = end_stop_config['motor']
-                else:
-                    raise PrinterError("Unknown end stop type " + polarity)
-                end_stop = deepcopy(axis['end-stops'][end_stop_pos])
-                if 'position' in end_stop:
-                    end_stop['position'] = convert_mm_to_steps(end_stop['position'], axis['steps_per_mm'])
-                if axis['motor']:
-                    self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos, end_stop_config=end_stop)
-                else:
-                    #endstop config is a bit more complicated for multiple motors
-                    if end_stop_config['polarity'] == 'virtual':
-                        for motor in axis['motors']:
-                            self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
-                    else:
+        if 'end-stops' in config:
+            _logger.debug("Configuring endstops for axis %s", axis['name'])
+            end_stops_config = config['end-stops']
+            for end_stop_pos in ('left', 'right'):
+                if end_stop_pos in end_stops_config:
+                    _logger.debug("Configuring %s endstops", end_stop_pos)
+                    end_stop_config = end_stops_config[end_stop_pos]
+                    polarity = end_stop_config['polarity']
+                    if 'virtual' == polarity:
+                        position = float(end_stop_config['position'])
+                        _logger.debug(" %s endstop is virtual at %s", end_stop_pos, position)
+                        axis['end-stops'][end_stop_pos] = {
+                            'type': 'virtual',
+                            'position': position
+                        }
+                    elif polarity in ('positive', 'negative'):
+                        _logger.debug(" %s endstop is real with %s polarity", end_stop_pos, polarity)
+                        axis['end-stops'][end_stop_pos] = {
+                            'type': 'real',
+                            'polarity': polarity
+                        }
                         if 'motor' in end_stop_config:
-                            motor = end_stop_config['motor']
+                            motor_ = end_stop_config['motor']
+                            _logger.debug(" %s endstops applies to motor %s", end_stop_pos, motor_)
+                            axis['end-stops'][end_stop_pos]['motor'] = motor_
+                    else:
+                        raise PrinterError("Unknown end stop type " + polarity)
+                    end_stop = deepcopy(axis['end-stops'][end_stop_pos])
+                    if 'position' in end_stop:
+                        end_stop['position'] = convert_mm_to_steps(end_stop['position'], axis['steps_per_mm'])
+                    if axis['motor']:
+                        self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos,
+                                                       end_stop_config=end_stop)
+                    else:
+                        #endstop config is a bit more complicated for multiple motors
+                        if end_stop_config['polarity'] == 'virtual':
+                            for motor in axis['motors']:
+                                self.machine.configure_endstop(motor=motor, position=end_stop_pos,
+                                                               end_stop_config=end_stop)
                         else:
-                            motor = axis['motors'][0]
-                        self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
+                            if 'motor' in end_stop_config:
+                                motor = end_stop_config['motor']
+                            else:
+                                motor = axis['motors'][0]
+                            self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
+        else:
+            _logger.debug("No endstops for axis %s", axis['name'])
 
         current = config["current"]
         if axis["motor"]:
@@ -335,24 +347,23 @@ class Printer(Thread):
         else:
             y_move_config = None
 
-
         if movement['delta_z']:
             z_move_config = [
                 {
                     'motor': self.axis['z']['motors'][0],
-                    'target':step_pos['z'],
+                    'target': step_pos['z'],
                     'acceleration': self.axis['z']['max_step_acceleration'],
                     'speed': abs(step_speed_vector['z']),
-                    'type':'stop',
-                    'startBow':0
+                    'type': 'stop',
+                    'startBow': 0
                 },
                 {
                     'motor': self.axis['z']['motors'][1],
-                    'target':step_pos['z'],
+                    'target': step_pos['z'],
                     'acceleration': self.axis['z']['max_step_acceleration'],
                     'speed': abs(step_speed_vector['z']),
-                    'type':'stop',
-                    'startBow':0
+                    'type': 'stop',
+                    'startBow': 0
                 }
             ]
         else:
