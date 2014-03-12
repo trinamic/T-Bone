@@ -413,7 +413,7 @@ class Printer(Thread):
                     , step_pos['x'], y_factor, step_pos['y'])
 
                 y_move_config['acceleration'] = x_move_config[
-                                                    'acceleration'] * y_factor  # todo or the max of the config/scaeld??
+                                                    'acceleration'] * y_factor  # todo or the max of the config/scaled??
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
                 #move
                 move_commands = [
@@ -427,7 +427,7 @@ class Printer(Thread):
                     , step_pos['x'], x_factor, step_pos['y'])
 
                 x_move_config['acceleration'] = y_move_config[
-                                                    'acceleration'] * x_factor  # todo or the max of the config/scaeld??
+                                                    'acceleration'] * x_factor  # todo or the max of the config/scaled??
                 x_move_config['startBow'] = y_move_config['startBow'] * x_factor
                 #move
                 move_commands = [
