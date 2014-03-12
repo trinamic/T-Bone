@@ -18,6 +18,16 @@ _axis_config = {
     'z': 'z-axis',
     'e': 'extruder',
 }
+_pwm_config = [
+    {
+        'temp': 'P8_39',
+        'out': 'P8_16'
+    },
+    {
+        'temp': 'P8_40',
+        'out': 'P8_14'
+    }
+]
 
 
 class Printer(Thread):
@@ -178,8 +188,9 @@ class Printer(Thread):
                 #get the next movement from stack
                 movement = self._print_queue.next_movement(self._print_queue_wait_time)
                 step_pos, step_speed_vector = self._add_movement_calculations(movement)
-                x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement, step_pos,
-                                                                                         step_speed_vector)
+                x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement,
+                                                                                                        step_pos,
+                                                                                                        step_speed_vector)
                 self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
             except Empty:
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
@@ -309,8 +320,8 @@ class Printer(Thread):
             'e': convert_mm_to_steps(movement['e'], self.axis['e']['steps_per_mm'])
         }
         relative_move_vector = movement['relative_move_vector']
-        z_speed = min(abs(relative_move_vector['v']*relative_move_vector['z']), self.axis['z']['max_speed'])
-        e_speed = min(abs(relative_move_vector['v']*relative_move_vector['e']), self.axis['z']['max_speed'])
+        z_speed = min(abs(relative_move_vector['v'] * relative_move_vector['z']), self.axis['z']['max_speed'])
+        e_speed = min(abs(relative_move_vector['v'] * relative_move_vector['e']), self.axis['z']['max_speed'])
         step_speed_vector = {
             #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
             'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),
@@ -382,7 +393,6 @@ class Printer(Thread):
                 e_move_config['type'] = 'way'
         else:
             e_move_config = None
-
 
         return x_move_config, y_move_config, z_move_config, e_move_config
 

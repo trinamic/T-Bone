@@ -18,9 +18,9 @@
 //#define DEBUG_HOMING_STATUS
 //#define DEBUG_ENDSTOPS
 
-#define DEBUG_MOTION
+//#define DEBUG_MOTION
 //#define DEBUG_MOTION_TRACE
-#define DEBUG_MOTION_TRACE_SHORT
+//#define DEBUG_MOTION_TRACE_SHORT
 //#define DEBUG_MOTOR_QUEUE
 //#define DEBUG_MOTION_STATUS
 //#define DEBUG_X_POS
@@ -65,21 +65,28 @@ const char homing_max_following_motors = nr_of_controlled_motors - 1;
 #define INT_4361_2_PIN 2
 #define INT_4361_3_PIN 7
 
+#define TEMP1_PIN A0
+#define TEMP2_PIN A1
+#define TEMP3_PIN A2
+
+#define FB1_PIN A4
+#define FB2_PIN A5
+
 TMC4361_info motors[nr_of_coordinated_motors] = {
   {
     INT_4361_1_PIN,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION        }
+    DEFAULT_STEPS_PER_REVOLUTION          }
   ,
   {
     INT_4361_2_PIN,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION         }
+    DEFAULT_STEPS_PER_REVOLUTION           }
   ,
   {
     INT_4361_3_PIN,4, motor_3_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION         }
+    DEFAULT_STEPS_PER_REVOLUTION           }
 };
 
 
@@ -104,16 +111,28 @@ CmdMessenger messenger = CmdMessenger(Serial1);
 Metro watchDogMetro = Metro(1000); 
 
 void setup() {
+  //switch the analog pins as innput to hand them over to the BBB
+  pinModeFast(TEMP1_PIN,INPUT);
+  digitalWriteFast(TEMP1_PIN,LOW);
+  pinModeFast(TEMP2_PIN,INPUT);
+  digitalWriteFast(TEMP2_PIN,LOW);
+  pinModeFast(TEMP3_PIN,INPUT);
+  digitalWriteFast(TEMP3_PIN,LOW);
+  pinModeFast(FB1_PIN,INPUT);
+  digitalWriteFast(FB1_PIN,LOW);
+  pinModeFast(FB1_PIN,INPUT);
+  digitalWriteFast(FB1_PIN,LOW);
+
   //initialize SPI
   SPI.begin();
   //SPI.setClockDivider(SPI_CLOCK_DIV4);
 
   // Use HWBE as Output
   DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
-  
+
   // Analog reference AREF
   analogReference(EXTERNAL);
-  
+
   //set the TMC4361 ipns correctly
   prepareTMC4361();
   //set the TMMC5041 pins correctly
@@ -143,7 +162,7 @@ void setup() {
 
   //finally signal that we are ready
   watchDogStart();
- 
+
 }
 
 void loop() {
@@ -168,6 +187,7 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 
 
