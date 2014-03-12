@@ -178,7 +178,7 @@ class Printer(Thread):
                 #get the next movement from stack
                 movement = self._print_queue.next_movement(self._print_queue_wait_time)
                 step_pos, step_speed_vector = self._add_movement_calculations(movement)
-                x_move_config, y_move_config, z_move_config = self._generate_move_config(movement, step_pos,
+                x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement, step_pos,
                                                                                          step_speed_vector)
                 self._move(movement, step_pos, x_move_config, y_move_config, z_move_config)
             except Empty:
@@ -305,19 +305,22 @@ class Printer(Thread):
         step_pos = {
             'x': convert_mm_to_steps(movement['x'], self.axis['x']['steps_per_mm']),
             'y': convert_mm_to_steps(movement['y'], self.axis['y']['steps_per_mm']),
-            'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm'])
+            'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm']),
+            'e': convert_mm_to_steps(movement['e'], self.axis['e']['steps_per_mm'])
         }
-        max_z_speed = min(movement['target_speed'], self.axis['z']['max_speed'])
+        relative_move_vector = movement['relative_move_vector']
+        z_speed = min(abs(relative_move_vector['v']*relative_move_vector['z']), self.axis['z']['max_speed'])
+        e_speed = min(abs(relative_move_vector['v']*relative_move_vector['e']), self.axis['z']['max_speed'])
         step_speed_vector = {
             #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
             'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),
             'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']),
-            'z': convert_mm_to_steps(max_z_speed, self.axis['z']['steps_per_mm'])
+            'z': convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']),
+            'e': convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm'])
         }
         return step_pos, step_speed_vector
 
     def _generate_move_config(self, movement, step_pos, step_speed_vector):
-        #todo can't we null movements if there is no delta??
         def _axis_movement_template(axis):
             return {
                 'motor': axis['motor'],
@@ -369,7 +372,19 @@ class Printer(Thread):
         else:
             z_move_config = None
 
-        return x_move_config, y_move_config, z_move_config
+        if movement['delta_e']:
+            e_move_config = _axis_movement_template(self.axis['e'])
+            e_move_config['target'] = step_pos['e']
+            e_move_config['speed'] = abs(step_speed_vector['e'])
+            if 'e_stop' in movement:
+                e_move_config['type'] = 'stop'
+            else:
+                e_move_config['type'] = 'way'
+        else:
+            e_move_config = None
+
+
+        return x_move_config, y_move_config, z_move_config, e_move_config
 
     def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config):
         move_vector = movement['relative_move_vector']
@@ -442,6 +457,7 @@ class PrintQueue():
         #calculate the target
         self._extract_movement_values(move, target_position)
         #and see how fast we can allowable go
+        #TODO currently the maximum achievable speed only considers x & y movements
         maximum_achievable_speed = self._maximum_achievable_speed(move)
         move['max_achievable_speed_vector'] = maximum_achievable_speed
         #and since we do not know it better the first guess is that the final speed is the max speed
@@ -525,8 +541,9 @@ class PrintQueue():
         move['delta_y'] = move['y'] - last_y
         move['delta_z'] = move['z'] - last_z
         move['delta_e'] = move['e'] - last_e
-        move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_e'])
-        #save the move vector for later use …
+        move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_z'], move['delta_e'])
+        move_vector['v'] = move['target_speed'] / move_vector['l']
+        #save the move vector for later use ...
         move['relative_move_vector'] = move_vector
 
     def _maximum_achievable_speed(self, move):
@@ -609,6 +626,7 @@ class PrintQueue():
         y_bow_ = self.axis['y']['bow']
 
         max_speed = move['speed']
+        #todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
         for movement in reversed(self.planning_list):
             #todo in theory we can stop somewhere …
             delta_x = movement['delta_x']
