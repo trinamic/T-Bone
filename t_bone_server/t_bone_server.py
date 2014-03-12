@@ -60,15 +60,6 @@ def print_page():
         else:
             if _printer.prepared_file:
                 if request.form and 'really' in request.form:
-                    axis_to_home = []
-                    for axis in _printer.axis:
-                        printer_axis = _printer.axis[axis]
-                        if not 'homed' in printer_axis or not printer_axis['homed']:
-                            _logger.info("Homing axis %s before printing", axis)
-                            axis_to_home.append(axis)
-                    if axis_to_home:
-                        _printer.home(axis_to_home)
-
                     _logger.info("Printing %s", _printer.prepared_file)
                     global _print_thread
                     _print_thread = GCodePrintThread(_printer.prepared_file, _printer, None)

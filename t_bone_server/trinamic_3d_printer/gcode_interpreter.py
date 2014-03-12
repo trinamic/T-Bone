@@ -49,15 +49,7 @@ def read_gcode_to_printer(line, printer):
         pass
     elif "G0" == gcode.code or "G1" == gcode.code:  #TODO G1 & G0 is different
         #we simply interpret the arguments as positions
-        positions = {}
-        for argument in gcode.options:
-            position = decode_text_and_number(argument)
-            if position:
-                positions[position[0].lower()] = position[1]
-            else:
-                _logger.warn("Unable to interpret position %s in %s", argument, line)
-        if 'f' in positions:
-            positions['target_speed'] = positions['f'] / 60.0
+        positions = _decode_positions(gcode, line)
         printer.move_to(positions)
     elif "G20" == gcode.code:
         #we cannot switch to inches - sorry folks
@@ -65,13 +57,43 @@ def read_gcode_to_printer(line, printer):
     elif "G21" == gcode.code:
         _logger.info("Using metric units according to the g code")
     elif "G28" == gcode.code:
-        #we could home
-        pass
+        positions = _decode_positions(gcode, line)
+        homing_axis = []
+        if positions:
+            for axis_name in positions:
+                if axis_name in printer.axis:
+                    if printer.axis[axis_name]['homeable']:
+                        _logger.info("Configuring axis %s for homing", axis_name)
+                        homing_axis.append(axis_name)
+                    else:
+                        _logger.warn("Ignoring not homeable axis %s for homing", axis_name)
+                else:
+                    _logger.warn("Ignoring unknown axis %s for homing", axis_name)
+        else:
+            for axis_name, axis in printer.axis.iteritems():
+                if axis['homeable']:
+                    homing_axis.append(axis_name)
+        _logger.info("Homing axis %s", homing_axis)
+        printer.home(homing_axis)
     elif "G92" == gcode.code:
         #set XPOS
         pass
     else:
         _logger.warn("Unknown GCODE %s ignored", gcode)
+
+
+def _decode_positions(gcode, line):
+    positions = {}
+    if gcode.options:
+        for argument in gcode.options:
+            position = decode_text_and_number(argument)
+            if position:
+                positions[position[0].lower()] = position[1]
+            else:
+                _logger.warn("Unable to interpret position %s in %s", argument, line)
+    if 'f' in positions:
+        positions['target_speed'] = positions['f'] / 60.0
+    return positions
 
 
 class GCode:
