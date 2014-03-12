@@ -400,7 +400,11 @@ class Printer(Thread):
                 y_move_config['acceleration'] = x_move_config[
                                                     'acceleration'] * y_factor  # todo or the max of the config/scaeld??
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
-
+                #move
+                move_commands = [
+                    x_move_config,
+                    y_move_config
+                ]
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'] * self._x_step_conversion)
                 _logger.debug(
@@ -410,12 +414,11 @@ class Printer(Thread):
                 x_move_config['acceleration'] = y_move_config[
                                                     'acceleration'] * x_factor  # todo or the max of the config/scaeld??
                 x_move_config['startBow'] = y_move_config['startBow'] * x_factor
-
-            #move
-            move_commands = [
-                x_move_config,
-                y_move_config
-            ]
+                #move
+                move_commands = [
+                    y_move_config,
+                    x_move_config
+                ]
         if z_move_config:
             move_commands.extend(z_move_config)
 
