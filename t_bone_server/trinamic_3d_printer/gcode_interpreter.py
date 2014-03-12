@@ -75,9 +75,19 @@ def read_gcode_to_printer(line, printer):
                     homing_axis.append(axis_name)
         _logger.info("Homing axis %s", homing_axis)
         printer.home(homing_axis)
+    elif "G90" == gcode.code:
+        _logger.info("Using absolute positions")
+        #todo we can support relative positions - if we are a bit careful
+    elif "G91" == gcode.code:
+        raise PrinterError("Currently only absolute positions are supported!")
     elif "G92" == gcode.code:
         #set XPOS
         pass
+    elif "M82" == gcode.code:
+        _logger.info("Using absolute positions")
+        #todo we can support relative positions - if we are a bit careful
+    elif "M83" == gcode.code:
+        raise PrinterError("Currently only absolute positions are supported!")
     else:
         _logger.warn("Unknown GCODE %s ignored", gcode)
 
