@@ -1,5 +1,16 @@
 __author__ = 'marcus'
 
+class heater(object):
+    def __init__(self, thermometer, output, current_measurement = None, maximum_duty_cycle = 1.0):
+        self._thermometer = thermometer
+        self._output = output
+        self._current_measurement = current_measurement
+        self._maximum_duty_cycle = maximum_duty_cycle
+
+        self.active=False
+        self.temperature = 0.0
+        self.current_consumption = 0.0
+
 
 #from https://github.com/steve71/RasPiBrew
 class pidpy(object):
@@ -34,7 +45,7 @@ class pidpy(object):
         self.pp = 0.0
         self.pi = 0.0
         self.pd = 0.0
-        if (self.ti == 0.0):
+        if self.ti == 0.0:
             self.k0 = 0.0
         else:
             self.k0 = self.kc * self.ts / self.ti
