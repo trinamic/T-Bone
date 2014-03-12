@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 _axis_config = {
     #maps axis name to config entry
     'x': 'x-axis',
-    'y': 'x-axis',
+    'y': 'y-axis',
     'z': 'z-axis',
     'e': 'extruder',
 }
