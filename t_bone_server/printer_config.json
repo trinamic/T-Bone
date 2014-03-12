@@ -80,7 +80,8 @@
     "extruder": {
         "motor": 3,
         "current": 0.8,
-        "steps-per-mm": 1420.8984,
+        "steps-per-mm": 12160,
+        "hint":"this may be wrong and  we may want more realistic extrusion values - as in real volume",
         "max-speed": 300,
         "max-acceleration": 3000,
         "bow-acceleration": 10000,
