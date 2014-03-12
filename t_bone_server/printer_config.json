@@ -86,6 +86,6 @@
         "bow-acceleration": 10000,
         "time-reference":"time",
         "inverted": false,
-        "inverted_comment": "not fully functional yet",
+        "inverted_comment": "not fully functional yet"
     }
 }

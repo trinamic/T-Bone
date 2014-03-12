@@ -11,6 +11,13 @@ from trinamic_3d_printer.helpers import convert_mm_to_steps, find_shortest_vecto
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
+_axis_config = {
+    #maps axis name to config entry
+    'x':'x-axis',
+    'y':'x-axis',
+    'z':'x-axis',
+    'e':'extruder',
+}
 
 
 class Printer(Thread):
@@ -19,7 +26,6 @@ class Printer(Thread):
         self.ready = False
         self.printing = False
         self.config = None
-        self.axis = {'x': {}, 'y': {}, 'z': {}}
         self.homed_axis = []
 
         self.printer_thread = None
@@ -54,10 +60,12 @@ class Printer(Thread):
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
 
-        self._configure_axis(self.axis['x'], config["x-axis"])
-        self._configure_axis(self.axis['y'], config["y-axis"])
-        self._configure_axis(self.axis['z'], config["z-axis"])
-        self._configure_axis(self.axis['e'], config["extruder"])
+        self.axis = {}
+        for axis_name, config_name in _axis_config.iteritems():
+            _logger.info("Configuring axis \'%s\' according to conf \'%s\'", axis_name, config_name)
+            axis = {}
+            self.axis[axis_name] = axis
+            self._configure_axis(axis, config["config_name"])
         self._postconfig()
 
     def _postconfig(self):
