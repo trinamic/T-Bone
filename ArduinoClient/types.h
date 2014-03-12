@@ -4,6 +4,7 @@ enum movement_type {
   follow_to,
   move_over,
   follow_over, 
+  set_position,
   uninitialized
 };
 

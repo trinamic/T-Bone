@@ -13,6 +13,7 @@ enum {
   kMove = 10,
   kMovement = 11, //controls if a new movement is started or a running one is stopped
   kHome=12, //Home one axis
+  kSetPos = 12, //set an axis position
   //Kommandos zur Information
   kPos = 30,
   kCommands = 31,
@@ -35,6 +36,7 @@ void attachCommandCallbacks() {
   messenger.attach(kInvertMotor,onInvertMotor);
   messenger.attach(kMove, onMove);
   messenger.attach(kMovement, onMovement);
+  messenger.attach(kSetPos, onSetPosition);
   messenger.attach(kPos, onPosition);
   messenger.attach(kHome, onHome);
   messenger.attach(kCommands, onCommands);
@@ -273,6 +275,7 @@ void onMove() {
   for (char i=0; i<following_motors; i++) {
     moveQueue.push(followers[i]);
   }
+  
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
@@ -377,6 +380,28 @@ void onMovement() {
       startMotion(initial_command_buffer_depth);
     }
   }
+}
+
+void onSetPosition() {
+  char motor = decodeMotorNumber(true);
+  if (motor<0) {
+    return;
+  }
+  long newPos = messenger.readLongArg();
+  if (newPos<0) {
+    messenger.sendCmd (kError,F("cannot move beyond home"));
+    return;
+  }
+
+  //configure a movement
+  movement move;
+  move.type = set_position;
+  move.motor=motor;
+  moveQueue.push(move);
+  
+  messenger.sendCmdStart(kOK);
+  messenger.sendCmdArg(moveQueue.count());
+  messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
 }
 
 void onPosition() {
