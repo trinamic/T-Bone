@@ -21,23 +21,6 @@ _axis_config = {
     'z': 'z-axis',
     'e': 'extruder',
 }
-_pwm_config = [
-    {
-        'temp': 'P8_39',
-        'out': 'P8_16',
-        'high_power':True
-    },
-    {
-        'temp': 'P8_40',
-        'out': 'P8_14',
-        'high_power':True
-    },
-    {
-        'temp': 'P8_47',
-        'out': 'P9_19',
-        'high_power':False
-    }
-]
 
 
 class Printer(Thread):
