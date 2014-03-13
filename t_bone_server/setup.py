@@ -36,7 +36,7 @@ def params():
 
     packages = find_packages(where="src")
     package_dir = {"t_bone": "src/t_bone"}
-    test_suite="tests"
+    test_suite = "tests"
 
     include_package_data = True
     zip_safe = False
