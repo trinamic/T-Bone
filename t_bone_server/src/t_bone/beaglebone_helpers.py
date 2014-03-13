@@ -11,18 +11,18 @@ _default_serial_port = "/dev/ttyO1"
 _create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
 _pwm_config = [
     {
-        'temp': 'P8_39',
-        'out': 'P8_16',
+        'temp': 'P9_39',
+        'out': 'P9_16',
         'high_power':True
     },
     {
-        'temp': 'P8_40',
-        'out': 'P8_14',
+        'temp': 'P9_40',
+        'out': 'P9_14',
         'high_power':True
     },
     {
-        'temp': 'P8_47',
-        'out': 'P9_19',
+        'temp': 'P9_47',
+        'out': 'P8_19',
         'high_power':False
     }
 ]
