@@ -41,7 +41,7 @@ def params():
     include_package_data = True
     zip_safe = False
 
-    tests_require = open("test/requirements.txt").read().split("\n")
+    tests_require = open("tests/requirements.txt").read().split("\n")
     install_requires = open("requirements.txt").read().split("\n")
 
     #entry_points = {
