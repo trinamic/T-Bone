@@ -2,3 +2,4 @@ numpy
 flask==0.9
 werkzeug==0.8.3
 pyserial>=2.6
+Adafruit_BBIO>=0.0.19
