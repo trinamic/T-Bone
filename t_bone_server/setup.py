@@ -42,7 +42,7 @@ def params():
     zip_safe = False
 
     tests_require = open("test/requirements.txt").read().split("\n")
-    install_requires = open("requirements.txt").read().split("\n") + test_requirements
+    install_requires = open("requirements.txt").read().split("\n")
 
     #entry_points = {
     #"console_scripts": [
