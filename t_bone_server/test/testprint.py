@@ -2,14 +2,16 @@
 
 This serves as a long usage message.
 """
-from Adafruit_BBIO import GPIO
 import json
 import logging
 import os
 import sys
 import getopt
-from trinamic_3d_printer.Printer import Printer
-from trinamic_3d_printer.gcode import read_gcode_to_printer
+
+from Adafruit_BBIO import GPIO
+from src.trinamic_3d_printer.Printer import Printer
+from src.trinamic_3d_printer.gcode import read_gcode_to_printer
+
 
 _config_file = "testprint-config.json"
 _print_file = "../reference designs/test-model.gcode"

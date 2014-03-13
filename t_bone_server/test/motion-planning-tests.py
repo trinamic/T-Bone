@@ -1,10 +1,11 @@
 from Queue import Empty, Full
-from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, \
-    has_length
 from math import sqrt
 from threading import Thread
 import unittest
-from trinamic_3d_printer.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
+
+from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, \
+    has_length
+from src.trinamic_3d_printer.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
 
 
 class VectorTests(unittest.TestCase):

@@ -1,4 +1,4 @@
-from trinamic_3d_printer.gcode_interpreter import GCode, decode_gcode_line, decode_text_and_number
+from src.trinamic_3d_printer.gcode_interpreter import decode_gcode_line, decode_text_and_number
 from hamcrest import *
 
 __author__ = 'marcus'

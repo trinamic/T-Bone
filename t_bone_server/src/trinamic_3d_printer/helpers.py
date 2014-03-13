@@ -1,5 +1,7 @@
 from numpy import sqrt
-from trinamic_3d_printer import machine
+
+from src.trinamic_3d_printer import machine
+
 
 __author__ = 'marcus'
 

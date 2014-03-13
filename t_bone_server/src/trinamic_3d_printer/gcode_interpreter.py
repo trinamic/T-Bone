@@ -1,8 +1,10 @@
 import logging
 import re
 from threading import Thread
-from trinamic_3d_printer.helpers import file_len
-from trinamic_3d_printer.printer import PrinterError
+
+from src.trinamic_3d_printer.helpers import file_len
+from src.trinamic_3d_printer.printer import PrinterError
+
 
 __author__ = 'marcus'
 

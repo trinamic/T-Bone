@@ -2,12 +2,15 @@
 from Queue import Queue, Empty
 from copy import deepcopy
 import logging
-from math import sqrt, copysign
-from numpy import sign
+from math import copysign
 from threading import Thread
-from trinamic_3d_printer.machine import Machine
+
+from numpy import sign
+
+from src.trinamic_3d_printer.machine import Machine
 from trinamic_3d_printer.helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
     convert_velocity_clock_ref_to_realtime_ref, convert_acceleration_clock_ref_to_realtime_ref
+
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
