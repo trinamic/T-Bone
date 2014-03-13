@@ -62,3 +62,9 @@ class GCodeTest(unittest.TestCase):
         assert_that(result, has_length(2))
         assert_that(result[0], equal_to("Y"))
         assert_that(result[0], 4.157)
+
+def suite():
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+    suite.addTest(loader.loadTestsFromTestCase(GCodeTest))
+    return suite
