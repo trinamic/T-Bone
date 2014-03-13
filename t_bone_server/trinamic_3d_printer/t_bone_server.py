@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request
-import flask
-import json
 import logging
 import os
 import threading
+
+from flask import Flask, render_template, request
+import flask
 from werkzeug.utils import secure_filename
-import helpers
-import json_config_file
+import beaglebone_helpers
+from trinamic_3d_printer import json_config_file
 from trinamic_3d_printer.gcode_interpreter import GCodePrintThread
+
 
 _logger = logging.getLogger(__name__)
 #this is THE printer - just a dictionary with anything
@@ -48,7 +49,7 @@ def print_page():
     if request.method == 'POST':
         if request.files and 'printfile' in request.files:
             file = request.files['printfile']
-            if file and helpers.allowed_file(file.filename):
+            if file and beaglebone_helpers.allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 try:
@@ -152,7 +153,7 @@ if __name__ == '__main__':
         if not os.path.exists(UPLOAD_FOLDER):
             os.mkdir(UPLOAD_FOLDER)
         if not _printer:
-            _printer = helpers.create_printer()
+            _printer = beaglebone_helpers.create_printer()
             config = json_config_file.read()
             _printer.connect()
             _printer.configure(config)
