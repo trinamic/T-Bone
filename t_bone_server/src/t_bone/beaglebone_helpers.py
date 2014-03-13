@@ -21,7 +21,7 @@ _pwm_config = [
         'high_power':True
     },
     {
-        'temp': 'P9_47',
+        'temp': 'P9_37',
         'out': 'P8_19',
         'high_power':False
     }
