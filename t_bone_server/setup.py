@@ -35,7 +35,7 @@ def params():
     license = "AGPLv3"
 
     packages = find_packages(where="src")
-    package_dir = {"octoprint": "src/octoprint"}
+    package_dir = {"t_bone": "src/t_bone"}
 
     include_package_data = True
     zip_safe = False
