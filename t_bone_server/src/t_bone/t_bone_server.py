@@ -6,8 +6,8 @@ from flask import Flask, render_template, request
 import flask
 from werkzeug.utils import secure_filename
 import beaglebone_helpers
-from trinamic_3d_printer.gcode_interpreter import GCodePrintThread
-from src.trinamic_3d_printer import json_config_file
+from gcode_interpreter import GCodePrintThread
+from t_bone import json_config_file
 
 
 _logger = logging.getLogger(__name__)

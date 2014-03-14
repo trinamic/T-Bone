@@ -1,7 +1,7 @@
 import os
 
-from src.trinamic_3d_printer.t_bone_server import _logger
-from src.trinamic_3d_printer.printer import Printer
+from t_bone_server import _logger
+from printer import Printer
 
 
 __author__ = 'marcus'

@@ -7,8 +7,8 @@ from threading import Thread
 
 from numpy import sign
 
-from src.trinamic_3d_printer.machine import Machine
-from trinamic_3d_printer.helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
+from t_bone.machine import Machine
+from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
     convert_velocity_clock_ref_to_realtime_ref, convert_acceleration_clock_ref_to_realtime_ref
 
 
