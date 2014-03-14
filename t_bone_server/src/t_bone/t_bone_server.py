@@ -16,7 +16,9 @@ _printer = None
 _print_thread = None
 _printer_busy = False
 _printer_busy_lock = threading.RLock()
-app = Flask(__name__)
+app = Flask(__name__,
+            static_folder='static',
+            static_url_path='')
 UPLOAD_FOLDER = '/var/print_uploads'
 MAX_CONTENT_LENGTH = 2 * 1024 * 1024 * 1024
 
