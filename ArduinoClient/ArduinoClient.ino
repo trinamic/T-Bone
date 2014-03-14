@@ -3,7 +3,6 @@
 #include <SPI.h>
 #include <QueueArray.h>
 #include <TMC26XGenerator.h>
-#include <Metro.h>
 #include <CmdMessenger.h>
 
 #include "constants.h"
@@ -14,7 +13,7 @@
 //##################
 
 //#define DEBUG_MOTOR_CONTFIG
-#define DEBUG_HOMING
+//#define DEBUG_HOMING
 //#define DEBUG_HOMING_STATUS
 //#define DEBUG_ENDSTOPS
 
@@ -29,7 +28,7 @@
 
 //#define DEBUG_SPI
 
-//#define DEBUG_STATUS
+#define DEBUG_STATUS
 //#define DEBUG_TMC5041_STATUS
 
 
@@ -76,17 +75,17 @@ TMC4361_info motors[nr_of_coordinated_motors] = {
   {
     INT_4361_1_PIN,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION          }
+    DEFAULT_STEPS_PER_REVOLUTION            }
   ,
   {
     INT_4361_2_PIN,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION           }
+    DEFAULT_STEPS_PER_REVOLUTION             }
   ,
   {
     INT_4361_3_PIN,4, motor_3_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION           }
+    DEFAULT_STEPS_PER_REVOLUTION             }
 };
 
 
@@ -107,8 +106,6 @@ QueueArray<movement> moveQueue = QueueArray<movement>(COMMAND_QUEUE_LENGTH);
 
 //somebody must deal with our commands
 CmdMessenger messenger = CmdMessenger(Serial1);
-//watchdog Metro
-Metro watchDogMetro = Metro(1000); 
 
 void setup() {
   //switch the analog pins as innput to hand them over to the BBB
@@ -170,7 +167,12 @@ void loop() {
   checkMotion();
   // Process incoming serial data, and perform callbacks
   messenger.feedinSerialData();
-  if (watchDogMetro.check()) {
+  /* TODO as real watchdog?
+   if (watchDogMetro.check()) {
+   watchDogPing();
+   }
+   */
+  if (millis()%1000==0) {
     watchDogPing();
   }
 }
@@ -187,6 +189,7 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 
 
