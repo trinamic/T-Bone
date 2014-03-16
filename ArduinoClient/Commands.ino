@@ -17,6 +17,8 @@ enum {
   //Kommandos zur Information
   kPos = 30,
   kCommands = 31,
+  //weiteres
+  kCurrentReading = 41,
   //Sonstiges
   kOK = 0,
   kError =  -9,
@@ -40,16 +42,17 @@ void attachCommandCallbacks() {
   messenger.attach(kPos, onPosition);
   messenger.attach(kHome, onHome);
   messenger.attach(kCommands, onCommands);
-}
+  messenger.attach(kCurrentReading, onCurrentReading);
+  }
 
-// ------------------  C A L L B A C K S -----------------------
+  // ------------------  C A L L B A C K S -----------------------
 
-// Fehlerfunktion wenn ein Kommand nicht bekannt ist
-void OnUnknownCommand() {
-  messenger.sendCmd(kError,F("Unknonwn command"));
-  Serial.print(messenger.CommandID());
-  Serial.println(F(" - unknown command"));
-}
+  // Fehlerfunktion wenn ein Kommand nicht bekannt ist
+  void OnUnknownCommand() {
+    messenger.sendCmd(kError,F("Unknonwn command"));
+    Serial.print(messenger.CommandID());
+    Serial.println(F(" - unknown command"));
+  }
 
 void onInit() {
   //initialize the 43x
@@ -582,7 +585,23 @@ void onCommands() {
   }  
   Serial.println();
 #endif
+}
 
+void onCurrentReading() {
+  //todo this is a hack because the current reading si onyl avail on arduino
+  char number = messenger.readIntArg();
+  if (number!=0) {
+    number = 1;
+  }
+  unsigned int value = 0;
+  for (char i=0; i<4; i++) {
+    value += analogRead(4+number);
+  }
+  value >> 2;
+  messenger.sendCmdStart(kCurrentReading);
+  messenger.sendCmdArg(number,DEC);
+  messenger.sendCmdArg(value);
+  messenger.sendCmdEnd();
 }
 
 void watchDogPing() {
@@ -661,6 +680,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 

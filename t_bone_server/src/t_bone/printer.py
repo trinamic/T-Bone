@@ -65,15 +65,22 @@ class Printer(Thread):
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
         if 'heated-bed' in printer_config:
-            pwm_number = printer_config['heated-bed']['pwm']
+            pwm_number = printer_config['heated-bed']['pwm'] - 1
             #do we have a maximum duty cycle??
             max_duty_cycle = None
             if 'max-duty-cycle' in printer_config['heated-bed']:
                 max_duty_cycle = printer_config['heated-bed']['max-duty-cycle']
-            bed_thermometer = Thermometer(themistor_type=printer_config['heated-bed']['type'], analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
-            self.heated_bed = Heater(thermometer= bed_thermometer,
+            if 'current_input' in beaglebone_helpers.pwm_config[pwm_number]:
+                current_pin = beaglebone_helpers.pwm_config[pwm_number]['current_input']
+            else:
+                current_pin = None
+            bed_thermometer = Thermometer(themistor_type=printer_config['heated-bed']['type'],
+                                          analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
+            self.heated_bed = Heater(thermometer=bed_thermometer,
                                      output=beaglebone_helpers.pwm_config[pwm_number]['out'],
-                                     maximum_duty_cycle=max_duty_cycle)
+                                     maximum_duty_cycle=max_duty_cycle,
+                                     current_measurement=current_pin,
+                                     machine=self.machine)
 
         self.axis = {}
         for axis_name, config_name in _axis_config.iteritems():
@@ -684,6 +691,7 @@ def get_target_velocity(start_velocity, length, jerk):
     target_velocity = pow(abs(length), 0.666666666666) * jerk
     target_velocity = copysign(target_velocity, length) + start_velocity
     return target_velocity
+
 
 class PrinterError(Exception):
     def __init__(self, msg):

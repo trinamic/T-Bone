@@ -1,4 +1,4 @@
-from Adafruit_BBIO import ADC
+from Adafruit_BBIO import ADC, PWM, GPIO
 from flask import logging
 from threading import Thread
 import time
@@ -11,19 +11,31 @@ ADC.setup()
 
 
 class Heater(Thread):
-    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None):
+    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None, machine=None, pwm_frequency=None, pwm_polarity=None):
         super(Heater, self).__init__()
         self._thermometer = thermometer
         self._output = output
-        self._current_measurement = current_measurement
         if maximum_duty_cycle:
             self._maximum_duty_cycle = float(maximum_duty_cycle)
         else:
             self._maximum_duty_cycle = 1.0
+        self._current_measurement = current_measurement
+        self._machine = machine
+
         self.active = False
         self.set_temperature = 0.0
         self.temperature = 0.0
         self.current_consumption = 0.0
+        self.duty_cycle = 0.0
+        if not pwm_frequency:
+            self.pwm_frequency = 1000
+        else:
+            self.pwm_frequency = pwm_frequency
+        if not self.pwm_polarity:
+            self.pwm_polarity = 1
+        else:
+            self.pwm_polarity = pwm_polarity
+
         self.readout_delay = 1
 
         self.start()
@@ -32,19 +44,34 @@ class Heater(Thread):
         self.active = False
 
     def run(self):
+        PWM.start(self._output, 0.0, self.pwm_frequency, self.pwm_polarity)
         self.active = True
         while self.active:
             self.temperature = self._thermometer.read()
+            self._apply_duty_cycle()
             time.sleep(self.readout_delay)
 
-class Thermometer(object):
-    def __init__(self, themistor_type, analog_input):
-        self._thermistor_type = themistor_type
-        self._input = analog_input
+    def _apply_duty_cycle(self):
+        PWM.stop(self._output)
+        #todo this is a hack because the current reading si onyl avail on arduino
+        GPIO.setup(self._output, GPIO.OUT)
+        GPIO.output(self._output, GPIO.HIGH)
+        if self._current_measurement:
+            self.current_consumption = self._machine.read_current(self._current_measurement)
+        GPIO.output(self._output, GPIO.LOW)
+        GPIO.cleanup()
+        PWM.start(self._output, min(self.duty_cycle, self._maximum_duty_cycle), self.pwm_frequency, self.pwm_polarity)
 
-    def read(self):
-        raw_value =  ADC.read_raw(self._input) #read up to 4096
-        return thermistors.get_thermistor_reading(self._thermistor_type, raw_value)
+
+    class Thermometer(object):
+        def __init__(self, themistor_type, analog_input):
+            self._thermistor_type = themistor_type
+            self._input = analog_input
+
+        def read(self):
+            raw_value = ADC.read_raw(self._input)  #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+            raw_value = ADC.read_raw(self._input)  #read up to 4096
+            return thermistors.get_thermistor_reading(self._thermistor_type, raw_value)
 
 #from https://github.com/steve71/RasPiBrew
 class pidpy(object):

@@ -132,7 +132,7 @@ class Machine():
             #we lazily add the motor in the printer - since it is quite easy to remove it here
             following = [motor for motor in home_config['followers'] if motor != home_config['motor']]
         else:
-            following=None
+            following = None
 
         command.arguments = [
             int(home_config['motor']),
@@ -245,6 +245,18 @@ class Machine():
             _logger.error("Unable read motor position: %s", reply)
             raise MachineError("Unable read motor position", reply)
         return int(reply.arguments[0])
+
+    def read_current(self, input):
+        command = MachineCommand()
+        command.command_number = 41
+        command.arguments = [
+            int(input)
+        ]
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 42:
+            _logger.error("Unable read current: %s", reply)
+            raise MachineError("Unable read current", reply)
+        return int(reply.arguments[1])
 
 
 class _MachineConnection:
