@@ -7,9 +7,9 @@ from threading import Thread
 
 from numpy import sign
 import beaglebone_helpers
-from heater import Heater
+from heater import Heater, Thermometer
 
-from t_bone.machine import Machine
+from machine import Machine
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
     convert_velocity_clock_ref_to_realtime_ref, convert_acceleration_clock_ref_to_realtime_ref
 
@@ -70,7 +70,8 @@ class Printer(Thread):
             max_duty_cycle = None
             if 'max-duty-cycle' in printer_config['heated-bed']:
                 max_duty_cycle = printer_config['heated-bed']['max-duty-cycle']
-            self.heated_bed = Heater(thermometer=beaglebone_helpers.pwm_config[pwm_number]['temp'],
+            bed_thermometer = Thermometer(themistor_type=printer_config['heated-bed']['type'], analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
+            self.heated_bed = Heater(thermometer= bed_thermometer,
                                      output=beaglebone_helpers.pwm_config[pwm_number]['out'],
                                      maximum_duty_cycle=max_duty_cycle)
 
@@ -683,7 +684,6 @@ def get_target_velocity(start_velocity, length, jerk):
     target_velocity = pow(abs(length), 0.666666666666) * jerk
     target_velocity = copysign(target_velocity, length) + start_velocity
     return target_velocity
-
 
 class PrinterError(Exception):
     def __init__(self, msg):

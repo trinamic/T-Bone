@@ -90,7 +90,7 @@
         "home-retract": 2.5,
         "heated-bed": {
             "pwm": 2,
-            "type": "epcos-10k",
+            "type": "epcos-100k",
             "max-duty-cycle": 0.5
         }
     }

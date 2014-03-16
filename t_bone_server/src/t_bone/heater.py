@@ -2,6 +2,7 @@ from Adafruit_BBIO import ADC
 from flask import logging
 from threading import Thread
 import time
+import thermistors
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
@@ -33,9 +34,17 @@ class Heater(Thread):
     def run(self):
         self.active = True
         while self.active:
-            self.temperature = ADC.read_raw(self._thermometer) #read up to 4096
+            self.temperature = self._thermometer.read()
             time.sleep(self.readout_delay)
 
+class Thermometer(object):
+    def __init__(self, themistor_type, analog_input):
+        self._thermistor_type = themistor_type
+        self._input = analog_input
+
+    def read(self):
+        raw_value =  ADC.read_raw(self._input) #read up to 4096
+        return thermistors.get_thermistor_reading(self._thermistor_type, raw_value)
 
 #from https://github.com/steve71/RasPiBrew
 class pidpy(object):

@@ -1,10 +1,10 @@
+from flask import logging
 import os
 
-from t_bone_server import _logger
 from printer import Printer
 
-
 __author__ = 'marcus'
+_logger = logging.getLogger(__name__)
 
 _reset_pin = "P9_12"
 _default_serial_port = "/dev/ttyO1"

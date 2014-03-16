@@ -1,8 +1,73 @@
+# coding=utf-8
 #thermistor table taken from current marlin software
 #see https:  #raw.github.com/ErikZalm/Marlin/Marlin_v1/Marlin/thermistortables.h
+from numpy import NaN
+
+
+def get_thermistor_reading(thermistor, raw_value):
+    #find the thermistor
+    thermistortable = None
+    if thermistor == "100k":
+        thermistortable = bed_thermistor_100k
+    elif thermistor == "200k":
+        thermistortable = bed_thermistor_200k
+    elif thermistor == "mendel-parts":
+        thermistortable = mendel_parts_thermistor
+    elif thermistor == "10k":
+        thermistortable = thermistor_10k
+    elif thermistor == "parcan-100k":
+        thermistortable = thermistor_parcan_100k
+    elif thermistor == "epcos-100k":
+        thermistortable = thermistor_epcos_100k
+    elif thermistor == "honeywell-100k":
+        thermistortable = thermistor_honeywell_100k
+    elif thermistor == "honeywell-135_104_LAF_J01":
+        thermistortable = thermistor_honeywell_135_104_LAF_J01
+    elif thermistor == "vishay-NTCS0603E3104FXT":
+        thermistortable = thermistor_vishay_NTCS0603E3104FXT
+    elif thermistor == "ge-sensing":
+        thermistortable = thermistor_ge_sensing
+    elif thermistor == "rs-198961":
+        thermistortable = thermistor_rs_198961
+    if not thermistor:
+        raise Exception("Unknown Thermistor" + thermistor)
+
+    #the tables are from 1024er based arduino
+    comparable_value = raw_value / 4.0
+    #find upper value
+    upper_value = int(comparable_value)
+    upper_temperature = None
+    while upper_value < 1024:
+        if upper_value in thermistortable:
+            upper_temperature = thermistortable[upper_value]
+            break
+        upper_value += 1
+    lower_value = int(comparable_value)
+    lower_temperature = None
+    while lower_value >= 0:
+        if lower_value in thermistortable:
+            lower_temperature = thermistortable[lower_value]
+            break
+        lower_value -= 1
+
+    #now decode it
+    if upper_temperature and lower_temperature:
+        value_difference = float(upper_value - lower_value)
+        temperature_difference = float(upper_temperature - lower_temperature)
+        return float(lower_temperature) \
+               + temperature_difference / value_difference \
+                 * (raw_value - lower_value) / value_difference
+    elif lower_temperature:
+        return lower_value
+    elif upper_temperature:
+        return upper_temperature
+    else:
+        #todo log or so?
+        return NaN
+
 
 #100k bed thermistor
-bed_termistor_100k = {
+bed_thermistor_100k = {
     23: 300,
     25: 295,
     27: 290,
@@ -67,7 +132,7 @@ bed_termistor_100k = {
 }
 
 #200k bed thermistor
-bed_thermistor_100k = {
+bed_thermistor_200k = {
     #200k ATC Semitec 204GT-2
     #Verified by linagee. Source: http:  #shop.arcol.hu/static/datasheets/thermistors.pdf
     # Calculated using 4.7kohm pullup, voltage divider math, and manufacturer provided temp/resistance
@@ -138,7 +203,7 @@ mendel_parts_thermistor = {
 }
 
 #10k thermistor
-themistor_10k = {
+thermistor_10k = {
     1: 430,
     54: 137,
     107: 107,
