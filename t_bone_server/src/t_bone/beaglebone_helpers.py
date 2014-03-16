@@ -9,21 +9,21 @@ __author__ = 'marcus'
 _reset_pin = "P9_12"
 _default_serial_port = "/dev/ttyO1"
 _create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
-_pwm_config = [
+pwm_config = [
     {
         'temp': 'P9_39',
         'out': 'P9_16',
-        'high_power':True
+        'high_power': True
     },
     {
         'temp': 'P9_40',
         'out': 'P9_14',
-        'high_power':True
+        'high_power': True
     },
     {
         'temp': 'P9_37',
         'out': 'P8_19',
-        'high_power':False
+        'high_power': False
     }
 ]
 ALLOWED_EXTENSIONS = {'gcode'}
@@ -42,6 +42,7 @@ def create_printer():
 
     #basically the printer is just a bunch of stuff
     return printer
+
 
 def allowed_file(filename):
     return '.' in filename and \

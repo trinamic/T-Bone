@@ -1,8 +1,16 @@
+from Adafruit_BBIO import ADC
+from flask import logging
+from threading import Thread
+import time
+
 __author__ = 'marcus'
+_logger = logging.getLogger(__name__)
 
+ADC.setup()
 
-class Heater(object):
-    def __init__(self, thermometer, output, current_measurement=None, maximum_duty_cycle=None):
+class Heater(Thread):
+    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None):
+        super(Heater, self).__init__()
         self._thermometer = thermometer
         self._output = output
         self._current_measurement = current_measurement
@@ -10,11 +18,18 @@ class Heater(object):
             self._maximum_duty_cycle = float(maximum_duty_cycle)
         else:
             self._maximum_duty_cycle = 1.0
-
         self.active = False
+        self.set_temperature = 0.0
         self.temperature = 0.0
         self.current_consumption = 0.0
+        self.readout_delay = 1
 
+        self.start()
+
+    def run(self):
+        if self.start:
+            self.temperature = ADC.read_raw(self._thermometer)
+            time.sleep(self.readout_delay )
 
 #from https://github.com/steve71/RasPiBrew
 class pidpy(object):
