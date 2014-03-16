@@ -12,14 +12,14 @@ _create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
 pwm_config = [
     {
         'temp': 'P9_39',
-        'out': 'P9_16',
-        'current_input': 0,
+        'out': 'P9_14',
+        'current_input': 1,
         'high_power': True
     },
     {
         'temp': 'P9_40',
-        'out': 'P9_14',
-        'current_input': 1,
+        'out': 'P9_16',
+        'current_input': 0,
         'high_power': True
     },
     {

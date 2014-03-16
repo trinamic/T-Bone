@@ -11,7 +11,7 @@ ADC.setup()
 
 
 class Heater(Thread):
-    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None, machine=None, pwm_frequency=None, pwm_polarity=None):
+    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None, machine=None, pwm_frequency=None):
         super(Heater, self).__init__()
         self._thermometer = thermometer
         self._output = output
@@ -31,10 +31,6 @@ class Heater(Thread):
             self.pwm_frequency = 1000
         else:
             self.pwm_frequency = pwm_frequency
-        if not pwm_polarity:
-            self.pwm_polarity = 1
-        else:
-            self.pwm_polarity = pwm_polarity
 
         self.readout_delay = 1
 
@@ -44,7 +40,7 @@ class Heater(Thread):
         self.active = False
 
     def run(self):
-        PWM.start(self._output, 0.0, self.pwm_frequency, self.pwm_polarity)
+        PWM.start(self._output, 0.0, self.pwm_frequency, 0)
         self.active = True
         while self.active:
             self.temperature = self._thermometer.read()
@@ -52,17 +48,13 @@ class Heater(Thread):
             time.sleep(self.readout_delay)
 
     def _apply_duty_cycle(self):
-        PWM.stop(self._output)
         #todo this is a hack because the current reading si onyl avail on arduino
-        if self._current_measurement:
-            GPIO.setup(self._output, GPIO.OUT)
+        if self._current_measurement is not None:
             try:
-                GPIO.output(self._output, GPIO.HIGH)
+                PWM.set_duty_cycle(self._output, 100.0)
                 self.current_consumption = self._machine.read_current(self._current_measurement)
             finally:
-                GPIO.output(self._output, GPIO.LOW)
-                GPIO.cleanup()
-        PWM.start(self._output, min(self.duty_cycle, self._maximum_duty_cycle), self.pwm_frequency, self.pwm_polarity)
+                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle)*100.0)
 
 
 class Thermometer(object):

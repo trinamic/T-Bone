@@ -253,7 +253,7 @@ class Machine():
             int(input)
         ]
         reply = self.machine_connection.send_command(command)
-        if not reply or reply.command_number != 42:
+        if not reply or reply.command_number != 41:
             _logger.error("Unable read current: %s", reply)
             raise MachineError("Unable read current", reply)
         return int(reply.arguments[1])
