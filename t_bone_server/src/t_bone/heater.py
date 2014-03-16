@@ -54,12 +54,14 @@ class Heater(Thread):
     def _apply_duty_cycle(self):
         PWM.stop(self._output)
         #todo this is a hack because the current reading si onyl avail on arduino
-        GPIO.setup(self._output, GPIO.OUT)
-        GPIO.output(self._output, GPIO.HIGH)
         if self._current_measurement:
-            self.current_consumption = self._machine.read_current(self._current_measurement)
-        GPIO.output(self._output, GPIO.LOW)
-        GPIO.cleanup()
+            GPIO.setup(self._output, GPIO.OUT)
+            try:
+                GPIO.output(self._output, GPIO.HIGH)
+                self.current_consumption = self._machine.read_current(self._current_measurement)
+            finally:
+                GPIO.output(self._output, GPIO.LOW)
+                GPIO.cleanup()
         PWM.start(self._output, min(self.duty_cycle, self._maximum_duty_cycle), self.pwm_frequency, self.pwm_polarity)
 
 
