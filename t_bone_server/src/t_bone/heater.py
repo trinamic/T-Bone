@@ -68,6 +68,9 @@ class Thermometer(object):
         return thermistors.get_thermistor_reading(self._thermistor_type, raw_value)
 
 #from https://github.com/steve71/RasPiBrew
+#tehre used as
+#pid = PIDController.pidpy(cycle_time, k_param, i_param, d_param) #init pid
+#duty_cycle = pid.calcPID_reg4(temp_ma, set_point, True)
 class pidpy(object):
     ek_1 = 0.0  # e[k-1] = SP[k-1] - PV[k-1] = Tset_hlt[k-1] - Thlt[k-1]
     ek_2 = 0.0  # e[k-2] = SP[k-2] - PV[k-2] = Tset_hlt[k-2] - Thlt[k-2]
