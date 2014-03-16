@@ -69,10 +69,10 @@ class Printer(Thread):
             #do we have a maximum duty cycle??
             max_duty_cycle = None
             if 'max-duty-cycle' in printer_config['heated-bed']:
-                max_duty_cycle = printer_config['heated-bed']
+                max_duty_cycle = printer_config['heated-bed']['max-duty-cycle']
             self.heated_bed = Heater(thermometer=beaglebone_helpers.pwm_config[pwm_number]['temp'],
                                      output=beaglebone_helpers.pwm_config[pwm_number]['out'],
-                                     max_duty_cycle=max_duty_cycle)
+                                     maximum_duty_cycle=max_duty_cycle)
 
         self.axis = {}
         for axis_name, config_name in _axis_config.iteritems():
