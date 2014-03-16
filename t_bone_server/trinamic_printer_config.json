@@ -80,7 +80,7 @@
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet"
-    };
+    },
     "printer": {
         "print-queue": {
             "min-length": 20,

@@ -6,8 +6,8 @@ from math import copysign
 from threading import Thread
 
 from numpy import sign
-from t_bone import beaglebone_helpers
-from t_bone.heater import Heater
+import beaglebone_helpers
+from heater import Heater
 
 from t_bone.machine import Machine
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
@@ -65,11 +65,11 @@ class Printer(Thread):
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
         if 'heated-bed' in printer_config:
-            pwm_number = config['heated_bed']['pwm']
+            pwm_number = printer_config['heated-bed']['pwm']
             #do we have a maximum duty cycle??
             max_duty_cycle = None
-            if 'max-duta-cycle' in config['heated_bed']:
-                max_duty_cycle = config['heated_bed']
+            if 'max-duty-cycle' in printer_config['heated-bed']:
+                max_duty_cycle = printer_config['heated-bed']
             self.heated_bed = Heater(thermometer=beaglebone_helpers.pwm_config[pwm_number]['temp'],
                                      output=beaglebone_helpers.pwm_config[pwm_number]['out'],
                                      max_duty_cycle=max_duty_cycle)
