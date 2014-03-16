@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 ADC.setup()
 
+
 class Heater(Thread):
     def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None):
         super(Heater, self).__init__()
@@ -26,10 +27,15 @@ class Heater(Thread):
 
         self.start()
 
+    def stop(self):
+        self.active = False
+
     def run(self):
-        if self.start:
-            self.temperature = ADC.read_raw(self._thermometer)
-            time.sleep(self.readout_delay )
+        self.active = True
+        while self.active:
+            self.temperature = ADC.read_raw(self._thermometer) #read up to 4096
+            time.sleep(self.readout_delay)
+
 
 #from https://github.com/steve71/RasPiBrew
 class pidpy(object):
