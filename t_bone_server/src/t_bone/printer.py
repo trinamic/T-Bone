@@ -6,6 +6,7 @@ from math import copysign
 from threading import Thread
 
 from numpy import sign
+from t_bone.heater import Heater
 
 from t_bone.machine import Machine
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
@@ -62,6 +63,14 @@ class Printer(Thread):
         self.print_queue_max_length = print_queue_config['max-length']
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
+        if 'heated-bed' in printer_config:
+            #do we have a maximum duty cycle??
+            max_duty_cycle = None
+            if 'max-duta-cycle' in config['heated_bed']:
+                max_duty_cycle = config['heated_bed']
+            self.heated_bed = Heater(thermometer=config['heated_bed']['pwm'],
+                                     output=config['heated_bed']['pwm'],
+                                     max_duty_cycle=max_duty_cycle)
 
         self.axis = {}
         for axis_name, config_name in _axis_config.iteritems():

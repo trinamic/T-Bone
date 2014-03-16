@@ -1,13 +1,17 @@
 __author__ = 'marcus'
 
-class heater(object):
-    def __init__(self, thermometer, output, current_measurement = None, maximum_duty_cycle = 1.0):
+
+class Heater(object):
+    def __init__(self, thermometer, output, current_measurement=None, maximum_duty_cycle=None):
         self._thermometer = thermometer
         self._output = output
         self._current_measurement = current_measurement
-        self._maximum_duty_cycle = maximum_duty_cycle
+        if maximum_duty_cycle:
+            self._maximum_duty_cycle = float(maximum_duty_cycle)
+        else:
+            self._maximum_duty_cycle = 1.0
 
-        self.active=False
+        self.active = False
         self.temperature = 0.0
         self.current_consumption = 0.0
 
