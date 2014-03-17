@@ -302,7 +302,6 @@ void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
 }
 
 const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
-  //TODO also with active 
   unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
   if (left) {
     if (active_high) {
@@ -363,7 +362,31 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
 }
 
 const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
-  //TODO also with active 
+  unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
+  unsigned long position_register;
+  if (left) {
+#ifdef DEBUG_ENDSTOPS
+      Serial.print(F("TMC4361 motor "));
+      Serial.print(motor_nr);
+      Serial.print(F(" - configuring left virtual endstop at"));
+      Serial.println(positions);
+#endif
+    endstop_config |= _BV(6);
+    position_register = TMC4361_VIRTUAL_STOP_LEFT_REGISTER;
+    //we doe not latch since we know where they are??
+  } else {
+#ifdef DEBUG_ENDSTOPS
+      Serial.print(F("TMC4361 motor "));
+      Serial.print(motor_nr);
+      Serial.print(F(" - configuring right virtual endstop at"));
+      Serial.println(positions);
+#endif
+    endstop_config |= _BV(7);
+    position_register = TMC4361_VIRTUAL_STOP_RIGHT_REGISTER;
+    //we doe not latch since we know where they are??
+  }
+  writeRegister(motor_nr,TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+  writeRegister(motor_nr,position_register, positions);
   return NULL; //TODO this has to be implemented ...
 }
 
