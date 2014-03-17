@@ -61,7 +61,7 @@ def get_thermistor_reading(thermistor, value):
                 + temperature_difference / value_difference \
                 * (value - lower_value) / value_difference
     elif lower_temperature:
-        return lower_value
+        return lower_temperature
     elif upper_temperature:
         return upper_temperature
     else:
