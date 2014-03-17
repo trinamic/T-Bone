@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 
 _reset_pin = "P9_12"
 _default_serial_port = "/dev/ttyO1"
-_create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.8/slots"
+_create_serial_port_script = "echo BB-UART1 > /sys/devices/bone_capemgr.9/slots"
 pwm_config = [
     {
         'temp': 'P9_39',
