@@ -6,6 +6,7 @@ import thermistors
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
+_DEFAULT_READOUT_DELAY = 60
 
 ADC.setup()
 
@@ -32,7 +33,7 @@ class Heater(Thread):
         else:
             self.pwm_frequency = pwm_frequency
 
-        self.readout_delay = 1
+        self.readout_delay = _DEFAULT_READOUT_DELAY
 
         self.start()
 
