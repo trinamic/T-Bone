@@ -49,9 +49,8 @@ void attachCommandCallbacks() {
 
   // Fehlerfunktion wenn ein Kommand nicht bekannt ist
   void OnUnknownCommand() {
-    messenger.sendCmd(kError,F("Unknonwn command"));
+    messenger.sendCmd(kError,F("UC"));
     Serial.print(messenger.CommandID());
-    Serial.println(F(" - unknown command"));
   }
 
 void onInit() {
@@ -68,7 +67,7 @@ void onInit() {
     moveQueue.pop();
   }
   //and we are done here
-  messenger.sendCmd(kOK,F("initialized"));
+  messenger.sendCmd(kOK,0);
 }
 
 //Motor Strom einstellen
@@ -86,13 +85,13 @@ void onConfigMotorCurrent() {
       messenger.sendCmdEnd();
     } 
     else {
-      messenger.sendCmd (kError,F("not implemented  yet"));
+      messenger.sendCmd (kError,0); //not implemented yet
       //get back the TMC5041 current 
     }
     return;
   }
   if (newCurrent<0) {
-    messenger.sendCmd (kError,F("too low")); 
+    messenger.sendCmd (kError,-1); 
     return;
   }
   const __FlashStringHelper* error;
@@ -103,7 +102,7 @@ void onConfigMotorCurrent() {
     error = setCurrentTMC5041(motor-nr_of_coordinated_motors,newCurrent);
   }
   if (error==NULL) {
-    messenger.sendCmd(kOK,F("Current set"));
+    messenger.sendCmd(kOK,0);
   } 
   else {
     messenger.sendCmd(kError,error);
@@ -117,7 +116,7 @@ void onStepsPerRevolution() {
     return;
   }
   if (IS_COORDINATED_MOTOR(motor)) {
-    messenger.sendCmd (kError,F("Steps per rev only for coordinated motors")); 
+    messenger.sendCmd (kError,-100); 
   }
   int newSteps = messenger.readIntArg();
   if (newSteps==0) {
@@ -128,13 +127,13 @@ void onStepsPerRevolution() {
     return;
   }
   if (newSteps<0) {
-    messenger.sendCmd (kError,F("there cannot be negative steps pre revolution")); 
+    messenger.sendCmd (kError,-1); 
     return;
   }
   const __FlashStringHelper* error =  setStepsPerRevolutionTMC4361(motor,newSteps);
   motors[motor].steps_per_revolution=newSteps;
   if (error==NULL) {
-    messenger.sendCmd(kOK,F("Steps set"));
+    messenger.sendCmd(kOK,0);
   } 
   else {
     messenger.sendCmd(kError,error);
@@ -161,7 +160,7 @@ void onInvertMotor() {
   }
   if (invert<0) {
     if (IS_COORDINATED_MOTOR(motor)) {
-      messenger.sendCmd (kError,F("not funcion"));
+      messenger.sendCmd (kError,-100); //not implmented yet
       return;
       /*
       //TODO somehow the endstops are not reacting as expected at least there is a problem with retract after hitting
@@ -176,10 +175,10 @@ void onInvertMotor() {
     } 
     else {
       if (invertMotorTMC5041(motor-nr_of_coordinated_motors,true)) {
-        messenger.sendCmd(kOK,F("Motor inverted"));
+        messenger.sendCmd(kOK,0);
       } 
       else {
-        messenger.sendCmd (kError,F("Motor not inverted"));
+        messenger.sendCmd (kError,-1);
       }
     }
   } 
@@ -187,14 +186,14 @@ void onInvertMotor() {
     if (IS_COORDINATED_MOTOR(motor)) {
 
       inverted_motors &= ~(_BV(motor));
-      messenger.sendCmd(kOK,F("Motor not inverted"));
+      messenger.sendCmd(kOK,0);
     } 
     else {
       if (invertMotorTMC5041(motor-nr_of_coordinated_motors,false)) {
-        messenger.sendCmd(kError,F("Motor inverted"));
+        messenger.sendCmd(kError,-1);
       } 
       else {
-        messenger.sendCmd (kOK,F("Motor not inverted"));
+        messenger.sendCmd (kOK,0);
       }
     }
   }
@@ -271,7 +270,7 @@ void onMove() {
   Serial.println();
 #endif
   if (moveQueue.count()+following_motors+1>COMMAND_QUEUE_LENGTH) {
-    messenger.sendCmd(kError,F("Queue is full"));
+    messenger.sendCmd(kError,-1);
     return;
   }
   moveQueue.push(move);
@@ -288,14 +287,13 @@ void onMove() {
   else {
     messenger.sendCmdArg(-1);
   }
-  messenger.sendCmdArg(F("command added"));
   messenger.sendCmdEnd();
 } 
 
 char readMovementParameters(movement* move) {
   long newPos = messenger.readLongArg();
   if (newPos<0) {
-    messenger.sendCmd (kError,F("cannot move beyond home"));
+    messenger.sendCmd (kError,-1); //TODO really?
     return -1;
   }
   char movementType = (char)messenger.readIntArg();
@@ -308,22 +306,22 @@ char readMovementParameters(movement* move) {
     isWaypoint = true;
   } 
   else {
-    messenger.sendCmd (kError,F("unknown movement type (s or w)"));
+    messenger.sendCmd (kError,-2);
     return -1;
   }  
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
-    messenger.sendCmd (kError,F("cannot move with no or negative speed"));
+    messenger.sendCmd (kError,3);
     return -1;
   }
   double aMax = messenger.readFloatArg();
   if (aMax<=0) {
-    messenger.sendCmd(kError,F("cannot move with no or negative acceleration"));
+    messenger.sendCmd(kError,-4);
     return -1;
   }
   long jerk = messenger.readLongArg();
   if (jerk<0) {
-    messenger.sendCmd (kError,F("Jerk cannot be negative")); 
+    messenger.sendCmd (kError,-5); 
     return -1;
   }
 
@@ -350,25 +348,23 @@ void onMovement() {
     //just give out the current state of movement
     if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
       messenger.sendCmdArg(1);
-      messenger.sendCmdArg(F("running"));
     } 
     else {
       messenger.sendCmdArg(-1);
-      messenger.sendCmdArg(F("stopped"));
     }
     messenger.sendCmdEnd();
   } 
   else if (movement<0) {
     //below zero means nostop the motion
     if (!current_motion_state==in_motion) {
-      messenger.sendCmd(kError,F("there is currently no motion to stop"));
+      messenger.sendCmd(kError,-1);
     } 
     else {
       //TODO should we handle double finishing ??
 #ifdef DEBUG_MOTION_STATUS
       Serial.println(F("motion will finish"));
 #endif
-      messenger.sendCmd(kOK,F("motion finishing"));
+      messenger.sendCmd(kOK,0);
       finishMotion();
     }
   } 
@@ -376,10 +372,10 @@ void onMovement() {
     char initial_command_buffer_depth = messenger.readIntArg(); //defaults to zero and is optionnal
     //a new movement is started
     if (current_motion_state!=no_motion) {
-      messenger.sendCmd(kError,F("There is already a motion running"));
+      messenger.sendCmd(kError,-1);
     } 
     else {
-      messenger.sendCmd(kOK,F("motion started"));
+      messenger.sendCmd(kOK,0);
       startMotion(initial_command_buffer_depth);
     }
   }
@@ -392,7 +388,7 @@ void onSetPosition() {
   }
   long newPos = messenger.readLongArg();
   if (newPos<0) {
-    messenger.sendCmd (kError,F("cannot move beyond home"));
+    messenger.sendCmd (kError,-1);
     return;
   }
 #ifdef DEBUG_SET_POS
@@ -442,14 +438,14 @@ void onConfigureEndStop() {
   }
   int position = messenger.readIntArg();
   if (position==0) {
-    messenger.sendCmd(kError,F("Use position smaller or bigger 0 for left or right position"));
+    messenger.sendCmd(kError,-1);
   }
   int type = messenger.readIntArg();
   if (type!=0 && type!=1) {
-    messenger.sendCmd(kError,F("Use type 0 for virtual and 1 for real endstops"));
+    messenger.sendCmd(kError,-1);
     return;
   }
-  const __FlashStringHelper* error = F("Unkown error occurred");
+  const __FlashStringHelper* error;
   switch(type) {
   case 0: //virtual endstops
     {
@@ -466,7 +462,7 @@ void onConfigureEndStop() {
     {
       int polarity = messenger.readIntArg();
       if (polarity==0) {
-        messenger.sendCmd(kError,F("Use polarity 1 for active on or -1 for active off endstops"));
+        messenger.sendCmd(kError,-1);
         return;
       }
       if (IS_COORDINATED_MOTOR(motor)) {
@@ -482,7 +478,7 @@ void onConfigureEndStop() {
     messenger.sendCmd(kError,error);
   } 
   else {
-    messenger.sendCmd(kOK,F("endstop configured"));
+    messenger.sendCmd(kOK,0);
   }
 }
 
@@ -498,29 +494,29 @@ void onHome() {
   }
   double homeFastSpeed = messenger.readFloatArg();
   if (homeFastSpeed<=0) {
-    messenger.sendCmd (kError,F("cannot home with no or negative homing speed"));
+    messenger.sendCmd (kError,-1);
     return;
   }
   double homeSlowSpeed = messenger.readFloatArg();
   if (homeSlowSpeed<=0) {
-    messenger.sendCmd (kError,F("cannot home with no or negative precision homing speed"));
+    messenger.sendCmd (kError,-2);
     return;
   }
   long homeRetract = messenger.readLongArg();
   if (homeRetract<=0) {
-    messenger.sendCmd(kError,F("cannot retract beyond home point after homing."));
+    messenger.sendCmd(kError,-3);
     return;
   }
   double aMax = messenger.readFloatArg();
   if (aMax<=0) {
-    messenger.sendCmd(kError,F("cannot home with no or negative acceleration"));
+    messenger.sendCmd(kError,-4);
     return;
   }
   const __FlashStringHelper* error;
   if (motor<nr_of_coordinated_motors) {
     long jerk = messenger.readLongArg();
     if (jerk<0) {
-      messenger.sendCmd (kError,F("Jerk cannot be negative")); 
+      messenger.sendCmd (kError,-5); 
       return;
     }
     error =  homeMotorTMC4361(
@@ -544,7 +540,6 @@ void onHome() {
   }
   if (error==NULL) {
     messenger.sendCmdStart(kOK);
-    messenger.sendCmdArg(F("homed"));
     messenger.sendCmdArg(motor,DEC);
     messenger.sendCmdEnd();
   } 
@@ -641,7 +636,7 @@ void watchDogPing() {
 }
 
 void watchDogStart() {
-  messenger.sendCmd(kOK,F("ready"));
+  messenger.sendCmd(kOK,0);
   watchDogPing();
 }
 
@@ -653,7 +648,6 @@ char decodeMotorNumber(const boolean complaint) {
       messenger.sendCmdArg(motor,DEC);
       messenger.sendCmdArg(1,DEC);
       messenger.sendCmdArg(nr_of_coordinated_motors,DEC);
-      messenger.sendCmdArg(F("motor number too small"));
       messenger.sendCmdEnd();
     }
     return -1;
@@ -664,7 +658,6 @@ char decodeMotorNumber(const boolean complaint) {
       messenger.sendCmdArg(motor,DEC);
       messenger.sendCmdArg(1,DEC);
       messenger.sendCmdArg(nr_of_motors,DEC);
-      messenger.sendCmdArg(F("motor number too big"));
       messenger.sendCmdEnd();
     }
     return -1;
