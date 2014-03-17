@@ -7,7 +7,7 @@ from threading import Thread
 
 from numpy import sign
 import beaglebone_helpers
-from heater import Heater, Thermometer
+from heater import Heater, Thermometer, pidpy
 
 from machine import Machine
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
@@ -76,7 +76,11 @@ class Printer(Thread):
                 current_pin = None
             bed_thermometer = Thermometer(themistor_type=printer_config['heated-bed']['type'],
                                           analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
+            bed_pid_controller = pidpy(kc=tprinter_config['heated-bed']['pid-config']['Kp'],
+                                       ti=tprinter_config['heated-bed']['pid-config']['Ki'],
+                                       td=tprinter_config['heated-bed']['pid-config']['Kd'])
             self.heated_bed = Heater(thermometer=bed_thermometer,
+                                     pid_controller = bed_pid_controller,
                                      output=beaglebone_helpers.pwm_config[pwm_number]['out'],
                                      maximum_duty_cycle=max_duty_cycle,
                                      current_measurement=current_pin,

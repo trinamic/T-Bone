@@ -13,10 +13,12 @@ ADC.setup()
 
 
 class Heater(Thread):
-    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None, machine=None,
+    def __init__(self, thermometer, pid_controller, output, maximum_duty_cycle=None, current_measurement=None,
+                 machine=None,
                  pwm_frequency=None):
         super(Heater, self).__init__()
         self._thermometer = thermometer
+        self._pid_controller = pid_controller
         self._output = output
         if maximum_duty_cycle:
             self._maximum_duty_cycle = float(maximum_duty_cycle)
@@ -27,7 +29,7 @@ class Heater(Thread):
 
         self.active = False
         self.set_temperature = 0.0
-        self.temperature = 0.0
+        self.temperature = 30.0  #todo just a test
         self.current_consumption = 0.0
         self.duty_cycle = 0.0
         if not pwm_frequency:
@@ -49,6 +51,7 @@ class Heater(Thread):
         self.active = True
         while self.active:
             self.temperature = self._thermometer.read()
+            self.duty_cycle = self._pid_controller.calcPID(self.temperature, self.set_temperature, True)
             self._apply_duty_cycle()
             time.sleep(self.readout_delay)
 
@@ -58,7 +61,8 @@ class Heater(Thread):
             self.current_readout_delay = 0
             try:
                 PWM.set_duty_cycle(self._output, 100.0)
-                self.current_consumption = self._machine.read_current(self._current_measurement)
+                self.current_consumption = self._machine.read_current(self._current_measurement) \
+                                           / 1024.0 * 1.8 * 121.0 / 10.0
             finally:
                 PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
         else:
@@ -96,7 +100,7 @@ class pidpy(object):
     GMA_HLIM = 100.0
     GMA_LLIM = 0.0
 
-    def __init__(self, ts, kc, ti, td):
+    def __init__(self, kc, ti, td, ts=_DEFAULT_READOUT_DELAY):
         self.kc = kc
         self.ti = ti
         self.td = td
@@ -159,7 +163,7 @@ class pidpy(object):
 
         return pidpy.yk
 
-    def calcPID_reg4(self, xk, tset, enable):
+    def calcPID(self, xk, tset, enable):
         ek = 0.0
         ek = tset - xk  # calculate e[k] = SP[k] - PV[k]
 
