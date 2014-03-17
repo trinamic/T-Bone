@@ -45,7 +45,7 @@ class Heater(Thread):
 
     def run(self):
         PWM.start(self._output, 0.0, self.pwm_frequency, 0)
-        self._wait_for_current_readout = 0
+        self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
         self.active = True
         while self.active:
             self.temperature = self._thermometer.read()
@@ -60,7 +60,7 @@ class Heater(Thread):
                 PWM.set_duty_cycle(self._output, 100.0)
                 self.current_consumption = self._machine.read_current(self._current_measurement)
             finally:
-                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle) * 100.0)
+                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
         else:
             self._wait_for_current_readout += self.readout_delay
 

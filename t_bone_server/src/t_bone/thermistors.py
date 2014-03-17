@@ -52,11 +52,14 @@ def get_thermistor_reading(thermistor, value):
 
     #now decode it
     if upper_temperature and lower_temperature:
-        value_difference = float(upper_value - lower_value)
-        temperature_difference = float(upper_temperature - lower_temperature)
-        return float(lower_temperature) \
-               + temperature_difference / value_difference \
-                 * (value - lower_value) / value_difference
+        value_difference = float(lower_value - upper_value)
+        if value_difference == 0.0:
+            return upper_value
+        else:
+            temperature_difference = float(upper_temperature - lower_temperature)
+            return float(upper_temperature) \
+                + temperature_difference / value_difference \
+                * (value - lower_value) / value_difference
     elif lower_temperature:
         return lower_value
     elif upper_temperature:

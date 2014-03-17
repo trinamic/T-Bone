@@ -79,7 +79,7 @@
         "heated-bed": {
             "pwm": 1,
             "type": "epcos-100k",
-            "max-duty-cycle": 0.5
+            "max-duty-cycle": 50
         }
     },
     "extruder": {
