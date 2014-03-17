@@ -90,6 +90,32 @@ def read_gcode_to_printer(line, printer):
         #todo we can support relative positions - if we are a bit careful
     elif "M83" == gcode.code:
         raise PrinterError("Currently only absolute positions are supported!")
+    elif "M140" == gcode.code:
+        if 's' in gcode.options:
+            temperature = gcode.options['s']
+            if printer.heated_bed:
+                printer.heated_bed.set_temperature(temperature)
+                #todo can this go wrong??
+            else:
+                _logger.info("Setting be temperature to %s got ignored", temperature)
+    elif "M143" == gcode.code:
+        #Maximum hot-end temperature
+        #Example: M143 S275"
+        #todo this is useful to implement
+        pass
+    elif "M190" == gcode.code:
+        #Wait for bed temperature to reach target temp
+        #Example: M190 S60"
+        if 's' in gcode.options:
+            temperature = gcode.options['s']
+            if printer.heated_bed:
+                if (printer.heated_bed.set_temperature < temperature):
+                    _logger.warn("The set temperature of %s can never reach the target temperature of %s",
+                                 printer.heated_bed.set_temperature, temperature)
+                    return
+                while printer.heated_bed.set_temperature < temperature:
+                    #todo a timeout value would be great?
+                    pass
     else:
         _logger.warn("Unknown GCODE %s ignored", gcode)
 

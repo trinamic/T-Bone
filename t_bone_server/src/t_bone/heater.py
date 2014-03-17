@@ -7,7 +7,7 @@ import thermistors
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
 _DEFAULT_READOUT_DELAY = 0.1
-_DEFAULT_CURRENT_READOUT_DELAY = 10
+_DEFAULT_CURRENT_READOUT_DELAY = 60
 
 ADC.setup()
 
@@ -45,6 +45,14 @@ class Heater(Thread):
     def stop(self):
         self.active = False
 
+    def set_temperature(self,temperature):
+        if (temperature<self._max_temperature):
+            self.temperature = temperature
+            #todo shouldn't we warn?
+        else:
+            _logger.warn("Temperature %s", temperature)
+        return self.temperature
+
     def run(self):
         PWM.start(self._output, 0.0, self.pwm_frequency, 0)
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
@@ -58,7 +66,7 @@ class Heater(Thread):
     def _apply_duty_cycle(self):
         #todo this is a hack because the current reading si onyl avail on arduino
         if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
-            self.current_readout_delay = 0
+            self._wait_for_current_readout = 0
             try:
                 PWM.set_duty_cycle(self._output, 100.0)
                 self.current_consumption = self._machine.read_current(self._current_measurement) \
@@ -163,6 +171,7 @@ class pidpy(object):
 
         return pidpy.yk
 
+    #todo shouldnt we consider the real time passed?
     def calcPID(self, xk, tset, enable):
         ek = 0.0
         ek = tset - xk  # calculate e[k] = SP[k] - PV[k]
