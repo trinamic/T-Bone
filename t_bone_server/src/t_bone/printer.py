@@ -269,7 +269,10 @@ class Printer(Thread):
                     end_stop_config = end_stops_config[end_stop_pos]
                     polarity = end_stop_config['polarity']
                     if 'virtual' == polarity:
-                        position = float(end_stop_config['position'])
+                        if end_stop_pos == 'left':
+                            position = 0
+                        else:
+                            position = float(end_stop_config['position'])
                         _logger.debug(" %s endstop is virtual at %s", end_stop_pos, position)
                         axis['end-stops'][end_stop_pos] = {
                             'type': 'virtual',
