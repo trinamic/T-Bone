@@ -4,7 +4,7 @@
 from numpy import NaN
 
 
-def get_thermistor_reading(thermistor, raw_value):
+def get_thermistor_reading(thermistor, value):
     #find the thermistor
     thermistortable = None
     if thermistor == "100k":
@@ -33,7 +33,7 @@ def get_thermistor_reading(thermistor, raw_value):
         raise Exception("Unknown Thermistor" + thermistor)
 
     #the tables are from 1024er based arduino
-    comparable_value = raw_value / 4.0
+    comparable_value = value * 1024.0
     #find upper value
     upper_value = int(comparable_value)
     upper_temperature = None
@@ -56,7 +56,7 @@ def get_thermistor_reading(thermistor, raw_value):
         temperature_difference = float(upper_temperature - lower_temperature)
         return float(lower_temperature) \
                + temperature_difference / value_difference \
-                 * (raw_value - lower_value) / value_difference
+                 * (value - lower_value) / value_difference
     elif lower_temperature:
         return lower_value
     elif upper_temperature:

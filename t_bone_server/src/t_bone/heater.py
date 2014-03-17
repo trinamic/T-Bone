@@ -62,7 +62,7 @@ class Heater(Thread):
             finally:
                 PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle) * 100.0)
         else:
-            self.current_readout_delay += self.readout_delay
+            self._wait_for_current_readout += self.readout_delay
 
 
 class Thermometer(object):
@@ -71,10 +71,10 @@ class Thermometer(object):
         self._input = analog_input
 
     def read(self):
-        raw_value = ADC.read_raw(
-            self._input)  #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
-        raw_value = ADC.read_raw(self._input)  #read up to 4096
-        return thermistors.get_thermistor_reading(self._thermistor_type, raw_value)
+        #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+        ADC.read(self._input)
+        value = ADC.read(self._input)  #read 0 to 1
+        return thermistors.get_thermistor_reading(self._thermistor_type, value)
 
 
 #from https://github.com/steve71/RasPiBrew

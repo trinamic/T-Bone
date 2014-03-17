@@ -77,8 +77,7 @@
         "homing-timeout": 15,
         "home-retract": 2.5,
         "heated-bed": {
-            "pwm": 2,
-            "sensor": 2,
+            "pwm": 1,
             "type": "epcos-100k",
             "max-duty-cycle": 0.5
         }
