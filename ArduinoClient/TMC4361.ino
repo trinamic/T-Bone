@@ -79,6 +79,10 @@ unsigned long right_homing_point)
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for TMC4361 motor "));
   Serial.print(motor_nr,DEC);
+  if (homing_right) {
+    Serial.print(F("rightwarsds to pos="));
+    Serial.print(homingright_homing_point);
+  }
   Serial.print(F(", timeout="));
   Serial.print(timeout);
   Serial.print(F(", fast="));
@@ -135,7 +139,12 @@ unsigned long right_homing_point)
           Serial.print(F(" phase "));
           Serial.println(homed,DEC);
 #endif
-          target -= 1000l;
+          if (!homing_right) {
+            target -= 1000l;
+          } 
+          else {
+            target +=1000l;
+          }
           writeRegister(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_speed));
           writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,X_TARGET_IN_DIRECTION(motor_nr,target));
         }
@@ -171,7 +180,19 @@ unsigned long right_homing_point)
           homed = 1;
         } 
         else {
-          writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
+          if (!homing_right) {
+            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
+          } 
+          else {
+            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,homing_right_pos);
+            //go back to zero
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, X_TARGET_IN_DIRECTION(motor_nr,0));
+            delay(10ul);
+            status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+            while (!(status & _BV(0))) {
+              status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+            } 
+          }
           homed=0xff;
         }     
       } 
@@ -368,20 +389,21 @@ const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr
   unsigned long position_register;
   if (left) {
 #ifdef DEBUG_ENDSTOPS
-      Serial.print(F("TMC4361 motor "));
-      Serial.print(motor_nr);
-      Serial.print(F(" - configuring left virtual endstop at"));
-      Serial.println(positions);
+    Serial.print(F("TMC4361 motor "));
+    Serial.print(motor_nr);
+    Serial.print(F(" - configuring left virtual endstop at"));
+    Serial.println(positions);
 #endif
     endstop_config |= _BV(6);
     position_register = TMC4361_VIRTUAL_STOP_LEFT_REGISTER;
     //we doe not latch since we know where they are??
-  } else {
+  } 
+  else {
 #ifdef DEBUG_ENDSTOPS
-      Serial.print(F("TMC4361 motor "));
-      Serial.print(motor_nr);
-      Serial.print(F(" - configuring right virtual endstop at"));
-      Serial.println(positions);
+    Serial.print(F("TMC4361 motor "));
+    Serial.print(motor_nr);
+    Serial.print(F(" - configuring right virtual endstop at"));
+    Serial.println(positions);
 #endif
     endstop_config |= _BV(7);
     position_register = TMC4361_VIRTUAL_STOP_RIGHT_REGISTER;
@@ -406,6 +428,10 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config |= clearing_pattern;
   return endstop_config;
 }  
+
+
+
+
 
 
 
