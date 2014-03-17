@@ -71,8 +71,10 @@ const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, 
 const __FlashStringHelper* homeMotorTMC4361(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
 double homming_accel,
-unsigned long homming_jerk)
+unsigned long homming_jerk, 
+unsigned long right_homing_point)
 {
+  const boolean homing_right = right_homing_point!=0;
   //todo shouldn't we check if there is a movement going??
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for TMC4361 motor "));

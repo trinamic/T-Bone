@@ -43,15 +43,15 @@ void attachCommandCallbacks() {
   messenger.attach(kHome, onHome);
   messenger.attach(kCommands, onCommands);
   messenger.attach(kCurrentReading, onCurrentReading);
-  }
+}
 
-  // ------------------  C A L L B A C K S -----------------------
+// ------------------  C A L L B A C K S -----------------------
 
-  // Fehlerfunktion wenn ein Kommand nicht bekannt ist
-  void OnUnknownCommand() {
-    messenger.sendCmd(kError,F("UC"));
-    Serial.print(messenger.CommandID());
-  }
+// Fehlerfunktion wenn ein Kommand nicht bekannt ist
+void OnUnknownCommand() {
+  messenger.sendCmd(kError,F("UC"));
+  Serial.print(messenger.CommandID());
+}
 
 void onInit() {
   //initialize the 43x
@@ -519,9 +519,12 @@ void onHome() {
       messenger.sendCmd (kError,-5); 
       return;
     }
+
+    unsigned long home_right_position = messenger.readLongArg();
+
     error =  homeMotorTMC4361(
     motor,timeout,
-    homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk);
+    homeFastSpeed, homeSlowSpeed,homeRetract,aMax,jerk, home_right_position);
   } 
   else {
     char following_motors[homing_max_following_motors]; //we can only home follow controlled motors
@@ -673,6 +676,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
