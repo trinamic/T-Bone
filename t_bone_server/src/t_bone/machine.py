@@ -125,6 +125,7 @@ class Machine():
         command = MachineCommand()
         command.command_number = 12
         if 'jerk' in home_config:
+            #TODO why so complicated? can't it be integrated with the addition code later on ?
             jerk = int(home_config['jerk'])
         else:
             jerk = None
@@ -147,6 +148,8 @@ class Machine():
         if following:
             for motor in following:
                 command.arguments.append(int(motor))
+        if 'homing_right_position' in home_config:
+            command.arguments.append(int(home_config['homing_right_position']))
 
         command.arguments.append(int(0))
         reply = self.machine_connection.send_command(command, timeout)

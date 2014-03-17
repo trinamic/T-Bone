@@ -81,7 +81,7 @@ unsigned long right_homing_point)
   Serial.print(motor_nr,DEC);
   if (homing_right) {
     Serial.print(F("rightwarsds to pos="));
-    Serial.print(homingright_homing_point);
+    Serial.print(right_homing_point);
   }
   Serial.print(F(", timeout="));
   Serial.print(timeout);
@@ -184,7 +184,7 @@ unsigned long right_homing_point)
             writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
           } 
           else {
-            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,homing_right_pos);
+            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,right_homing_point);
             //go back to zero
             writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, X_TARGET_IN_DIRECTION(motor_nr,0));
             delay(10ul);
