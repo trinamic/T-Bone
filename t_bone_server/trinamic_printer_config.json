@@ -12,7 +12,7 @@
         "end-stops": {
             "left": {
                 "polarity": "virtual",
-                "position": 20
+                "position": 200
             },
             "right": {
                 "polarity": "negative"
@@ -32,11 +32,11 @@
         "time-reference": "time",
         "end-stops": {
             "left": {
-                "polarity": "virtual",
-                "position": 20
+                "polarity": "negative"
             },
             "right": {
-                "polarity": "negative"
+                "polarity": "virtual",
+                "position": 200
             }
         },
         "home-speed": 300,

@@ -74,7 +74,7 @@ double homming_accel,
 unsigned long homming_jerk, 
 unsigned long right_homing_point)
 {
-  const boolean homing_right = right_homing_point!=0;
+  const boolean homing_right = (right_homing_point!=0);
   //todo shouldn't we check if there is a movement going??
 #ifdef DEBUG_HOMING
   Serial.print(F("Homing for TMC4361 motor "));
@@ -117,6 +117,9 @@ unsigned long right_homing_point)
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
+#ifdef DEBUG_HOMING_STATUS
+  unsigned long old_status = -1;
+#endif
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
     if (homed==0 || homed==1) {
       double homing_speed=homing_fast_speed; 
@@ -132,10 +135,21 @@ unsigned long right_homing_point)
       else {
         end_stop_mask = _BV(7) | _BV(9);
       }
-#ifdef DEBUG_HOMING
-      Serial.println(status,HEX);
+#ifdef DEBUG_HOMING_STATUS
+      if (status!=old_status) {
+        Serial.print(F("Status1 "));
+        Serial.println(status,HEX);
+        Serial.print(F("Position "));
+        Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
+        Serial.print(F(", Targe "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1));
+        Serial.print(F(", Velocity "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
+        Serial.println(status & end_stop_mask,HEX);
+        old_status=status;
+      }
 #endif
-      if (!(status & (end_stop_mask))) { //stopl not active
+      if (!(status & end_stop_mask)) { //stopl not active
         if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) { //at target or not moving
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
@@ -149,11 +163,11 @@ unsigned long right_homing_point)
           Serial.print(F(" phase "));
           Serial.println(homed,DEC);
 #endif
-          if (!homing_right) {
-            target -= 1000l;
+          if (homing_right) {
+            target += 1000l;
           } 
           else {
-            target +=1000l;
+            target -=1000l;
           }
           writeRegister(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_speed));
           writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,X_TARGET_IN_DIRECTION(motor_nr,target));
@@ -163,7 +177,17 @@ unsigned long right_homing_point)
         long go_back_to;
         if (homed==0) {
           long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER));
-          go_back_to = actual + homing_retraction;
+          if (homing_right) {
+            go_back_to = actual - homing_retraction;
+            if (go_back_to<=0) {
+              writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,homing_retraction*2);
+              writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,homing_retraction*2);
+              go_back_to = homing_retraction;
+            }
+          } 
+          else {
+            go_back_to = actual + homing_retraction;
+          } 
 #ifdef DEBUG_HOMING
           Serial.print(F("home near "));
           Serial.print(actual);
@@ -184,24 +208,39 @@ unsigned long right_homing_point)
         delay(10ul);
         status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
         while (!(status & _BV(0))) {
+#ifdef DEBUG_HOMING_STATUS
+          if (status!=old_status) {
+            Serial.print(F("Status2 "));
+            Serial.println(status,HEX);
+            Serial.print(F("Position "));
+            Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
+            Serial.print(F(", Targe "));
+            Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1));
+            Serial.print(F(", Velocity "));
+            Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
+            Serial.println(status & end_stop_mask,HEX);
+            old_status=status;
+          }
+#endif
           status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
         }
         if (homed==0) {
           homed = 1;
         } 
         else {
-          if (!homing_right) {
-            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
-          } 
-          else {
+          if (homing_right) {
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,right_homing_point);
             writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,right_homing_point);
             //go back to zero
-            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, X_TARGET_IN_DIRECTION(motor_nr,0));
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, 0);
             delay(10ul);
             status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
             while (!(status & _BV(0))) {
               status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
             } 
+          } 
+          else {
+            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
           }
           homed=0xff;
         }     
@@ -475,6 +514,9 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
+
+
 
 
 
