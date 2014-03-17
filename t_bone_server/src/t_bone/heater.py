@@ -6,13 +6,15 @@ import thermistors
 
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
-_DEFAULT_READOUT_DELAY = 60
+_DEFAULT_READOUT_DELAY = 0.1
+_DEFAULT_CURRENT_READOUT_DELAY = 10
 
 ADC.setup()
 
 
 class Heater(Thread):
-    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None, machine=None, pwm_frequency=None):
+    def __init__(self, thermometer, output, maximum_duty_cycle=None, current_measurement=None, machine=None,
+                 pwm_frequency=None):
         super(Heater, self).__init__()
         self._thermometer = thermometer
         self._output = output
@@ -34,6 +36,7 @@ class Heater(Thread):
             self.pwm_frequency = pwm_frequency
 
         self.readout_delay = _DEFAULT_READOUT_DELAY
+        self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
 
         self.start()
 
@@ -42,6 +45,7 @@ class Heater(Thread):
 
     def run(self):
         PWM.start(self._output, 0.0, self.pwm_frequency, 0)
+        self._wait_for_current_readout = 0
         self.active = True
         while self.active:
             self.temperature = self._thermometer.read()
@@ -50,12 +54,15 @@ class Heater(Thread):
 
     def _apply_duty_cycle(self):
         #todo this is a hack because the current reading si onyl avail on arduino
-        if self._current_measurement is not None:
+        if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
+            self.current_readout_delay = 0
             try:
                 PWM.set_duty_cycle(self._output, 100.0)
                 self.current_consumption = self._machine.read_current(self._current_measurement)
             finally:
-                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle)*100.0)
+                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle) * 100.0)
+        else:
+            self.current_readout_delay += self.readout_delay
 
 
 class Thermometer(object):
@@ -64,9 +71,11 @@ class Thermometer(object):
         self._input = analog_input
 
     def read(self):
-        raw_value = ADC.read_raw(self._input)  #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+        raw_value = ADC.read_raw(
+            self._input)  #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
         raw_value = ADC.read_raw(self._input)  #read up to 4096
         return thermistors.get_thermistor_reading(self._thermistor_type, raw_value)
+
 
 #from https://github.com/steve71/RasPiBrew
 #tehre used as

@@ -64,8 +64,7 @@ class Printer(Thread):
         self.print_queue_max_length = print_queue_config['max-length']
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
-        if False: #TODO disabled until we understand what the problem is
-        #if 'heated-bed' in printer_config:
+        if 'heated-bed' in printer_config:
             pwm_number = printer_config['heated-bed']['pwm'] - 1
             #do we have a maximum duty cycle??
             max_duty_cycle = None
