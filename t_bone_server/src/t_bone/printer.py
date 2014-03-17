@@ -146,9 +146,10 @@ class Printer(Thread):
             home_precision_speed = self.axis[home_axis]['home_precision_speed']
             home_acceleration = self.axis[home_axis]['home_acceleration']
             home_retract = self.axis[home_axis]['home_retract']
-            #TODO we just enforce the xistence of a left axis - is there a simpler way?
-            if self.axis[home_axis]['endstops']['left']['polarity'] == 'virtual':
-                homing_right_position = self.axis[home_axis]['endstops']['left']['position']
+            #TODO we just enforce the existence of a left axis - is there a simpler way?
+            if self.axis[home_axis]['end-stops']['left']['type'] == 'virtual':
+                homing_right_position = convert_mm_to_steps(self.axis[home_axis]['end-stops']['left']['distance']
+                    , self.axis[home_axis]['steps_per_mm'])
             else:
                 homing_right_position = 0
             #convert everything from mm to steps
@@ -270,15 +271,17 @@ class Printer(Thread):
                     end_stop_config = end_stops_config[end_stop_pos]
                     polarity = end_stop_config['polarity']
                     if 'virtual' == polarity:
-                        if end_stop_pos == 'left':
-                            position = 0
-                        else:
-                            position = float(end_stop_config['position'])
+                        position = float(end_stop_config['position'])
                         _logger.debug(" %s endstop is virtual at %s", end_stop_pos, position)
                         axis['end-stops'][end_stop_pos] = {
                             'type': 'virtual',
                             'position': position
                         }
+                        #left endstop get's 0 posiotn - makes sense and distance for homing use
+                        if end_stop_pos == 'left':
+                            axis['end-stops'][end_stop_pos]['distance']=axis['end-stops'][end_stop_pos]['position']
+                            axis['end-stops'][end_stop_pos]['position'] = 0
+
                     elif polarity in ('positive', 'negative'):
                         _logger.debug(" %s endstop is real with %s polarity", end_stop_pos, polarity)
                         axis['end-stops'][end_stop_pos] = {

@@ -80,7 +80,7 @@ unsigned long right_homing_point)
   Serial.print(F("Homing for TMC4361 motor "));
   Serial.print(motor_nr,DEC);
   if (homing_right) {
-    Serial.print(F("rightwarsds to pos="));
+    Serial.print(F(" right to pos="));
     Serial.print(right_homing_point);
   }
   Serial.print(F(", timeout="));
@@ -125,7 +125,17 @@ unsigned long right_homing_point)
       }  
       unsigned long status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
       unsigned long events = readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
-      if (!(status & (_BV(7) | _BV(9)))) { //not accelerarting
+      unsigned long end_stop_mask;
+      if (homing_right) {
+        end_stop_mask = _BV(8) | _BV(10);
+      } 
+      else {
+        end_stop_mask = _BV(7) | _BV(9);
+      }
+#ifdef DEBUG_HOMING
+      Serial.println(status,HEX);
+#endif
+      if (!(status & (end_stop_mask))) { //stopl not active
         if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) { //at target or not moving
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
@@ -325,7 +335,15 @@ void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
 }
 
 const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Enstop config before "));
+  Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
+#endif
   unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Cleared enstop config before "));
+  Serial.println(endstop_config);
+#endif
   if (left) {
     if (active_high) {
 #ifdef DEBUG_ENDSTOPS
@@ -371,7 +389,7 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
       Serial.println(F(" - configuring right end stop as active low"));
 #endif
       endstop_config |= 0 
-        | _BV(0) //STOP_LEFT enable
+        | _BV(1) //STOP_LEFT enable
         | _BV(12) //X_LATCH if stopr becomes inactive ..
           ;
     }
@@ -380,18 +398,34 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   if (inverted_motors & _BV(motor_nr)) {
     endstop_config |= _BV(4);
   }
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("New enstop config "));
+  Serial.println(endstop_config);
+#endif
   writeRegister(motor_nr,TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Written enstop config "));
+  Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
+#endif
   return NULL;
 }
 
 const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Enstop config before "));
+  Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
+#endif
   unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Cleared enstop config before "));
+  Serial.println(endstop_config);
+#endif
   unsigned long position_register;
   if (left) {
 #ifdef DEBUG_ENDSTOPS
     Serial.print(F("TMC4361 motor "));
     Serial.print(motor_nr);
-    Serial.print(F(" - configuring left virtual endstop at"));
+    Serial.print(F(" - configuring left virtual endstop at "));
     Serial.println(positions);
 #endif
     endstop_config |= _BV(6);
@@ -406,10 +440,23 @@ const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr
     Serial.println(positions);
 #endif
     endstop_config |= _BV(7);
+#ifdef DEBUG_ENDSTOPS_DETAIL
+    Serial.print(F("Cleared enstop config before "));
+    Serial.println(endstop_config);
+#endif
+
     position_register = TMC4361_VIRTUAL_STOP_RIGHT_REGISTER;
     //we doe not latch since we know where they are??
   }
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("New enstop config "));
+  Serial.println(endstop_config);
+#endif
   writeRegister(motor_nr,TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Written enstop config "));
+  Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
+#endif
   writeRegister(motor_nr,position_register, positions);
   return NULL; //TODO this has to be implemented ...
 }
@@ -425,9 +472,12 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
     clearing_pattern = TMC4361_RIGHT_ENDSTOP_REGISTER_PATTERN;
   }
   clearing_pattern = ~clearing_pattern;
-  endstop_config |= clearing_pattern;
+  endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
+
+
 
 
 
