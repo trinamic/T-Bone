@@ -69,6 +69,20 @@
         "home-acceleration": 10,
         "home-precision-speed": 1
     },
+    "printer": {
+        "print-queue": {
+            "min-length": 20,
+            "max-length": 30
+        },
+        "homing-timeout": 15,
+        "home-retract": 2.5,
+        "heated-bed": {
+            "pwm": 2,
+            "sensor": 2,
+            "type": "epcos-100k",
+            "max-duty-cycle": 0.5
+        }
+    },
     "extruder": {
         "motor": 3,
         "current": 0.5,
@@ -80,18 +94,5 @@
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet"
-    },
-    "printer": {
-        "print-queue": {
-            "min-length": 20,
-            "max-length": 30
-        },
-        "homing-timeout": 15,
-        "home-retract": 2.5,
-        "heated-bed": {
-            "pwm": 2,
-            "type": "epcos-100k",
-            "max-duty-cycle": 0.5
-        }
     }
 }
