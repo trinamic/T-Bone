@@ -29,7 +29,7 @@ class Heater(Thread):
 
         self.active = False
         self.set_temperature = 0.0
-        self.temperature = 30.0  #todo just a test
+        self.temperature = 0.0
         self.current_consumption = 0.0
         self.duty_cycle = 0.0
         if not pwm_frequency:

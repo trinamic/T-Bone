@@ -76,9 +76,9 @@ class Printer(Thread):
                 current_pin = None
             bed_thermometer = Thermometer(themistor_type=printer_config['heated-bed']['type'],
                                           analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
-            bed_pid_controller = pidpy(kc=tprinter_config['heated-bed']['pid-config']['Kp'],
-                                       ti=tprinter_config['heated-bed']['pid-config']['Ki'],
-                                       td=tprinter_config['heated-bed']['pid-config']['Kd'])
+            bed_pid_controller = pidpy(kc=printer_config['heated-bed']['pid-config']['Kp'],
+                                       ti=printer_config['heated-bed']['pid-config']['Ki'],
+                                       td=printer_config['heated-bed']['pid-config']['Kd'])
             self.heated_bed = Heater(thermometer=bed_thermometer,
                                      pid_controller = bed_pid_controller,
                                      output=beaglebone_helpers.pwm_config[pwm_number]['out'],

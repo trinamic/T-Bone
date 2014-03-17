@@ -79,7 +79,7 @@
         "heated-bed": {
             "pwm": 1,
             "type": "epcos-100k",
-            "max-duty-cycle": 50,
+            "max-duty-cycle": 100,
             "pid-config": {
                 "Kp":20.0,
                 "Ki": 160.0,
