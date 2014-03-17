@@ -145,6 +145,11 @@ class Printer(Thread):
             home_precision_speed = self.axis[home_axis]['home_precision_speed']
             home_acceleration = self.axis[home_axis]['home_acceleration']
             home_retract = self.axis[home_axis]['home_retract']
+            #TODO we just enforce the xistence of a left axis - is there a simpler way?
+            if self.axis[home_axis]['endstops']['left']['polarity'] == 'virtual':
+                homing_right_position = self.axis[home_axis]['endstops']['left']['position']
+            else:
+                homing_right_position = 0
             #convert everything from mm to steps
             home_speed = convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
             home_precision_speed = convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
@@ -164,6 +169,7 @@ class Printer(Thread):
                     'home_slow_speed': home_precision_speed,
                     'home_retract': home_retract,
                     'acceleration': home_acceleration,
+                    'homing_right_position': homing_right_position,
                 }
                 if self.axis[home_axis]['bow_step']:
                     homing_config['jerk'] = self.axis[home_axis]['bow_step']
@@ -177,6 +183,7 @@ class Printer(Thread):
                     'home_slow_speed': home_precision_speed,
                     'home_retract': home_retract,
                     'acceleration': home_acceleration,
+                    'homing_right_position': homing_right_position,
                 }
                 if self.axis[home_axis]['bow_step']:
                     homing_config['bow'] = self.axis[home_axis]['bow_step']
