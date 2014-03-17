@@ -317,7 +317,7 @@ char* followers)
   //TODO obey the timeout!!
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
-#ifdef DEBUG_HOMING_STATUS
+#ifdef DEBUG_HOMING_STATUS_5041
   unsigned long old_status = -1;
 #endif
 
@@ -334,7 +334,7 @@ char* followers)
       else {
         status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
       }
-#ifdef DEBUG_HOMING_STATUS
+#ifdef DEBUG_HOMING_STATUS_5041
       if (status!=old_status) {
         Serial.print("Status1 ");
         Serial.println(status,HEX);
@@ -349,7 +349,7 @@ char* followers)
 #endif
       if ((status & _BV(4))==0){ //reference switches not hit
         if (status & (_BV(12) | _BV(10) | _BV(9))) { //not moving or at or beyond target
-          target -= 999999l;
+          target -= 9999999l;
 #ifdef DEBUG_HOMING
           Serial.print(F("Homing to "));
           Serial.print(target);

@@ -45,10 +45,10 @@
     },
     "z-axis": {
         "motors": [4, 5],
-        "current": 0.4,
+        "current": 0.1,
         "inverted": {
-            "4": true,
-            "5": true
+            "4": false,
+            "5": false
         },
         "inverted_comment": "TMC5041 is easier to invert ...",
         "steps-per-mm": 64000.0,
