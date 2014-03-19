@@ -138,7 +138,7 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
         Serial.print(motor_nr);
         Serial.println(F(" - configuring left end stop as active high"));
 #endif
-        endstop_config |= _BV(2) | _BV(5);
+        endstop_config |= _BV(5); //nothing to do here ...
       }  
       else {
 #ifdef DEBUG_ENDSTOPS
@@ -146,7 +146,7 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
         Serial.print(motor_nr);
         Serial.println(F(" - configuring left end stop as active low"));
 #endif
-        endstop_config |= _BV(6);
+        endstop_config |= _BV(2) | _BV(5);
       }
     } 
     else {
@@ -157,7 +157,7 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
         Serial.print(motor_nr);
         Serial.println(F(" - configuring right end stop as active high"));
 #endif
-        endstop_config |= _BV(3) | _BV(7);
+        endstop_config |= _BV(7);
       }  
       else {
 #ifdef DEBUG_ENDSTOPS
@@ -165,7 +165,7 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
         Serial.print(motor_nr);
         Serial.println(F(" - configuring right end stop as active low"));
 #endif
-        endstop_config |= _BV(8);
+        endstop_config |= _BV(3) | _BV(7);
       }
     }
   }
