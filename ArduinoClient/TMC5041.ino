@@ -5,6 +5,9 @@ const unsigned long default_chopper_config = 0
 | (5 << 4) // hysteresis start time
 | 5 //t OFF
 ;
+//the endstop config seems to be write only 
+unsigned long endstop_config_shadow[2] = {
+  0,0};
 
 volatile boolean tmc5041_read_position_read_status = true;
 
@@ -115,7 +118,16 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
 }
 
 const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active, boolean active_high) {
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Enstop config before "));
+  Serial.println(enstop_config_shadow[motor_nr],HEX);
+  
+#endif
   unsigned long endstop_config = getClearedEndstopConfigTMC5041(motor_nr, left);
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("Cleared enstop config before "));
+  Serial.println(endstop_config,HEX);
+#endif
 
   if (active) {
     if (left) {
@@ -143,7 +155,7 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
 #ifdef DEBUG_ENDSTOPS
         Serial.print(F("TMC5041 motor "));
         Serial.print(motor_nr);
-        Serial.println(F(" - configuring left end stop as active high"));
+        Serial.println(F(" - configuring right end stop as active high"));
 #endif
         endstop_config |= _BV(3) | _BV(7);
       }  
@@ -157,6 +169,10 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
       }
     }
   }
+#ifdef DEBUG_ENDSTOPS_DETAIL
+  Serial.print(F("New enstop config "));
+  Serial.println(endstop_config,HEX);
+#endif
   if (motor_nr == 0) {
     writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1,endstop_config);
   } 
@@ -347,7 +363,7 @@ char* followers)
         old_status=status;
       }
 #endif
-      if ((status & _BV(4))==0){ //reference switches not hit
+      if ((status & (_BV(4) | _BV(0)))==0){ //reference switches not hit
         if (status & (_BV(12) | _BV(10) | _BV(9))) { //not moving or at or beyond target
           target -= 9999999l;
 #ifdef DEBUG_HOMING
@@ -356,7 +372,7 @@ char* followers)
           Serial.print(F(" @ "));
           Serial.println(homing_speed);
           Serial.print(F("Status "));
-          Serial.println(status,HEX);
+          Serial.print(status,HEX);
           Serial.print(F(" phase "));
           Serial.println(homed,DEC);
           Serial.print(F("Position "));
@@ -384,7 +400,7 @@ char* followers)
           }
         }
       } 
-      else if(status & _BV(4)){ //reference switches hit
+      else{ //reference switches hit
         long go_back_to;
         if (homed==0) {
           long actual;
@@ -529,13 +545,7 @@ int calculateCurrentValue(int current, boolean high_sense) {
 }
 
 unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
-  unsigned long endstop_config;
-  if (motor_nr == 0) {
-    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1);
-  } 
-  else {
-    endstop_config = readRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2);
-  }
+  unsigned long endstop_config = endstop_config_shadow[motor_nr];
   //clear everything
   unsigned long clearing_pattern; // - a trick to ensure the use of all 32 bits
   if (left) {
@@ -567,6 +577,9 @@ ISR(PCINT0_vect)
 {
   tmc5041_read_position_read_status = true;
 }
+
+
+
 
 
 

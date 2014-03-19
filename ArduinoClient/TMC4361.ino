@@ -381,7 +381,7 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   unsigned long endstop_config = getClearedEndStopConfigTMC4361(motor_nr, left);
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("Cleared enstop config before "));
-  Serial.println(endstop_config);
+  Serial.println(endstop_config, HEX);
 #endif
   if (left) {
     if (active_high) {
@@ -439,7 +439,7 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   }
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("New enstop config "));
-  Serial.println(endstop_config);
+  Serial.println(endstop_config, HEX);
 #endif
   writeRegister(motor_nr,TMC4361_REFERENCE_CONFIG_REGISTER, endstop_config);
 #ifdef DEBUG_ENDSTOPS_DETAIL
