@@ -99,6 +99,17 @@
         "bow-acceleration": 10000,
         "time-reference": "time",
         "inverted": false,
-        "inverted_comment": "not fully functional yet"
+        "inverted_comment": "not fully functional yet",
+        "heater": {
+            "pwm": 2,
+            "sensor": 2,
+            "type": "epcos-10k",
+            "max-duty-cycle": 50,
+            "pid-config": {
+                "Kp":20.0,
+                "Ki": 160.0,
+                "Kd":1.66
+            }
+        }
     }
 }
