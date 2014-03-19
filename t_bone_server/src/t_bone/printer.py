@@ -1,4 +1,5 @@
 # coding=utf-8
+from Adafruit_BBIO import PWM
 from Queue import Queue, Empty
 from copy import deepcopy
 import logging
@@ -52,6 +53,26 @@ class Printer(Thread):
         names.sort()
         return names
 
+    def _configure_heater(self, heater_config):
+        pwm_number = heater_config['pwm'] - 1
+        #do we have a maximum duty cycle??
+        max_duty_cycle = None
+        if 'max-duty-cycle' in heater_config:
+            max_duty_cycle = heater_config['max-duty-cycle']
+        if 'current_input' in beaglebone_helpers.pwm_config[pwm_number]:
+            current_pin = beaglebone_helpers.pwm_config[pwm_number]['current_input']
+        else:
+            current_pin = None
+        bed_thermometer = Thermometer(themistor_type=heater_config['type'],
+                                      analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
+        bed_pid_controller = pidpy(kc=heater_config['pid-config']['Kp'],
+                                   ti=heater_config['pid-config']['Ki'],
+                                   td=heater_config['pid-config']['Kd'])
+        heater = Heater(thermometer=bed_thermometer, pid_controller=bed_pid_controller,
+                        output=beaglebone_helpers.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
+                        current_measurement=current_pin, machine=self.machine)
+        return heater
+
     def configure(self, config):
         if not config:
             raise PrinterError("No printer config given!")
@@ -64,27 +85,18 @@ class Printer(Thread):
         self.print_queue_max_length = print_queue_config['max-length']
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
+
+        #todo this is the fan and should be configured
+        PWM.start(beaglebone_helpers.pwm_config[2]['out'], 10.0, 1000, 0)
+
         if 'heated-bed' in printer_config:
-            pwm_number = printer_config['heated-bed']['pwm'] - 1
-            #do we have a maximum duty cycle??
-            max_duty_cycle = None
-            if 'max-duty-cycle' in printer_config['heated-bed']:
-                max_duty_cycle = printer_config['heated-bed']['max-duty-cycle']
-            if 'current_input' in beaglebone_helpers.pwm_config[pwm_number]:
-                current_pin = beaglebone_helpers.pwm_config[pwm_number]['current_input']
-            else:
-                current_pin = None
-            bed_thermometer = Thermometer(themistor_type=printer_config['heated-bed']['type'],
-                                          analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
-            bed_pid_controller = pidpy(kc=printer_config['heated-bed']['pid-config']['Kp'],
-                                       ti=printer_config['heated-bed']['pid-config']['Ki'],
-                                       td=printer_config['heated-bed']['pid-config']['Kd'])
-            self.heated_bed = Heater(thermometer=bed_thermometer,
-                                     pid_controller = bed_pid_controller,
-                                     output=beaglebone_helpers.pwm_config[pwm_number]['out'],
-                                     maximum_duty_cycle=max_duty_cycle,
-                                     current_measurement=current_pin,
-                                     machine=self.machine)
+            bed_heater_config = printer_config['heated-bed']
+            self.heated_bed = self._configure_heater(bed_heater_config)
+
+        extruder_heater_config = config['extruder']['heater']
+        #we do not care if it the extruder heate may not be given in the config
+        # # - the whole point of additive printing is pretty dull w/o an heated extruder
+        self.extruder_heater = self._configure_heater(extruder_heater_config)
 
         self.axis = {}
         for axis_name, config_name in _axis_config.iteritems():

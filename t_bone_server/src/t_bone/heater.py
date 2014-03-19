@@ -1,6 +1,7 @@
 from Adafruit_BBIO import ADC, PWM, GPIO
 from flask import logging
 from threading import Thread
+import threading
 import time
 import thermistors
 
@@ -8,7 +9,7 @@ __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
 _DEFAULT_READOUT_DELAY = 0.1
 _DEFAULT_CURRENT_READOUT_DELAY = 60
-
+_PWM_LOCK = threading.Lock()
 ADC.setup()
 
 
@@ -39,14 +40,19 @@ class Heater(Thread):
 
         self.readout_delay = _DEFAULT_READOUT_DELAY
         self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
+        self.set_temperature = 40.0  #todo testing
 
+        with _PWM_LOCK:
+            PWM.start(self._output, 0.0, self.pwm_frequency, 0)
         self.start()
 
     def stop(self):
         self.active = False
+        with _PWM_LOCK:
+            PWM.stop(self._output)
 
-    def set_temperature(self,temperature):
-        if (temperature<self._max_temperature):
+    def set_temperature(self, temperature):
+        if (temperature < self._max_temperature):
             self.temperature = temperature
             #todo shouldn't we warn?
         else:
@@ -54,7 +60,6 @@ class Heater(Thread):
         return self.temperature
 
     def run(self):
-        PWM.start(self._output, 0.0, self.pwm_frequency, 0)
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
         self.active = True
         while self.active:
@@ -65,16 +70,21 @@ class Heater(Thread):
 
     def _apply_duty_cycle(self):
         #todo this is a hack because the current reading si onyl avail on arduino
-        if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
-            self._wait_for_current_readout = 0
-            try:
-                PWM.set_duty_cycle(self._output, 100.0)
+        try:
+            if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
+                self._wait_for_current_readout = 0
+                with _PWM_LOCK:
+                    PWM.set_duty_cycle(self._output, 100.0)
                 self.current_consumption = self._machine.read_current(self._current_measurement) \
                                            / 1024.0 * 1.8 * 121.0 / 10.0
-            finally:
-                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
-        else:
-            self._wait_for_current_readout += self.readout_delay
+            else:
+                self._wait_for_current_readout += self.readout_delay
+        finally:
+            if self.duty_cycle >= 0.0 and self.duty_cycle <= 100.0:
+                with _PWM_LOCK:
+                    PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
+            else:
+                _logger.warn("how did i come up with a duty cycle of %s", self.duty_cycle)
 
 
 class Thermometer(object):

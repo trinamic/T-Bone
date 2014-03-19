@@ -77,10 +77,10 @@
         },
         "homing-timeout": 15,
         "home-retract": 10,
-        "heated-bed": {
+        "heated-bed-disabled": {
             "pwm": 2,
             "sensor": 2,
-            "type": "epcos-10k",
+            "type": "epcos-100k",
             "max-duty-cycle": 100,
             "pid-config": {
                 "Kp":20.0,
@@ -103,7 +103,7 @@
         "heater": {
             "pwm": 2,
             "sensor": 2,
-            "type": "epcos-10k",
+            "type": "epcos-100k",
             "max-duty-cycle": 50,
             "pid-config": {
                 "Kp":20.0,
