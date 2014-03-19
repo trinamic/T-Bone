@@ -45,7 +45,7 @@
     },
     "z-axis": {
         "motors": [4, 5],
-        "current": 0.4,
+        "current": 0.2,
         "inverted": {
             "4": true,
             "5": true
@@ -65,9 +65,10 @@
                 "position": 20.2
             }
         },
-        "home-speed": 10,
-        "home-acceleration": 10,
-        "home-precision-speed": 1
+        "home-speed": 2,
+        "home-acceleration": 10000,
+        "home-precision-speed": 1,
+         "home-retract": 3
     },
     "printer": {
         "print-queue": {
@@ -75,12 +76,17 @@
             "max-length": 30
         },
         "homing-timeout": 15,
-        "home-retract": 2.5,
+        "home-retract": 10,
         "heated-bed": {
             "pwm": 2,
             "sensor": 2,
             "type": "epcos-10k",
-            "max-duty-cycle": 0.5
+            "max-duty-cycle": 100,
+            "pid-config": {
+                "Kp":20.0,
+                "Ki": 160.0,
+                "Kd":1.66
+            }
         }
     },
     "extruder": {
