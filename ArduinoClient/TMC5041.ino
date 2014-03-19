@@ -120,7 +120,7 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
 const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active, boolean active_high) {
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("Enstop config before "));
-  Serial.println(enstop_config_shadow[motor_nr],HEX);
+  Serial.println(endstop_config_shadow[motor_nr],HEX);
   
 #endif
   unsigned long endstop_config = getClearedEndstopConfigTMC5041(motor_nr, left);
