@@ -7,7 +7,7 @@ const unsigned long default_chopper_config = 0
 ;
 //the endstop config seems to be write only 
 unsigned long endstop_config_shadow[2] = {
-  0,0};
+  _BV(11), _BV(11)};
 
 volatile boolean tmc5041_read_position_read_status = true;
 
@@ -121,7 +121,7 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("Enstop config before "));
   Serial.println(endstop_config_shadow[motor_nr],HEX);
-  
+
 #endif
   unsigned long endstop_config = getClearedEndstopConfigTMC5041(motor_nr, left);
 #ifdef DEBUG_ENDSTOPS_DETAIL
@@ -336,6 +336,17 @@ char* followers)
 #ifdef DEBUG_HOMING_STATUS_5041
   unsigned long old_status = -1;
 #endif
+  //to ensure a easier homing we make both motors use the same refence heigt from here on  so they must be parallel at this point
+  if (motor_nr==0) {
+    long actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,actual);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,actual);
+  } 
+  else {          
+    long actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,actual);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,actual);
+  }
 
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
     unsigned long status=0;
@@ -577,6 +588,7 @@ ISR(PCINT0_vect)
 {
   tmc5041_read_position_read_status = true;
 }
+
 
 
 

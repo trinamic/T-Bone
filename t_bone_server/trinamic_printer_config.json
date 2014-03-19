@@ -45,7 +45,7 @@
     },
     "z-axis": {
         "motors": [4, 5],
-        "current": 0.1,
+        "current": 0.2,
         "inverted": {
             "4": true,
             "5": true
@@ -57,7 +57,7 @@
         "time-reference": "clock signal",
         "end-stops": {
             "left": {
-                "polarity": "positive",
+                "polarity": "negative",
                 "motor": 4
             },
             "right": {
@@ -65,10 +65,11 @@
                 "position": 20.2
             }
         },
-        "home-speed": 5,
-        "home-acceleration": 1000,
-        "home-precision-speed": 1
-    },
+        "home-speed": 2,
+        "home-acceleration": 10000,
+        "home-precision-speed": 1,
+         "home-retract": 3
+   },
     "printer": {
         "print-queue": {
             "min-length": 20,

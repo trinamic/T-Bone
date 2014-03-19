@@ -9,7 +9,7 @@ import Adafruit_BBIO.GPIO as GPIO
 
 __author__ = 'marcus'
 
-_default_timeout = 5
+_default_timeout = 30
 _commandEndMatcher = re.compile(";")  #needed to search for command ends
 _min_command_buffer_free_space = 5  # how much arduino buffer to preserve
 _initial_buffer_length = 20  #how much buffer do we need befoer starting to print
