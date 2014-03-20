@@ -107,7 +107,7 @@
             "max-duty-cycle": 50,
             "pid-config": {
                 "Kp":20.0,
-                "Ki": 160.0,
+                "Ki":160.0,
                 "Kd":1.66
             }
         }

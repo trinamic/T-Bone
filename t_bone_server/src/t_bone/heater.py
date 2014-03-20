@@ -10,6 +10,7 @@ _logger = logging.getLogger(__name__)
 _DEFAULT_READOUT_DELAY = 0.1
 _DEFAULT_CURRENT_READOUT_DELAY = 60
 _PWM_LOCK = threading.Lock()
+_DEFAULT_MAX_TEMPERATURE = 250
 ADC.setup()
 
 
@@ -18,7 +19,10 @@ class Heater(Thread):
                  machine=None,
                  pwm_frequency=None, max_temperature=None):
         super(Heater, self).__init__()
-        self.max_temperature = max_temperature
+        if max_temperature:
+            self.max_temperature = max_temperature
+        else:
+            self.max_temperature = _DEFAULT_MAX_TEMPERATURE
         self._thermometer = thermometer
         self._pid_controller = pid_controller
         self._output = output
@@ -30,7 +34,7 @@ class Heater(Thread):
         self._machine = machine
 
         self.active = False
-        self.set_temperature = 0.0
+        self._set_temperature = 0.0
         self.temperature = 0.0
         self.current_consumption = 0.0
         self.duty_cycle = 0.0
@@ -42,7 +46,7 @@ class Heater(Thread):
         self.readout_delay = _DEFAULT_READOUT_DELAY
         self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
         self._wait_for_current_readout = 0
-        self.set_temperature = 40.0  #todo testing
+        self._set_temperature = 40.0  #todo testing
 
         with _PWM_LOCK:
             PWM.start(self._output, 0.0, self.pwm_frequency, 0)
@@ -55,11 +59,10 @@ class Heater(Thread):
 
     def set_temperature(self, temperature):
         if not self.max_temperature or temperature < self.max_temperature:
-            self.temperature = temperature
-            #todo shouldn't we warn?
+            self._set_temperature = temperature
+            self._pid_controller.setPoint(temperature)
         else:
             _logger.warn("Temperature %s", temperature)
-        return self.temperature
 
     def run(self):
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
@@ -67,7 +70,7 @@ class Heater(Thread):
         try:
             while self.active:
                 self.temperature = self._thermometer.read()
-                self.duty_cycle = self._pid_controller.calcPID(self.temperature, self.set_temperature, True)
+                self.duty_cycle = self._pid_controller.update(self.temperature)
                 self._apply_duty_cycle()
                 time.sleep(self.readout_delay)
         except Exception as e:
@@ -75,7 +78,7 @@ class Heater(Thread):
             PWM.stop(self._output)
 
     def _apply_duty_cycle(self):
-        #todo this is a hack because the current reading si onyl avail on arduino
+        #todo this is a hack because the current reading si only avail on arduino
         try:
             if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
                 self._wait_for_current_readout = 0
@@ -86,11 +89,12 @@ class Heater(Thread):
             else:
                 self._wait_for_current_readout += self.readout_delay
         finally:
-            if self.duty_cycle >= 0.0 and self.duty_cycle <= 100.0:
-                with _PWM_LOCK:
-                    PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
-            else:
-                _logger.warn("how did i come up with a duty cycle of %s", self.duty_cycle)
+            self.duty_cycle = max(self.duty_cycle, 0.0)
+            self.duty_cycle = min(self.duty_cycle, 100.0)
+            if self.temperature >= self.max_temperature:
+                self.duty_cycle = 0.0
+            with _PWM_LOCK:
+                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
 
 
 class Thermometer(object):
@@ -105,117 +109,114 @@ class Thermometer(object):
         return thermistors.get_thermistor_reading(self._thermistor_type, value)
 
 
-#from https://github.com/steve71/RasPiBrew
-#tehre used as
-#pid = PIDController.pidpy(cycle_time, k_param, i_param, d_param) #init pid
-#duty_cycle = pid.calcPID_reg4(temp_ma, set_point, True)
-class pidpy(object):
-    ek_1 = 0.0  # e[k-1] = SP[k-1] - PV[k-1] = Tset_hlt[k-1] - Thlt[k-1]
-    ek_2 = 0.0  # e[k-2] = SP[k-2] - PV[k-2] = Tset_hlt[k-2] - Thlt[k-2]
-    xk_1 = 0.0  # PV[k-1] = Thlt[k-1]
-    xk_2 = 0.0  # PV[k-2] = Thlt[k-1]
-    yk_1 = 0.0  # y[k-1] = Gamma[k-1]
-    yk_2 = 0.0  # y[k-2] = Gamma[k-1]
-    lpf_1 = 0.0  # lpf[k-1] = LPF output[k-1]
-    lpf_2 = 0.0  # lpf[k-2] = LPF output[k-2]
+#from http://code.activestate.com/recipes/577231-discrete-pid-controller/
+#The recipe gives simple implementation of a Discrete Proportional-Integral-Derivative (PID) controller.
+# PID controller gives output value for error between desired reference input and measurement feedback to minimize
+# error value.
+#More information: http://en.wikipedia.org/wiki/PID_controller
+#
+#cnr437@gmail.com
+#
+#######	Example	#########
+#
+#p=PID(3.0,0.4,1.2)
+#p.setPoint(5.0)
+#while True:
+#     pid = p.update(measurement_value)
+#
+#
+class PID:
+    """
+    Discrete PID control
+    """
 
-    yk = 0.0  # output
+    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_max=500, Integrator_min=-500):
+        self.Kp = float(P)
+        self.Ki = float(I)
+        self.Kd = float(D)
+        self.Derivator = float(Derivator)
+        self.Integrator = float(Integrator)
+        self.Integrator_max = Integrator_max
+        self.Integrator_min = Integrator_min
 
-    GMA_HLIM = 100.0
-    GMA_LLIM = 0.0
+        self.set_point = 0.0
+        self.error = 0.0
+        self.pid_reset = False
 
-    def __init__(self, kc, ti, td, ts=_DEFAULT_READOUT_DELAY):
-        self.kc = kc
-        self.ti = ti
-        self.td = td
-        self.ts = ts
-        self.k_lpf = 0.0
-        self.k0 = 0.0
-        self.k1 = 0.0
-        self.k2 = 0.0
-        self.k3 = 0.0
-        self.lpf1 = 0.0
-        self.lpf2 = 0.0
-        self.ts_ticks = 0
-        self.pid_model = 3
-        self.pp = 0.0
-        self.pi = 0.0
-        self.pd = 0.0
-        if self.ti == 0.0:
-            self.k0 = 0.0
+        self._pid_max = 100.0
+        self._pid_min = 0.0
+
+
+    def update(self, current_value):
+        """
+        Calculate PID output value for given reference input and feedback
+        """
+
+        self.error = self.set_point - current_value
+
+        if self.error > 10.0:
+            PID = self._pid_max
+            self.pid_reset = True
+        elif self.error < -10.0:
+            PID = self._pid_min
+            self.pid_reset = True
         else:
-            self.k0 = self.kc * self.ts / self.ti
-        self.k1 = self.kc * self.td / self.ts
-        self.lpf1 = (2.0 * self.k_lpf - self.ts) / (2.0 * self.k_lpf + self.ts)
-        self.lpf2 = self.ts / (2.0 * self.k_lpf + self.ts)
+            if self.pid_reset:
+                self.I_value = 0
+                self.pid_reset = False
 
-    def calcPID_reg3(self, xk, tset, enable):
-        ek = 0.0
-        lpf = 0.0
-        ek = tset - xk  # calculate e[k] = SP[k] - PV[k]
-        #--------------------------------------
-        # Calculate Lowpass Filter for D-term
-        #--------------------------------------
-        lpf = self.lpf1 * pidpy.lpf_1 + self.lpf2 * (ek + pidpy.ek_1);
+            self.P_value = self.Kp * self.error
+            self.D_value = self.Kd * (self.error - self.Derivator)
+            self.Derivator = self.error
 
-        if (enable):
-            #-----------------------------------------------------------
-            # Calculate PID controller:
-            # y[k] = y[k-1] + kc*(e[k] - e[k-1] +
-            # Ts*e[k]/Ti +
-            # Td/Ts*(lpf[k] - 2*lpf[k-1] + lpf[k-2]))
-            #-----------------------------------------------------------
-            self.pp = self.kc * (ek - pidpy.ek_1)  # y[k] = y[k-1] + Kc*(PV[k-1] - PV[k])
-            self.pi = self.k0 * ek  # + Kc*Ts/Ti * e[k]
-            self.pd = self.k1 * (lpf - 2.0 * pidpy.lpf_1 + pidpy.lpf_2)
-            pidpy.yk += self.pp + self.pi + self.pd
-        else:
-            pidpy.yk = 0.0
-            self.pp = 0.0
-            self.pi = 0.0
-            self.pd = 0.0
+            self.Integrator += self.error
 
-        pidpy.ek_1 = ek  # e[k-1] = e[k]
-        pidpy.lpf_2 = pidpy.lpf_1  # update stores for LPF
-        pidpy.lpf_1 = lpf
+            if self.Integrator > self.Integrator_max:
+                self.Integrator = self.Integrator_max
+            elif self.Integrator < self.Integrator_min:
+                self.Integrator = self.Integrator_min
 
-        # limit y[k] to GMA_HLIM and GMA_LLIM
-        if (pidpy.yk > pidpy.GMA_HLIM):
-            pidpy.yk = pidpy.GMA_HLIM
-        if (pidpy.yk < pidpy.GMA_LLIM):
-            pidpy.yk = pidpy.GMA_LLIM
+            self.I_value = self.Integrator * self.Ki
 
-        return pidpy.yk
+            PID = self.P_value + self.I_value - self.D_value
 
-    #todo shouldnt we consider the real time passed?
-    def calcPID(self, xk, tset, enable):
-        ek = 0.0
-        ek = tset - xk  # calculate e[k] = SP[k] - PV[k]
+        if PID < 0.0:
+            return 0.0
+        elif PID > 100.0:
+            return 100.0
+        return PID
 
-        if (enable):
-            #-----------------------------------------------------------
-            # Calculate PID controller:
-            # y[k] = y[k-1] + kc*(PV[k-1] - PV[k] +
-            # Ts*e[k]/Ti +
-            # Td/Ts*(2*PV[k-1] - PV[k] - PV[k-2]))
-            #-----------------------------------------------------------
-            self.pp = self.kc * (pidpy.xk_1 - xk)  # y[k] = y[k-1] + Kc*(PV[k-1] - PV[k])
-            self.pi = self.k0 * ek  # + Kc*Ts/Ti * e[k]
-            self.pd = self.k1 * (2.0 * pidpy.xk_1 - xk - pidpy.xk_2)
-            pidpy.yk += self.pp + self.pi + self.pd
-        else:
-            pidpy.yk = 0.0
-            self.pp = 0.0
-            self.pi = 0.0
-            self.pd = 0.0
+    def setPoint(self, set_point):
+        """
+        Initilize the setpoint of PID
+        """
+        self.set_point = float(set_point)
+        self.Integrator = 0
+        self.Derivator = 0
 
-        pidpy.xk_2 = pidpy.xk_1  # PV[k-2] = PV[k-1]
-        pidpy.xk_1 = xk  # PV[k-1] = PV[k]
+    def setIntegrator(self, Integrator):
+        self.Integrator = Integrator
 
-        # limit y[k] to GMA_HLIM and GMA_LLIM
-        if (pidpy.yk > pidpy.GMA_HLIM):
-            pidpy.yk = pidpy.GMA_HLIM
-        if (pidpy.yk < pidpy.GMA_LLIM):
-            pidpy.yk = pidpy.GMA_LLIM
+    def setDerivator(self, Derivator):
+        self.Derivator = Derivator
 
-        return pidpy.yk
+    def setKp(self, P):
+        self.Kp = P
+
+    def setKi(self, I):
+        self.Ki = I
+
+    def setKd(self, D):
+        self.Kd = D
+
+    def getPoint(self):
+        return self.set_point
+
+    def getError(self):
+        return self.error
+
+    def getIntegrator(self):
+        return self.Integrator
+
+    def getDerivator(self):
+        return self.Derivator
