@@ -16,8 +16,9 @@ ADC.setup()
 class Heater(Thread):
     def __init__(self, thermometer, pid_controller, output, maximum_duty_cycle=None, current_measurement=None,
                  machine=None,
-                 pwm_frequency=None):
+                 pwm_frequency=None, max_temperature=None):
         super(Heater, self).__init__()
+        self.max_temperature = max_temperature
         self._thermometer = thermometer
         self._pid_controller = pid_controller
         self._output = output
@@ -40,6 +41,7 @@ class Heater(Thread):
 
         self.readout_delay = _DEFAULT_READOUT_DELAY
         self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
+        self._wait_for_current_readout = 0
         self.set_temperature = 40.0  #todo testing
 
         with _PWM_LOCK:
@@ -52,7 +54,7 @@ class Heater(Thread):
             PWM.stop(self._output)
 
     def set_temperature(self, temperature):
-        if (temperature < self._max_temperature):
+        if not self.max_temperature or temperature < self.max_temperature:
             self.temperature = temperature
             #todo shouldn't we warn?
         else:
@@ -62,11 +64,15 @@ class Heater(Thread):
     def run(self):
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
         self.active = True
-        while self.active:
-            self.temperature = self._thermometer.read()
-            self.duty_cycle = self._pid_controller.calcPID(self.temperature, self.set_temperature, True)
-            self._apply_duty_cycle()
-            time.sleep(self.readout_delay)
+        try:
+            while self.active:
+                self.temperature = self._thermometer.read()
+                self.duty_cycle = self._pid_controller.calcPID(self.temperature, self.set_temperature, True)
+                self._apply_duty_cycle()
+                time.sleep(self.readout_delay)
+        except Exception as e:
+            _logger.error("Heater thread crashed", e)
+            PWM.stop(self._output)
 
     def _apply_duty_cycle(self):
         #todo this is a hack because the current reading si onyl avail on arduino

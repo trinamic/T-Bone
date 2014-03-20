@@ -109,7 +109,7 @@ def read_gcode_to_printer(line, printer):
         if 's' in gcode.options:
             temperature = gcode.options['s']
             if printer.heated_bed:
-                if (printer.heated_bed.set_temperature < temperature):
+                if printer.heated_bed.set_temperature < temperature:
                     _logger.warn("The set temperature of %s can never reach the target temperature of %s",
                                  printer.heated_bed.set_temperature, temperature)
                     return
