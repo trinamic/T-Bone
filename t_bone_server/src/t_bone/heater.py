@@ -46,7 +46,6 @@ class Heater(Thread):
         self.readout_delay = _DEFAULT_READOUT_DELAY
         self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
         self._wait_for_current_readout = 0
-        self._set_temperature = 40.0  #todo testing
 
         with _PWM_LOCK:
             PWM.start(self._output, 0.0, self.pwm_frequency, 0)

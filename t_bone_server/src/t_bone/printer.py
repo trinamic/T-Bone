@@ -24,7 +24,6 @@ _axis_config = {
     'z': 'z-axis',
     'e': 'extruder',
 }
-_FAN_OUTPUT = beaglebone_helpers.pwm_config[2]['out']
 
 
 class Printer(Thread):
@@ -45,6 +44,9 @@ class Printer(Thread):
 
         self._homing_timeout = 10
         self._print_queue_wait_time = 0.1
+
+        #todo why didn't this work as global constant?? - should be confugired anyway
+        self._FAN_OUTPUT = beaglebone_helpers.pwm_config[2]['out']
 
         #finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
@@ -68,7 +70,7 @@ class Printer(Thread):
         self._default_homing_retraction = printer_config['home-retract']
 
         #todo this is the fan and should be configured
-        PWM.start(_FAN_OUTPUT, 30.0, 1000, 0)
+        PWM.start(self._FAN_OUTPUT, 30.0, 1000, 0)
 
         if 'heated-bed' in printer_config:
             bed_heater_config = printer_config['heated-bed']
