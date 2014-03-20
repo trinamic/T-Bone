@@ -211,7 +211,7 @@ class Printer(Thread):
             value = 0
         elif value > 1:
             value = 1
-        PWM.set_frequency(_FAN_OUTPUT, value * 100.0)
+        PWM.set_duty_cycle(self._FAN_OUTPUT, value * 100.0)
 
     def _configure_axis(self, axis, config):
         #let's see if we got one or more motors
