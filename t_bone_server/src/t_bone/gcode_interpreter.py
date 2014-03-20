@@ -92,15 +92,15 @@ def read_gcode_to_printer(line, printer):
     elif "M83" == gcode.code:
         raise PrinterError("Currently only absolute positions are supported!")
     elif "M104" == gcode.code:
-        if 's' in gcode.options:
-            temperature = gcode.options['s']
+        if 'S' in gcode.options:
+            temperature = gcode.options['S']
             if not temperature>printer.extruder_heater.max_temperature:
                 printer.extruder_heater.set_temperature(temperature)
             else:
                 _logger.error("Setting be temperature to %s got ignored, too hot", temperature)
     elif "M106" == gcode.code:
-        if 's' in gcode.options:
-            fan_speed = gcode.options['s']/255.0
+        if 'S' in gcode.options:
+            fan_speed = gcode.options['S']/255.0
             printer.set_fan(fan_speed)
         else:
             _logger.info("No fan speed given in %",gcode)
@@ -109,8 +109,8 @@ def read_gcode_to_printer(line, printer):
     elif "M109" == gcode.code:
         #Wait for bed temperature to reach target temp
         #Example: M190 S60"
-        if 's' in gcode.options:
-            temperature = gcode.options['s']
+        if 'S' in gcode.options:
+            temperature = gcode.options['S']
             if printer.extruder_heater.get_set_temperature() < temperature:
                 _logger.warn("The set temperature of %s can never reach the target temperature of %s",
                              printer.heated_bed.set_temperature, temperature)
@@ -119,8 +119,8 @@ def read_gcode_to_printer(line, printer):
                 #todo a timeout value would be great?
                 pass
     elif "M140" == gcode.code:
-        if 's' in gcode.options:
-            temperature = gcode.options['s']
+        if 'S' in gcode.options:
+            temperature = gcode.options['S']
             if printer.heated_bed:
                 printer.heated_bed.set_temperature(temperature)
                 #todo can this go wrong??
@@ -134,8 +134,8 @@ def read_gcode_to_printer(line, printer):
     elif "M190" == gcode.code:
         #Wait for bed temperature to reach target temp
         #Example: M190 S60"
-        if 's' in gcode.options:
-            temperature = gcode.options['s']
+        if 'S' in gcode.options:
+            temperature = gcode.options['S']
             if printer.heated_bed:
                 if printer.heated_bed.get_set_temperature() < temperature:
                     _logger.warn("The set temperature of %s can never reach the target temperature of %s",
