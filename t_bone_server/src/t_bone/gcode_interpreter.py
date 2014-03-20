@@ -85,9 +85,7 @@ def read_gcode_to_printer(line, printer):
     elif "G92" == gcode.code:
         #set XPOS
         positions = _decode_positions(gcode, line)
-        printer.set
-        else:
-            _logger.info("axis positions give in %s",gcode)
+        printer.set_position(positions)
     elif "M82" == gcode.code:
         _logger.info("Using absolute positions")
         #todo we can support relative positions - if we are a bit careful
