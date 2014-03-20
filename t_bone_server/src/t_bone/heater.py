@@ -64,6 +64,9 @@ class Heater(Thread):
         else:
             _logger.warn("Temperature %s", temperature)
 
+    def get_set_temperature(self):
+        return self._set_temperature
+
     def run(self):
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
         self.active = True

@@ -84,12 +84,42 @@ def read_gcode_to_printer(line, printer):
         raise PrinterError("Currently only absolute positions are supported!")
     elif "G92" == gcode.code:
         #set XPOS
-        pass
+        positions = _decode_positions(gcode, line)
+        printer.set
+        else:
+            _logger.info("axis positions give in %s",gcode)
     elif "M82" == gcode.code:
         _logger.info("Using absolute positions")
         #todo we can support relative positions - if we are a bit careful
     elif "M83" == gcode.code:
         raise PrinterError("Currently only absolute positions are supported!")
+    elif "M104" == gcode.code:
+        if 's' in gcode.options:
+            temperature = gcode.options['s']
+            if not temperature>printer.extruder_heater.max_temperature:
+                printer.extruder_heater.set_temperature(temperature)
+            else:
+                _logger.error("Setting be temperature to %s got ignored, too hot", temperature)
+    elif "M106" == gcode.code:
+        if 's' in gcode.options:
+            fan_speed = gcode.options['s']/255.0
+            printer.set_fan(fan_speed)
+        else:
+            _logger.info("No fan speed given in %",gcode)
+    elif "M107" == gcode.code:
+            printer.set_fan(0)
+    elif "M109" == gcode.code:
+        #Wait for bed temperature to reach target temp
+        #Example: M190 S60"
+        if 's' in gcode.options:
+            temperature = gcode.options['s']
+            if printer.extruder_heater.get_set_temperature() < temperature:
+                _logger.warn("The set temperature of %s can never reach the target temperature of %s",
+                             printer.heated_bed.set_temperature, temperature)
+                return
+            while printer.heated_bed.get_set_temperature() < temperature:
+                #todo a timeout value would be great?
+                pass
     elif "M140" == gcode.code:
         if 's' in gcode.options:
             temperature = gcode.options['s']
@@ -109,11 +139,11 @@ def read_gcode_to_printer(line, printer):
         if 's' in gcode.options:
             temperature = gcode.options['s']
             if printer.heated_bed:
-                if printer.heated_bed.set_temperature < temperature:
+                if printer.heated_bed.get_set_temperature() < temperature:
                     _logger.warn("The set temperature of %s can never reach the target temperature of %s",
                                  printer.heated_bed.set_temperature, temperature)
                     return
-                while printer.heated_bed.set_temperature < temperature:
+                while printer.heated_bed.get_set_temperature() < temperature:
                     #todo a timeout value would be great?
                     pass
     else:

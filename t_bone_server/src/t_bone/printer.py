@@ -24,6 +24,7 @@ _axis_config = {
     'z': 'z-axis',
     'e': 'extruder',
 }
+_FAN_OUTPUT = beaglebone_helpers.pwm_config[2]['out']
 
 
 class Printer(Thread):
@@ -53,26 +54,6 @@ class Printer(Thread):
         names.sort()
         return names
 
-    def _configure_heater(self, heater_config):
-        pwm_number = heater_config['pwm'] - 1
-        #do we have a maximum duty cycle??
-        max_duty_cycle = None
-        if 'max-duty-cycle' in heater_config:
-            max_duty_cycle = heater_config['max-duty-cycle']
-        if 'current_input' in beaglebone_helpers.pwm_config[pwm_number]:
-            current_pin = beaglebone_helpers.pwm_config[pwm_number]['current_input']
-        else:
-            current_pin = None
-        bed_thermometer = Thermometer(themistor_type=heater_config['type'],
-                                      analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
-        bed_pid_controller = PID(P=heater_config['pid-config']['Kp'],
-                                   I=heater_config['pid-config']['Ki'],
-                                   D=heater_config['pid-config']['Kd'])
-        heater = Heater(thermometer=bed_thermometer, pid_controller=bed_pid_controller,
-                        output=beaglebone_helpers.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
-                        current_measurement=current_pin, machine=self.machine)
-        return heater
-
     def configure(self, config):
         if not config:
             raise PrinterError("No printer config given!")
@@ -87,7 +68,7 @@ class Printer(Thread):
         self._default_homing_retraction = printer_config['home-retract']
 
         #todo this is the fan and should be configured
-        PWM.start(beaglebone_helpers.pwm_config[2]['out'], 10.0, 1000, 0)
+        PWM.start(_FAN_OUTPUT, 30.0, 1000, 0)
 
         if 'heated-bed' in printer_config:
             bed_heater_config = printer_config['heated-bed']
@@ -106,15 +87,6 @@ class Printer(Thread):
             self.axis[axis_name] = axis
             self._configure_axis(axis, config[config_name])
         self._postconfig()
-
-    def _postconfig(self):
-        #we need the stepping rations for variuos calclutaions later
-        self._x_step_conversion = float(self.axis['x']['steps_per_mm']) / float(self.axis['y']['steps_per_mm'])
-        self._y_step_conversion = float(self.axis['y']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
-
-        self._extract_homing_information()
-
-        self.ready = True
 
     def connect(self):
         _logger.debug("Connecting printer")
@@ -143,16 +115,6 @@ class Printer(Thread):
             positions[axis_name] = position * axis_config['steps_per_mm']
         return positions
 
-    def _extract_homing_information(self):
-        for axis_name, axis in self.axis.iteritems():
-            axis['homeable'] = False
-            if 'end-stops' in axis:
-                for position in ['left', 'right']:
-                    if position in axis['end-stops'] and not 'virtual' == axis['end-stops'][position]:
-                        axis['homeable'] = True
-                        axis['homed'] = False
-                        break
-
     def home(self, axis):
         for home_axis in axis:
             _logger.info("Homing axis \'%s\' to zero", home_axis)
@@ -164,7 +126,7 @@ class Printer(Thread):
             #TODO we just enforce the existence of a left axis - is there a simpler way?
             if self.axis[home_axis]['end-stops']['left']['type'] == 'virtual':
                 homing_right_position = convert_mm_to_steps(self.axis[home_axis]['end-stops']['left']['distance']
-                    , self.axis[home_axis]['steps_per_mm'])
+                                                            , self.axis[home_axis]['steps_per_mm'])
             else:
                 homing_right_position = 0
             #convert everything from mm to steps
@@ -213,6 +175,17 @@ class Printer(Thread):
         self.y_pos = 0
         self.z_pos = 0
 
+    def set_position(self, positions):
+        if not positions:
+            return
+        for axis, position in positions.iteritems():
+            if axis in self.axis:
+                #todo this may break for z axis
+                motor = self.axis[axis]['motor']
+                step_position = convert_mm_to_steps(position, self.axis[axis]['steps-per-mm'])
+                self.machine.set_pos(motor, step_position)
+            else:
+                _logger.warn("Ignoring unkon axis %s" % axis)
 
     # tuple with x/y/e coordinates - if left out no change is intended
     def move_to(self, position):
@@ -230,6 +203,13 @@ class Printer(Thread):
                 self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
             except Empty:
                 _logger.debug("Print Queue did not return a value - this can be pretty normal")
+
+    def set_fan(self, value):
+        if value < 0:
+            value = 0
+        elif value > 1:
+            value = 1
+        PWM.set_frequency(_FAN_OUTPUT, value * 100.0)
 
     def _configure_axis(self, axis, config):
         #let's see if we got one or more motors
@@ -294,7 +274,7 @@ class Printer(Thread):
                         }
                         #left endstop get's 0 posiotn - makes sense and distance for homing use
                         if end_stop_pos == 'left':
-                            axis['end-stops'][end_stop_pos]['distance']=axis['end-stops'][end_stop_pos]['position']
+                            axis['end-stops'][end_stop_pos]['distance'] = axis['end-stops'][end_stop_pos]['position']
                             axis['end-stops'][end_stop_pos]['position'] = 0
 
                     elif polarity in ('positive', 'negative'):
@@ -351,6 +331,45 @@ class Printer(Thread):
                 for motor in axis['motors']:
                     if str(motor) in config['inverted'] and config['inverted'][str(motor)]:
                         self.machine.invert_motor(motor, True)
+
+    def _configure_heater(self, heater_config):
+        pwm_number = heater_config['pwm'] - 1
+        #do we have a maximum duty cycle??
+        max_duty_cycle = None
+        if 'max-duty-cycle' in heater_config:
+            max_duty_cycle = heater_config['max-duty-cycle']
+        if 'current_input' in beaglebone_helpers.pwm_config[pwm_number]:
+            current_pin = beaglebone_helpers.pwm_config[pwm_number]['current_input']
+        else:
+            current_pin = None
+        bed_thermometer = Thermometer(themistor_type=heater_config['type'],
+                                      analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
+        bed_pid_controller = PID(P=heater_config['pid-config']['Kp'],
+                                 I=heater_config['pid-config']['Ki'],
+                                 D=heater_config['pid-config']['Kd'])
+        heater = Heater(thermometer=bed_thermometer, pid_controller=bed_pid_controller,
+                        output=beaglebone_helpers.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
+                        current_measurement=current_pin, machine=self.machine)
+        return heater
+
+    def _postconfig(self):
+        #we need the stepping rations for variuos calclutaions later
+        self._x_step_conversion = float(self.axis['x']['steps_per_mm']) / float(self.axis['y']['steps_per_mm'])
+        self._y_step_conversion = float(self.axis['y']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
+
+        self._extract_homing_information()
+
+        self.ready = True
+
+    def _extract_homing_information(self):
+        for axis_name, axis in self.axis.iteritems():
+            axis['homeable'] = False
+            if 'end-stops' in axis:
+                for position in ['left', 'right']:
+                    if position in axis['end-stops'] and not 'virtual' == axis['end-stops'][position]:
+                        axis['homeable'] = True
+                        axis['homed'] = False
+                        break
 
 
     def _add_movement_calculations(self, movement):

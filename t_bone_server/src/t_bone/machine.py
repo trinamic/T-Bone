@@ -157,6 +157,18 @@ class Machine():
             _logger.fatal("Unable to home axis %s: %s", home_config, reply)
             raise MachineError("Unable to home axis " + str(home_config), reply)
 
+    def set_pos(self, motor, pos):
+        command = MachineCommand()
+        command.command_number = 13
+        command.arguments = [
+            int(motor),
+            int(pos)
+        ]
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 0:
+            _logger.fatal("Unable set axis %s to %s", motor, pos)
+            raise MachineError("Unable to set axis " + str(motor) + " to " + str(pos), reply)
+
     def start_motion(self):
         _logger.info("Starting movement")
         start_command = MachineCommand()

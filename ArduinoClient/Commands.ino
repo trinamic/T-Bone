@@ -13,7 +13,7 @@ enum {
   kMove = 10,
   kMovement = 11, //controls if a new movement is started or a running one is stopped
   kHome=12, //Home one axis
-  kSetPos = 12, //set an axis position
+  kSetPos = 13, //set an axis position
   //Kommandos zur Information
   kPos = 30,
   kCommands = 31,
