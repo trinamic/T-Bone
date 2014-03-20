@@ -96,6 +96,12 @@ class Heater(Thread):
             with _PWM_LOCK:
                 PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
 
+    def __del__(self):
+        try:
+            PWM.set_duty_cycle(self._output, 0)
+        finally:
+            PWM.stop(self._output)
+
 
 class Thermometer(object):
     def __init__(self, themistor_type, analog_input):
