@@ -35,6 +35,7 @@ $().ready(function () {
         function (eventData) {
             $("#printing-status-text").text(eventData.status_data.print_status);
             $("#extruder-temperature-text").text(eventData.status_data.extruder_temperature);
+            $("#extruder-temperature-page-text").text(eventData.status_data.extruder_temperature);
             $("#extruder-temperature-set-text").text(eventData.status_data.extruder_set_temperature);
             if (eventData.status_data.printing) {
                 $("#printing-progress").show();
