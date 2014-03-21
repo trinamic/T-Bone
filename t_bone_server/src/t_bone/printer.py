@@ -584,6 +584,8 @@ class PrintQueue():
         return self.queue.get(timeout=timeout)
 
     def finish(self, timeout=None):
+        if self.previous_movement:
+            self.planning_list.append(self.previous_movement)
         while len(self.planning_list) > 0:
             self._push_from_planning_to_execution(timeout)
         while not self.queue.empty():
