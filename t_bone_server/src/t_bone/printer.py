@@ -7,6 +7,7 @@ from math import copysign
 from threading import Thread
 
 from numpy import sign
+import time
 import beaglebone_helpers
 from heater import Heater, Thermometer, PID
 
@@ -28,7 +29,6 @@ _axis_config = {
 _axis_names = ('x', 'y', 'z')
 
 
-
 class Printer(Thread):
     def __init__(self, serial_port, reset_pin, print_queue_min_length=50, print_queue_max_length=100):
         Thread.__init__(self)
@@ -40,6 +40,10 @@ class Printer(Thread):
         self.heated_bed = None
         self.extruder_heater = None
         self.axis = {}
+
+        self.axis_position = {}
+        for axis_name in _axis_config:
+            self.axis_position[axis_name] = 0
 
         self.printer_thread = None
         self._print_queue = None
@@ -57,6 +61,8 @@ class Printer(Thread):
 
         #finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
+        self.running = True
+        self.start()
 
     def axis_names(self):
         return _axis_names
@@ -73,6 +79,7 @@ class Printer(Thread):
         self.print_queue_max_length = print_queue_config['max-length']
         self._homing_timeout = printer_config['homing-timeout']
         self._default_homing_retraction = printer_config['home-retract']
+        self.default_speed = printer_config['default-speed']
 
         #todo this is the fan and should be configured
         PWM.start(self._FAN_OUTPUT, 30.0, 1000, 0)
@@ -100,10 +107,9 @@ class Printer(Thread):
 
     def start_print(self):
         self._print_queue = PrintQueue(axis_config=self.axis, min_length=self.print_queue_min_length,
-                                       max_length=self.print_queue_max_length)
+                                       max_length=self.print_queue_max_length, default_target_speed=self.default_speed)
         self.machine.start_motion()
         self.printing = True
-        self.start()
 
     def finish_print(self):
         self._print_queue.finish()
@@ -176,9 +182,8 @@ class Printer(Thread):
             self.machine.home(homing_config, timeout=self._homing_timeout)
             #better but still not good - we should have a better concept of 'axis'
             self.axis[home_axis]['homed'] = True
-        self.x_pos = 0
-        self.y_pos = 0
-        self.z_pos = 0
+            self.axis_position[home_axis] = 0
+
 
     def set_position(self, positions):
         if not positions:
@@ -192,22 +197,30 @@ class Printer(Thread):
             else:
                 _logger.warn("Ignoring unkon axis %s" % axis)
 
+    def relative_move_to(self, position):
+        movement = {}
+        for axis_name, pos in self.axis_position.iteritems():
+            new_pos = pos
+            if axis_name in position:
+                new_pos += position[axis_name]
+            movement[axis_name] = new_pos
+        self.move_to(movement)
+
     # tuple with x/y/e coordinates - if left out no change is intended
     def move_to(self, position):
-        self._print_queue.add_movement(position)
+        if self.printing:
+            self._print_queue.add_movement(position)
+        else:
+            self.start_print()
+            self._print_queue.add_movement(position)
+            self.finish_print()
 
-    def run(self):
-        while self.printing:
-            try:
-                #get the next movement from stack
-                movement = self._print_queue.next_movement(self._print_queue_wait_time)
-                step_pos, step_speed_vector = self._add_movement_calculations(movement)
-                x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement,
-                                                                                                        step_pos,
-                                                                                                        step_speed_vector)
-                self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
-            except Empty:
-                _logger.debug("Print Queue did not return a value - this can be pretty normal")
+    def execute_movement(self, movement):
+        step_pos, step_speed_vector = self._add_movement_calculations(movement)
+        x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement,
+                                                                                                step_pos,
+                                                                                                step_speed_vector)
+        self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
 
     def set_fan(self, value):
         if value < 0:
@@ -215,6 +228,19 @@ class Printer(Thread):
         elif value > 1:
             value = 1
         PWM.set_duty_cycle(self._FAN_OUTPUT, value * 100.0)
+
+    def run(self):
+        while self.running:
+            if self.printing:
+                try:
+                    #get the next movement from stack
+                    movement = self._print_queue.next_movement(self._print_queue_wait_time)
+                    self.execute_movement(movement)
+                except Empty:
+                    _logger.debug("Print Queue did not return a value - this can be pretty normal")
+            else:
+                time.sleep(0.1)
+
 
     def _configure_axis(self, axis, config):
         #let's see if we got one or more motors
@@ -513,6 +539,11 @@ class Printer(Thread):
             move_commands.append(e_move_config)
         if z_move_config:
             move_commands.extend(z_move_config)
+
+        #we update our position
+        #todo isn't there a speedier way
+        for axis_name in self.axis:
+            self.axis_position[axis_name] = movement[axis_name]
 
         if move_commands:
             #we move only if ther eis something to move …

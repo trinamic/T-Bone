@@ -68,7 +68,7 @@
         "home-speed": 2,
         "home-acceleration": 10000,
         "home-precision-speed": 1,
-         "home-retract": 3
+        "home-retract": 3
     },
     "printer": {
         "print-queue": {
@@ -83,11 +83,12 @@
             "type": "epcos-100k",
             "max-duty-cycle": 100,
             "pid-config": {
-                "Kp":20.0,
+                "Kp": 20.0,
                 "Ki": 160.0,
-                "Kd":1.66
+                "Kd": 1.66
             }
-        }
+        },
+        "default-speed": 1
     },
     "extruder": {
         "motor": 3,
@@ -106,9 +107,9 @@
             "type": "epcos-100k",
             "max-duty-cycle": 50,
             "pid-config": {
-                "Kp":20.0,
-                "Ki":160.0,
-                "Kd":1.66
+                "Kp": 20.0,
+                "Ki": 160.0,
+                "Kd": 1.66
             }
         }
     }

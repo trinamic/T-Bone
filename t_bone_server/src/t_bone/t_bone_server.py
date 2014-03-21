@@ -111,12 +111,12 @@ def control():
 
 @app.route('/move/<axis>/<amount>')
 def move_axis(axis,amount):
-    _printer.move_to(
+    _printer.relative_move_to(
         {
             str(axis): float(amount)
         }
     )
-    pass
+    return "ok"
 
 
 @app.route('/home/<axis>')
