@@ -34,6 +34,10 @@ class Printer(Thread):
         self.config = None
         self.homed_axis = []
 
+        self.heated_bed = None
+        self.extruder_heater = None
+        self.axis = {}
+
         self.printer_thread = None
         self._print_queue = None
         self.print_queue_min_length = print_queue_min_length
@@ -81,11 +85,9 @@ class Printer(Thread):
         # # - the whole point of additive printing is pretty dull w/o an heated extruder
         self.extruder_heater = self._configure_heater(extruder_heater_config)
 
-        self.axis = {}
         for axis_name, config_name in _axis_config.iteritems():
             _logger.info("Configuring axis \'%s\' according to conf \'%s\'", axis_name, config_name)
-            axis = {}
-            axis['name'] = axis_name
+            axis = {'name': axis_name}
             self.axis[axis_name] = axis
             self._configure_axis(axis, config[config_name])
         self._postconfig()

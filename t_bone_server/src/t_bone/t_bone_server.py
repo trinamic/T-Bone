@@ -127,11 +127,19 @@ def status():
                    'queue_length': connection.internal_queue_length,
                    'max_queue_length': connection.internal_queue_max_length,
                    'queue_percentage': int(
-                       float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 100.0)}
+                       float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 100.0),
+                   'extruder_temperature': "%0.1f" % _printer.extruder_heater.temperature,
+                   'extruder_set_temperature': "%0.1f" % _printer.extruder_heater.get_set_temperature(),
+    }
     if _printer.printing:
         base_status['print_status'] = 'Printing'
     else:
         base_status['print_status'] = 'Idle'
+
+    if _printer.heated_bed:
+        base_status['bed-temperature'] = "%0.1f" % _printer.heated_bed.temperature
+        base_status['bed-set-temperature'] = "%0.1f" % _printer.heated_bed.get_set_temperature()
+
 
     global _print_thread
     if _print_thread and _print_thread.printing:

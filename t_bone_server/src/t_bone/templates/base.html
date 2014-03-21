@@ -63,7 +63,10 @@
 
         <div class="col-md-8">
             <p class="text-muted">
-                {{ full_name }}, Status: <span id="printing-status-text">{{ print_status }}</span>
+                {{ full_name }},
+                Status: <span id="printing-status-text">{{ print_status }}</span>,
+                Extruder Temperature <span id="extruder-temperature-text">0</span>°C
+                    — Target <span id="extruder-set-temperature-text">0</span>°C
             </p>
 
             <div class="progress" id="printing-progress">
