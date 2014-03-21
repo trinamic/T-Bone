@@ -101,8 +101,8 @@
         "inverted": false,
         "inverted_comment": "not fully functional yet",
         "heater": {
-            "pwm": 2,
-            "sensor": 2,
+            "pwm": 1,
+            "sensor": 1,
             "type": "epcos-100k",
             "max-duty-cycle": 50,
             "pid-config": {
