@@ -2,51 +2,9 @@
 {% block title %}Home{% endblock %}
 {% block content %}
     <div class="row">
-        <h1>Home Axis</h1>
+        <h1>Print File</h1>
 
-        <p>Before printing you are advised to home all axis</p>
-    </div>
-    {% for axis_name in axis %}
-        <div class="row">
-            {% if axis[axis_name]['homeable'] %}
-                <div class="col-lg-8">
-                    <p>
-                        {% if axis[axis_name]['home'] %}
-                            Axis <em>{{ axis_name }}</em> is already homed.
-                        {% else %}
-                            Axis <em>{{ axis_name }}</em> is not homed.
-                        {% endif %}
-                    </p>
-                </div>
-                <div class="col-lg-4">
-                    <p>
-                        {% if axis[axis_name]['home'] %}
-                            <button class="btn btn-lg btn-default printer_function"
-                                    onclick="$.ajax('/home/{{ axis_name }}');return false;">Home
-                                <em>{{ axis_name }}</em></button>
-                        {% else %}
-                            <button class="btn btn-lg btn-warning printer_function"
-                                    onclick="$.ajax('/home/{{ axis_name }}');return false;">Home
-                                <em>{{ axis_name }}</em>
-                            </button>
-                        {% endif %}
-                    </p>
-                </div>
-            {% endif %}
-        </div>
-    {% endfor %}
-    <div class="row">
-        <div class="col-lg-8">
-            <p>
-                &nbsp;
-            </p>
-        </div>
-        <div class="col-lg-4">
-            <p>
-                <button class="btn btn-lg btn-success printer_function" onclick="$.ajax('/home/all');return false;">Home
-                    all axis<em></em></button>
-            </p>
-        </div>
+        <p>Upload and print a GCODE file to the t-bone</p>
     </div>
     {% if print_file %}
         <form action="/print" method="post" enctype="multipart/form-data">

@@ -80,6 +80,11 @@ def print_page():
         template_dictionary['print_file'] = _printer.prepared_file.rsplit('/', 1)[1]
     return render_template("print.html", **template_dictionary)
 
+@app.route('/move', methods=['GET', 'POST'])
+def move():
+    template_dictionary = templating_defaults()
+    return render_template("move.html", **template_dictionary)
+
 
 @app.route('/home/<axis>')
 @busy_function
