@@ -23,7 +23,7 @@
                             Home {{ axis_name }}
                         </button>
                         <button class="btn btn-lg btn-default printer_function"
-                                onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
+                                onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
                             Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['+'] }}
                         </button>
                     </p>
