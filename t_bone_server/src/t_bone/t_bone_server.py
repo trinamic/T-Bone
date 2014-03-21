@@ -118,7 +118,6 @@ def move_axis(axis,amount):
     )
     return "ok"
 
-
 @app.route('/home/<axis>')
 @busy_function
 def home_axis(axis):
