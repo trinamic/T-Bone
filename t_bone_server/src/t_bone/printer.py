@@ -24,6 +24,9 @@ _axis_config = {
     'z': 'z-axis',
     'e': 'extruder',
 }
+#order of the axis
+_axis_names = ('x', 'y', 'z')
+
 
 
 class Printer(Thread):
@@ -56,9 +59,7 @@ class Printer(Thread):
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
 
     def axis_names(self):
-        names = list(self.axis.keys())
-        names.sort()
-        return names
+        return _axis_names
 
     def configure(self, config):
         if not config:

@@ -22,6 +22,21 @@ app = Flask(__name__,
 UPLOAD_FOLDER = '/var/print_uploads'
 MAX_CONTENT_LENGTH = 2 * 1024 * 1024 * 1024
 
+axis_directions = {
+    'x': {
+        '+': 'right',
+        '-': 'left',
+    },
+    'y': {
+        '+': 'forward',
+        '-': 'backward',
+    },
+    'z': {
+        '+': 'down',
+        '-': 'up',
+    },
+}
+
 
 def busy_function(original_function):
     def busy_decorator(*args, **kargs):
@@ -80,17 +95,28 @@ def print_page():
         template_dictionary['print_file'] = _printer.prepared_file.rsplit('/', 1)[1]
     return render_template("print.html", **template_dictionary)
 
-@app.route('/move', methods=['GET', 'POST'])
-def move():
+
+@app.route('/control/', methods=['GET', 'POST'])
+def control():
     if request.method == 'POST':
         if 'set-extruder-temp' in request.form:
             new_temp_ = request.form['set-extruder-temp']
             try:
                 _printer.extruder_heater.set_temperature(float(new_temp_))
             except:
-                _logger.error("unable to set temperature to %s",new_temp_)
+                _logger.error("unable to set temperature to %s", new_temp_)
     template_dictionary = templating_defaults()
+    template_dictionary['axis_directions'] = axis_directions
     return render_template("move.html", **template_dictionary)
+
+@app.route('/move/<axis>/<amount>')
+def move_axis(axis,amount):
+    _printer.move_to(
+        {
+            str(axis): float(amount)
+        }
+    )
+    pass
 
 
 @app.route('/home/<axis>')
@@ -154,7 +180,6 @@ def status():
     if _printer.heated_bed:
         base_status['bed-temperature'] = "%0.1f" % _printer.heated_bed.temperature
         base_status['bed-set-temperature'] = "%0.1f" % _printer.heated_bed.get_set_temperature()
-
 
     global _print_thread
     if _print_thread and _print_thread.printing:
