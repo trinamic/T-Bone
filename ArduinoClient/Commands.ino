@@ -262,7 +262,6 @@ void onMove() {
 #endif    
 #endif
       following_motors++;
-
     }  
   } 
   while (motor!=0);
@@ -293,8 +292,8 @@ void onMove() {
 char readMovementParameters(movement* move) {
   long newPos = messenger.readLongArg();
   if (newPos<0) {
-    messenger.sendCmd (kError,-1); //TODO really?
-    return -1;
+    messenger.sendCmd (kError,-10); //TODO really?
+    return -2;
   }
   char movementType = (char)messenger.readIntArg();
   boolean isWaypoint;
@@ -307,22 +306,22 @@ char readMovementParameters(movement* move) {
   } 
   else {
     messenger.sendCmd (kError,-2);
-    return -1;
+    return -3;
   }  
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
     messenger.sendCmd (kError,3);
-    return -1;
+    return -4;
   }
   double aMax = messenger.readFloatArg();
   if (aMax<=0) {
     messenger.sendCmd(kError,-4);
-    return -1;
+    return -5;
   }
   long jerk = messenger.readLongArg();
   if (jerk<0) {
     messenger.sendCmd (kError,-5); 
-    return -1;
+    return -6;
   }
 
   move->target = newPos;
@@ -343,12 +342,16 @@ char readMovementParameters(movement* move) {
 
 void onMovement() {
   char movement = messenger.readIntArg();
+  Serial.println(movement,DEC);
   if (movement==0) {
     messenger.sendCmdStart(kMovement);
     //just give out the current state of movement
-    if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
+    if (current_motion_state==in_motion) {
       messenger.sendCmdArg(1);
     } 
+    else if (current_motion_state==finishing_motion) {
+      messenger.sendCmdArg(2);
+    }
     else {
       messenger.sendCmdArg(-1);
     }
@@ -375,6 +378,9 @@ void onMovement() {
       messenger.sendCmd(kError,-1);
     } 
     else {
+#ifdef DEBUG_MOTION_STATUS
+      Serial.println(F("motion will start"));
+#endif
       messenger.sendCmd(kOK,0);
       startMotion(initial_command_buffer_depth);
     }
