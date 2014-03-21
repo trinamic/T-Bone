@@ -82,6 +82,13 @@ def print_page():
 
 @app.route('/move', methods=['GET', 'POST'])
 def move():
+    if request.method == 'POST':
+        if 'set-extruder-temp' in request.form:
+            new_temp_ = request.form['set-extruder-temp']
+            try:
+                _printer.extruder_heater.set_temperature(float(new_temp_))
+            except:
+                _logger.error("unable to set temperature to %s",new_temp_)
     template_dictionary = templating_defaults()
     return render_template("move.html", **template_dictionary)
 
@@ -121,6 +128,9 @@ def templating_defaults():
             templating_dictionary['max_queue_length'] = connection.internal_queue_max_length
             templating_dictionary['queue_percentage'] = int(
                 float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
+        templating_dictionary['extruder_temperature'] = "%0.1f" % _printer.extruder_heater.temperature
+        templating_dictionary['extruder_set_temperature'] = "%0.1f" % _printer.extruder_heater.get_set_temperature()
+
     return templating_dictionary
 
 

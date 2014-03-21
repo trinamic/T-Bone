@@ -2,7 +2,11 @@
 {% block title %}Home{% endblock %}
 {% block content %}
     <div class="row">
-        <h1>Home Axis</h1>
+        <h1>Manual Control</h1>
+
+    </div>
+    <div class="row">
+        <h2>Home Axis</h2>
 
     </div>
     {% for axis_name in axis %}
@@ -47,4 +51,27 @@
             </p>
         </div>
     </div>
+    <div class="row">
+        <h2>Control Extruder</h2>
+    </div>
+    <div class="row">
+        <div class="col-lg-8">
+            <p>
+                Extruder Temperature <span id="extruder-temperature-text">0.0</span>°C
+            </p>
+        </div>
+        <div class="col-lg-4">
+            <form action="/move" method="post">
+                <div class="form-group">
+                    <label for="set-extruder-temp">New Temperature:</label>
+                    <input type="text" id="set-extruder-temp" name="set-extruder-temp" class="form-control"
+                           placeholder="{{ extruder_set_temperature }}">
+                    <button class="btn btn-lg btn-success printer_function form-control"
+                            onclick="">
+                        Set<em></em></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 {% endblock %}
