@@ -77,7 +77,7 @@
         },
         "homing-timeout": 15,
         "home-retract": 10,
-        "heated-bed": {
+        "heated-bed-disabled": {
             "pwm": 1,
             "type": "epcos-100k",
             "max-duty-cycle": 100,
@@ -86,7 +86,8 @@
                 "Ki": 160.0,
                 "Kd":1.66
             }
-        }
+        },
+        "default-speed": 1
     },
     "extruder": {
         "motor": 3,
@@ -98,6 +99,17 @@
         "bow-acceleration": 10000,
         "time-reference": "time",
         "inverted": false,
-        "inverted_comment": "not fully functional yet"
+        "inverted_comment": "not fully functional yet",
+        "heater": {
+            "pwm": 2,
+            "sensor": 2,
+            "type": "epcos-100k",
+            "max-duty-cycle": 50,
+            "pid-config": {
+                "Kp": 20.0,
+                "Ki": 160.0,
+                "Kd": 1.66
+            }
+        }
     }
 }
