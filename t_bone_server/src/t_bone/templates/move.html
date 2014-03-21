@@ -13,20 +13,20 @@
         <div class="row">
                 <div class="col-lg-12">
                     <h3>Axis <em>{{ axis_name }}</em></h3>
-                    <div class="form-group">
-                        <button class="btn btn-lg btn-default printer_function form-control"
+                    <p>
+                        <button class="btn btn-lg btn-default printer_function"
                                 onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
                             Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['-'] }}
                         </button>
-                        <button class="btn btn-lg btn-default printer_function form-control"
+                        <button class="btn btn-lg btn-info printer_function"
                                 onclick="$.ajax('/home/{{ axis_name }}');return false;">
                             Home {{ axis_name }}
                         </button>
-                        <button class="btn btn-lg btn-default printer_function form-control"
+                        <button class="btn btn-lg btn-default printer_function"
                                 onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
                             Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['+'] }}
                         </button>
-                    </div>
+                    </p>
                 </div>
         </div>
     {% endfor %}

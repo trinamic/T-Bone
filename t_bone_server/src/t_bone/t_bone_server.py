@@ -96,7 +96,7 @@ def print_page():
     return render_template("print.html", **template_dictionary)
 
 
-@app.route('/control/', methods=['GET', 'POST'])
+@app.route('/control', methods=['GET', 'POST'])
 def control():
     if request.method == 'POST':
         if 'set-extruder-temp' in request.form:
