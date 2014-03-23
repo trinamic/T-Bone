@@ -35,31 +35,31 @@ def get_thermistor_reading(thermistor, value):
     #the tables are from 1024er based arduino
     comparable_value = value * 1024.0
     #find upper value
-    upper_value = int(comparable_value)
+    upper_index = int(comparable_value)
     upper_temperature = None
-    while upper_value < 1024:
-        if upper_value in thermistortable:
-            upper_temperature = thermistortable[upper_value]
+    while upper_index < 1024:
+        if upper_index in thermistortable:
+            upper_temperature = thermistortable[upper_index]
             break
-        upper_value += 1
-    lower_value = int(comparable_value)
+        upper_index += 1
+    lower_index = int(comparable_value)
     lower_temperature = None
-    while lower_value >= 0:
-        if lower_value in thermistortable:
-            lower_temperature = thermistortable[lower_value]
+    while lower_index >= 0:
+        if lower_index in thermistortable:
+            lower_temperature = thermistortable[lower_index]
             break
-        lower_value -= 1
+        lower_index -= 1
 
     #now decode it
     if upper_temperature and lower_temperature:
-        value_difference = float(lower_value - upper_value)
+        value_difference = float(lower_index - upper_index)
         if value_difference == 0.0:
-            return upper_value
+            return upper_index
         else:
             temperature_difference = float(upper_temperature - lower_temperature)
             return float(upper_temperature) \
                 + temperature_difference / value_difference \
-                * (value - lower_value) / value_difference
+                * (value - lower_index) / value_difference
     elif lower_temperature:
         return lower_temperature
     elif upper_temperature:
