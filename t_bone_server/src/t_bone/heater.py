@@ -138,7 +138,7 @@ class PID:
     Discrete PID control
     """
 
-    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_max=500, Integrator_min=-500):
+    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_max=10.0, Integrator_min=-10.0):
         self.Kp = float(P)
         self.Ki = float(I)
         self.Kd = float(D)
@@ -170,7 +170,7 @@ class PID:
             self.pid_reset = True
         else:
             if self.pid_reset:
-                self.I_value = 0
+                self.I_value = 0.0
                 self.pid_reset = False
 
             self.P_value = self.Kp * self.error
@@ -180,18 +180,21 @@ class PID:
             self.Integrator += self.error
 
             if self.Integrator > self.Integrator_max:
-                self.Integrator = self.Integrator_max
+                self.Integrator = float(self.Integrator_max)
             elif self.Integrator < self.Integrator_min:
-                self.Integrator = self.Integrator_min
+                self.Integrator = float(self.Integrator_min)
 
             self.I_value = self.Integrator * self.Ki
 
             PID = self.P_value + self.I_value - self.D_value
 
+        _logger.info("PID is %s (%s of %s)", PID, current_value, self.set_point)
+
         if PID < 0.0:
             return 0.0
         elif PID > 100.0:
             return 100.0
+
         return PID
 
     def setPoint(self, set_point):
@@ -199,8 +202,8 @@ class PID:
         Initilize the setpoint of PID
         """
         self.set_point = float(set_point)
-        self.Integrator = 0
-        self.Derivator = 0
+        self.Integrator = 0.0
+        self.Derivator = 0.0
 
     def setIntegrator(self, Integrator):
         self.Integrator = Integrator

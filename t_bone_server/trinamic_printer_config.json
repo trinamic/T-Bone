@@ -106,9 +106,9 @@
             "type": "epcos-100k",
             "max-duty-cycle": 50,
             "pid-config": {
-                "Kp": 20.0,
-                "Ki": 160.0,
-                "Kd": 1.66
+                "Kp": 1.66,
+                "Ki": 0.22,
+                "Kd": 0
             }
         }
     }
