@@ -76,7 +76,7 @@ class Heater(Thread):
                 self._apply_duty_cycle()
                 time.sleep(self.readout_delay)
         except Exception as e:
-            _logger.error("Heater thread crashed: %e", e)
+            _logger.error("Heater thread crashed %s", e)
             PWM.stop(self._output)
 
     def _apply_duty_cycle(self):
