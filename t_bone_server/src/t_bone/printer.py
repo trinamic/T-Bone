@@ -585,6 +585,8 @@ class PrintQueue():
 
     def finish(self, timeout=None):
         if self.previous_movement:
+            self.previous_movement['x_stop'] = True
+            self.previous_movement['y_stop'] = True
             self.planning_list.append(self.previous_movement)
             self.previous_movement = None
         while len(self.planning_list) > 0:
