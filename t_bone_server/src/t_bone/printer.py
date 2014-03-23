@@ -212,6 +212,8 @@ class Printer(Thread):
             self._print_queue.add_movement(position)
         else:
             self.start_print()
+            position['x_stop'] = True
+            position['y_stop'] = True
             self._print_queue.add_movement(position)
             self.finish_print()
 
@@ -586,6 +588,7 @@ class PrintQueue():
     def finish(self, timeout=None):
         if self.previous_movement:
             self.planning_list.append(self.previous_movement)
+            self.previous_movement = None
         while len(self.planning_list) > 0:
             self._push_from_planning_to_execution(timeout)
         while not self.queue.empty():

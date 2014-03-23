@@ -88,7 +88,7 @@
                 "Kd": 1.66
             }
         },
-        "default-speed": 1
+        "default-speed": 10
     },
     "extruder": {
         "motor": 3,
