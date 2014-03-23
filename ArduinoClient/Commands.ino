@@ -342,7 +342,6 @@ char readMovementParameters(movement* move) {
 
 void onMovement() {
   char movement = messenger.readIntArg();
-  Serial.println(movement,DEC);
   if (movement==0) {
     messenger.sendCmdStart(kMovement);
     //just give out the current state of movement
