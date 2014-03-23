@@ -269,7 +269,7 @@ void onMove() {
   Serial.println();
 #endif
   if (moveQueue.count()+following_motors+1>COMMAND_QUEUE_LENGTH) {
-    messenger.sendCmd(kError,-1);
+    messenger.sendCmd(kError,-100);
     return;
   }
   moveQueue.push(move);

@@ -11,31 +11,32 @@
     </div>
     {% for axis_name in axis_names %}
         <div class="row">
-                <div class="col-lg-12">
-                    <h3>Axis <em>{{ axis_name }}</em></h3>
-                    <p>
-                        <button class="btn btn-lg btn-default printer_function"
-                                onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
-                            Move {{ axis_name }} 50mm {{ axis_directions[axis_name]['-'] }}
-                        </button>
-                        <button class="btn btn-lg btn-default printer_function"
-                                onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
-                            Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['-'] }}
-                        </button>
-                        <button class="btn btn-lg btn-info printer_function"
-                                onclick="$.ajax('/home/{{ axis_name }}');return false;">
-                            Home {{ axis_name }}
-                        </button>
-                        <button class="btn btn-lg btn-default printer_function"
-                                onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
-                            Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['+'] }}
-                        </button>
-                        <button class="btn btn-lg btn-default printer_function"
-                                onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
-                            Move {{ axis_name }} 50mm {{ axis_directions[axis_name]['+'] }}
-                        </button>
-                    </p>
-                </div>
+            <div class="col-lg-12">
+                <h3>Axis <em>{{ axis_name }}</em></h3>
+
+                <p>
+                    <button class="btn btn-lg btn-default printer_function"
+                            onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
+                        Move {{ axis_name }} 50mm {{ axis_directions[axis_name]['-'] }}
+                    </button>
+                    <button class="btn btn-lg btn-default printer_function"
+                            onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
+                        Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['-'] }}
+                    </button>
+                    <button class="btn btn-lg btn-info printer_function"
+                            onclick="$.ajax('/home/{{ axis_name }}');return false;">
+                        Home {{ axis_name }}
+                    </button>
+                    <button class="btn btn-lg btn-default printer_function"
+                            onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
+                        Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['+'] }}
+                    </button>
+                    <button class="btn btn-lg btn-default printer_function"
+                            onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
+                        Move {{ axis_name }} 50mm {{ axis_directions[axis_name]['+'] }}
+                    </button>
+                </p>
+            </div>
         </div>
     {% endfor %}
     <div class="row">
@@ -55,9 +56,9 @@
         <h2>Control Extruder</h2>
     </div>
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-4">
             <p>
-                Extruder Temperature <span id="extruder-temperature-page-text">0.0</span>°C
+                <b>Extruder Temperatur</b> <span id="extruder-temperature-page-text">0.0</span>°C
             </p>
         </div>
         <div class="col-lg-4">
@@ -71,6 +72,16 @@
                         Set<em></em></button>
                 </div>
             </form>
+        </div>
+        <div class="col-lg-4">
+            <button class="btn btn-lg btn-default printer_function"
+                    onclick="$.ajax('/move/e/10');return false;">
+                Extrude 10mm
+            </button>
+            <button class="btn btn-lg btn-default printer_function"
+                    onclick="$.ajax('/move/e/-10');return false;">
+                Retract 10mm
+            </button>
         </div>
     </div>
 

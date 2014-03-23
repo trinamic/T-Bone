@@ -35,7 +35,7 @@ void finishMotion() {
   Serial.println(F("finishing motion"));
 #endif
   current_motion_state = finishing_motion;
-  min_buffer_depth = 0;
+  min_buffer_depth = 0; //reduce the motionbuffer depth to 0 to completely drain it
 }
 
 void resetMotion() {
@@ -71,9 +71,14 @@ void checkMotion() {
 #ifdef CALCULATE_OUTPUT
       digitalWriteFast(CALCULATE_OUTPUT,HIGH);
 #endif
-
+/*
+      This was needed to decode single move queues 
+      Serial.println(min_buffer_depth);
+      Serial.println(moveQueue.count());
+      Serial.println(current_motion_state);
+      */
       //we leave a rest in the move queue since it could be a partial movement
-      if (moveQueue.count()>min_buffer_depth) {
+      if (moveQueue.count()>0 && (moveQueue.count()>min_buffer_depth || current_motion_state==finishing_motion)) {
         if (min_buffer_depth!=0 && min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
 #ifdef DEBUG_MOTION_STATUS
           Serial.println(F("Inital motion buffer full."));
@@ -177,21 +182,21 @@ void checkMotion() {
         } 
         else if (move.type == set_position) {
 #ifdef DEBUG_SET_POS
-  Serial.print(F("Setting motor "));
-  Serial.print(move.motor,DEC);
-  Serial.print(F(" to position "));
-  Serial.print(move.target,DEC);
+          Serial.print(F("Setting motor "));
+          Serial.print(move.motor,DEC);
+          Serial.print(F(" to position "));
+          Serial.print(move.target,DEC);
 #endif  
-         if (IS_COORDINATED_MOTOR(move.motor)) {
+          if (IS_COORDINATED_MOTOR(move.motor)) {
 #ifdef DEBUG_SET_POS
-  Serial.println(F(" on TMC4361"));
+            Serial.println(F(" on TMC4361"));
 #endif  
             setMotorPositionTMC4361(move.motor,move.target);
           } 
           else {
 #ifdef DEBUG_SET_POS
-  Serial.print(F(" on TMC5041 as #"));
-  Serial.print(move.motor-nr_of_coordinated_motors,DEC);
+            Serial.print(F(" on TMC5041 as #"));
+            Serial.print(move.motor-nr_of_coordinated_motors,DEC);
 #endif
             setMotorPositionTMC5041(move.motor-nr_of_coordinated_motors,move.target);
           }
@@ -252,6 +257,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 

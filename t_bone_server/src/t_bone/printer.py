@@ -212,8 +212,6 @@ class Printer(Thread):
             self._print_queue.add_movement(position)
         else:
             self.start_print()
-            position['x_stop'] = True
-            position['y_stop'] = True
             self._print_queue.add_movement(position)
             self.finish_print()
 
