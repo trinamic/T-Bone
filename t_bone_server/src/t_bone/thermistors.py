@@ -37,7 +37,7 @@ def get_thermistor_reading(thermistor, value):
     #find upper value
     upper_index = int(comparable_value)
     upper_temperature = None
-    while upper_index < 1024:
+    while upper_index <= 1024:
         if upper_index in thermistortable:
             upper_temperature = thermistortable[upper_index]
             break
@@ -54,12 +54,12 @@ def get_thermistor_reading(thermistor, value):
     if upper_temperature and lower_temperature:
         value_difference = float(lower_index - upper_index)
         if value_difference == 0.0:
-            return upper_index
+            return upper_temperature
         else:
             temperature_difference = float(upper_temperature - lower_temperature)
             return float(upper_temperature) \
-                + temperature_difference / value_difference \
-                * (value - lower_index) / value_difference
+                   - temperature_difference / value_difference * (upper_index - comparable_value)
+
     elif lower_temperature:
         return lower_temperature
     elif upper_temperature:
