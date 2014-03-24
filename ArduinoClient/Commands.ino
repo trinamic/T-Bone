@@ -406,6 +406,7 @@ void onSetPosition() {
   movement move;
   move.type = set_position;
   move.motor=motor;
+  move.target=newPos;
   moveQueue.push(move);
 
   messenger.sendCmdStart(kOK);

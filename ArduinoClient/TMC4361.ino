@@ -337,6 +337,11 @@ inline void signal_start() {
     readRegister(i, TMC4361_EVENTS_REGISTER);
     writeRegister(i, TMC4361_POS_COMP_REGISTER,next_pos_comp[i]);
   }
+  //carefully trigger the start pin 
+  digitalWriteFast(START_SIGNAL_PIN,HIGH);
+  pinModeFast(START_SIGNAL_PIN,OUTPUT);
+  digitalWriteFast(START_SIGNAL_PIN,LOW);
+  pinModeFast(START_SIGNAL_PIN,INPUT);
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     if (target_motor_status & _BV(i)) {
       unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
@@ -353,11 +358,6 @@ inline void signal_start() {
     }
     next_pos_comp[i] = 0;
   }    
-  //carefully trigger the start pin 
-  digitalWriteFast(START_SIGNAL_PIN,HIGH);
-  pinModeFast(START_SIGNAL_PIN,OUTPUT);
-  digitalWriteFast(START_SIGNAL_PIN,LOW);
-  pinModeFast(START_SIGNAL_PIN,INPUT);
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif
