@@ -28,7 +28,6 @@
 //#define DEBUG_X_POS
 //#define DEBUG_SET_POS
 
-
 //#define DEBUG_SPI
 
 //#define DEBUG_STATUS
