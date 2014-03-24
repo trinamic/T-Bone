@@ -68,8 +68,8 @@
         "home-speed": 2,
         "home-acceleration": 10000,
         "home-precision-speed": 1,
-         "home-retract": 3
-   },
+        "home-retract": 3
+    },
     "printer": {
         "print-queue": {
             "min-length": 20,
@@ -87,7 +87,7 @@
                 "Kd":1.66
             }
         },
-        "default-speed": 1
+        "default-speed": 10
     },
     "extruder": {
         "motor": 3,
