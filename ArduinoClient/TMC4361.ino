@@ -42,11 +42,11 @@ void initialzeTMC4361() {
 
   //preconfigure the TMC4361
   for (char i=0; i<nr_of_coordinated_motors;i++) {
-    writeRegister(i, TMC4361_GENERAL_CONFIG_REGISTER, 0 | _BV(5)); //we use direct values
+    writeRegister(i, TMC4361_GENERAL_CONFIG_REGISTER, 0 | _BV(5)); //we don't use direct values
     writeRegister(i, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     writeRegister(i, TMC4361_SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     writeRegister(i,TMC4361_CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-    writeRegister(i,TMC4361_START_DELAY_REGISTER, 257); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
+    writeRegister(i,TMC4361_START_DELAY_REGISTER, 512); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
     writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
@@ -54,7 +54,8 @@ void initialzeTMC4361() {
     | _BV(4)  //use shaddow motion profiles
     | _BV(5) //external start is an start
     );   
-
+    writeRegister(i, TMC4361_INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
+    
     last_target[i]=0;
   }
 }
@@ -356,7 +357,6 @@ inline void signal_start() {
 #ifdef DEBUG_X_POS
   Serial.println();
 #endif
-  move_executing = true;
 }
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
