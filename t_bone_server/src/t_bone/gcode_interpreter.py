@@ -92,35 +92,39 @@ def read_gcode_to_printer(line, printer):
     elif "M83" == gcode.code:
         raise PrinterError("Currently only absolute positions are supported!")
     elif "M104" == gcode.code:
-        if 'S' in gcode.options:
-            temperature = gcode.options['S']
+        options = _decode_positions(gcode, line)
+        if 's' in options:
+            temperature = options['s']
             if not temperature>printer.extruder_heater.max_temperature:
                 printer.extruder_heater.set_temperature(temperature)
             else:
                 _logger.error("Setting be temperature to %s got ignored, too hot", temperature)
     elif "M106" == gcode.code:
-        if 'S' in gcode.options:
-            fan_speed = gcode.options['S']/255.0
+        options = _decode_positions(gcode, line)
+        if 's' in options:
+            fan_speed = options['s']/255.0
             printer.set_fan(fan_speed)
         else:
             _logger.info("No fan speed given in %",gcode)
     elif "M107" == gcode.code:
             printer.set_fan(0)
     elif "M109" == gcode.code:
+        options = _decode_positions(gcode, line)
         #Wait for bed temperature to reach target temp
         #Example: M190 S60"
-        if 'S' in gcode.options:
-            temperature = gcode.options['S']
+        if 's' in options:
+            temperature = options['s']
             if printer.extruder_heater.get_set_temperature() < temperature:
                 _logger.warn("The set temperature of %s can never reach the target temperature of %s",
                              printer.heated_bed.set_temperature, temperature)
                 return
-            while printer.heated_bed.get_set_temperature() < temperature:
+            while printer.extruder_heater.temperature < temperature:
                 #todo a timeout value would be great?
                 pass
     elif "M140" == gcode.code:
-        if 'S' in gcode.options:
-            temperature = gcode.options['S']
+        options = _decode_positions(gcode, line)
+        if 's' in options:
+            temperature = options['s']
             if printer.heated_bed:
                 printer.heated_bed.set_temperature(temperature)
                 #todo can this go wrong??
