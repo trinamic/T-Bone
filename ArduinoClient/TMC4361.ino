@@ -49,6 +49,12 @@ void initialzeTMC4361() {
     writeRegister(i,TMC4361_START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
+    writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
+      | _BV(0) //x_target requires start
+    | _BV(4)  //use shaddow motion profiles
+    | _BV(5) //external start is an start
+    );   
+
     last_target[i]=0;
   }
 }
@@ -257,7 +263,7 @@ inline long getMotorPositionTMC4361(unsigned char motor_nr) {
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean configure_shadow, boolean isWaypoint) {
+void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean isWaypoint) {
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
@@ -270,12 +276,7 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   }
 
 #ifdef DEBUG_MOTION  
-  if (!configure_shadow) {
-    Serial.print(F("Moving motor "));
-  } 
-  else {
-    Serial.print(F("Preparing motor "));
-  }
+  Serial.print(F("Preparing motor "));
   Serial.print(motor_nr,DEC);
   if (isWaypoint) {
     Serial.print(" via");
@@ -300,32 +301,17 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
 
   long fixed_a_max = FIXED_22_2_MAKE(aMax);
 
-  if (!configure_shadow) {
-    writeRegister(motor_nr, TMC4361_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
-    writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
-    writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
-    writeRegister(motor_nr, TMC4361_BOW_1_REGISTER,jerk);
-    writeRegister(motor_nr, TMC4361_BOW_2_REGISTER,jerk);
-    writeRegister(motor_nr, TMC4361_BOW_3_REGISTER,jerk);
-    writeRegister(motor_nr, TMC4361_BOW_4_REGISTER,jerk);
-    //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = target_pos;
-    writeRegister(motor_nr, TMC4361_POS_COMP_REGISTER,target_pos);
+  writeRegister(motor_nr, TMC4361_SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
+  writeRegister(motor_nr, TMC4361_SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+  writeRegister(motor_nr, TMC4361_SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
+  writeRegister(motor_nr, TMC4361_SH_BOW_1_REGISTER,jerk);
+  writeRegister(motor_nr, TMC4361_SH_BOW_2_REGISTER,jerk);
+  writeRegister(motor_nr, TMC4361_SH_BOW_3_REGISTER,jerk);
+  writeRegister(motor_nr, TMC4361_SH_BOW_4_REGISTER,jerk);
 
-  } 
-  else {
-    writeRegister(motor_nr, TMC4361_SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
-    writeRegister(motor_nr, TMC4361_SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
-    writeRegister(motor_nr, TMC4361_SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
-    writeRegister(motor_nr, TMC4361_SH_BOW_1_REGISTER,jerk);
-    writeRegister(motor_nr, TMC4361_SH_BOW_2_REGISTER,jerk);
-    writeRegister(motor_nr, TMC4361_SH_BOW_3_REGISTER,jerk);
-    writeRegister(motor_nr, TMC4361_SH_BOW_4_REGISTER,jerk);
+  //TODO pos comp is not shaddowwed
+  next_pos_comp[motor_nr] = target_pos;
 
-    //TODO pos comp is not shaddowwed
-    next_pos_comp[motor_nr] = target_pos;
-
-  }
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
   last_target[motor_nr]=target_pos;
 }
@@ -370,6 +356,7 @@ inline void signal_start() {
 #ifdef DEBUG_X_POS
   Serial.println();
 #endif
+  move_executing = true;
 }
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
@@ -521,6 +508,9 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
+
+
 
 
 

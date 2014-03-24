@@ -1,5 +1,5 @@
 volatile boolean next_move_prepared = false;
-volatile boolean prepare_shaddow_registers = false;
+volatile boolean move_executing = false;
 volatile unsigned int motor_status;
 volatile unsigned char target_motor_status;
 volatile unsigned char next_target_motor_status;
@@ -24,10 +24,10 @@ void startMotion(char initial_min_buffer_depth) {
     writeRegister(i, TMC4361_INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
   }
   next_move_prepared=false; //TODO in theory this is not needed  
-  prepare_shaddow_registers = false;
   current_motion_state = in_motion;
   target_motor_status=0;
   next_target_motor_status=0;
+  move_executing = false;
 }
 
 void finishMotion() {
@@ -52,7 +52,8 @@ void checkMotion() {
 
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
 
-    if (target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status) {
+    if ((target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status)
+   || (next_move_prepared && !move_executing)) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));
@@ -75,10 +76,10 @@ void checkMotion() {
       //This was needed to decode single move queues 
       /*
       Serial.println(min_buffer_depth);
-      Serial.println(moveQueue.count());
-      Serial.println(current_motion_state);
-      Serial.println();
-      */
+       Serial.println(moveQueue.count());
+       Serial.println(current_motion_state);
+       Serial.println();
+       */
       //we leave a rest in the move queue since it could be a partial movement
       if (moveQueue.count()>0 && (moveQueue.count()>min_buffer_depth || current_motion_state==finishing_motion)) {
         if (min_buffer_depth!=0 && min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {
@@ -86,27 +87,6 @@ void checkMotion() {
           Serial.println(F("Inital motion buffer full."));
 #endif
           min_buffer_depth=DEFAULT_COMMAND_BUFFER_DEPTH;
-        }
-        //configure the start conditions for the motors
-        //TODO - is'nt this more or less something just to be done for the first tqwo moves??
-        for (char i=0; i<nr_of_coordinated_motors;i++) {
-          //give all motors a nice start config
-          if (!prepare_shaddow_registers) {
-            writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
-              | _BV(0) //xtarget requires start
-            | _BV(1) //vmax requires start
-            | _BV(5) //external start is an start
-            //TODO is that correct?
-            //| _BV(10)//immediate start         
-            );   
-          } 
-          else {
-            writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
-              | _BV(0) //x_target requires start
-            | _BV(4)  //use shaddow motion profiles
-            | _BV(5) //external start is an start
-            );   
-          }
         }
 
         byte moving_motors=0;
@@ -125,11 +105,11 @@ void checkMotion() {
 #endif
           //TODO this move_over looks really suspicious!
           if (move.motor<nr_of_coordinated_motors) {
-            moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, prepare_shaddow_registers, move.type==move_over);
+            moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, move.type==move_over);
             moving_motors |= _BV(move.motor);
           } 
           else {
-            moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, prepare_shaddow_registers, move.type==move_over);
+            moveMotorTMC5041(move.motor-nr_of_coordinated_motors, move.target, move.vMax, move.aMax, move.type==move_over);
             moving_motors |= _BV(nr_of_coordinated_motors);
           }          
 
@@ -149,11 +129,11 @@ void checkMotion() {
                 Serial.println(follower.vMax);
 #endif
                 if (follower.motor<nr_of_coordinated_motors) {
-                  moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, prepare_shaddow_registers, follower.type==follow_over);
+                  moveMotorTMC4361(follower.motor, follower.target, follower.vMax, follower.aMax, follower.jerk, follower.type==follow_over);
                   moving_motors |= _BV(follower.motor);
                 } 
                 else {
-                  moveMotorTMC5041(follower.motor-nr_of_coordinated_motors, follower.target, follower.vMax, follower.aMax, prepare_shaddow_registers, follower.type==follow_over);
+                  moveMotorTMC5041(follower.motor-nr_of_coordinated_motors, follower.target, follower.vMax, follower.aMax, follower.type==follow_over);
                   moving_motors |= _BV(nr_of_coordinated_motors);
                 }          
               }
@@ -163,19 +143,9 @@ void checkMotion() {
 
           //in the end all moviong motorts must have apssed pos_comp
           next_target_motor_status = moving_motors;
-          //for the first move we need to configure everything a bit 
-          if (!prepare_shaddow_registers) {
-            target_motor_status = next_target_motor_status;
-            motor_status=0;
-            signal_start();
-            //and we need to prepare the next move for the shadow registers
-            prepare_shaddow_registers = true;
-            next_move_prepared = false;
-          } 
-          else {
-            //ok normally we can relax until the enxt start event occured
-            next_move_prepared = true;
-          }
+          //okwe can relax until the enxt start event occured
+          next_move_prepared = true;
+
 #ifdef DEBUG_MOTION
           Serial.print(F("Next move : "));
           Serial.println(next_target_motor_status,BIN);
@@ -212,7 +182,6 @@ void checkMotion() {
       } 
       else if (current_motion_state==finishing_motion) {
         current_motion_state=no_motion;
-        prepare_shaddow_registers = false;
       } 
       else {
 #ifdef DEBUG_MOTION_STATUS
@@ -260,6 +229,7 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 
 

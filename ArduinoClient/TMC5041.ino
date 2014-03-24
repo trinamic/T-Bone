@@ -200,43 +200,10 @@ unsigned char calculateCurrentValue(int current) {
   return low_sense_current | 0x80;
 }
 
-void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean prepare_next_movement, boolean isWayPoint) {
-  if (prepare_next_movement) {
+void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean isWayPoint) {
     tmc5031_next_movement[motor].target = target;
     tmc5031_next_movement[motor].vMax = vMax;
     tmc5031_next_movement[motor].aMax = aMax;
-  } 
-  else {
-    tmc5031_next_movement[0].vMax=0;
-    tmc5031_next_movement[1].vMax=0;
-    if (motor==0) {
-#ifdef DEBUG_MOTION
-      Serial.print(F("5041 #1 is first going to "));
-      Serial.print(target,DEC);
-      Serial.print(F(" @ "));
-      Serial.println(vMax,DEC);
-#endif
-
-      writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,aMax);
-      writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,aMax);
-
-      writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, vMax);
-      writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
-    } 
-    else {
-#ifdef DEBUG_MOTION
-      Serial.print(F("5041 #2 is first going to "));
-      Serial.print(target,DEC);
-      Serial.print(F(" @ "));
-      Serial.println(vMax,DEC);
-#endif
-      writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,aMax);
-      writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,aMax);
-
-      writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, vMax);
-      writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
-    }
-  }
 }
 
 void tmc5041_prepare_next_motion() {
