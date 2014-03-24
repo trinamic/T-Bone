@@ -362,9 +362,15 @@ inline void signal_start() {
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
   //we write x_actual, x_target and pos_comp to the same value to be safe 
+    writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0);   
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,position);
   writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,position);
   writeRegister(motor_nr, TMC4361_POS_COMP_REGISTER,position);
+    writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0
+      | _BV(0) //x_target requires start
+    | _BV(4)  //use shaddow motion profiles
+    | _BV(5) //external start is an start
+    );   
   last_target[motor_nr]=position;
 }
 
