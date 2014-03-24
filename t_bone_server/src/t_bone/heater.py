@@ -189,6 +189,7 @@ class PID:
             PID = self.P_value + self.I_value - self.D_value
 
         _logger.info("PID is %s (%s of %s)", PID, current_value, self.set_point)
+        #todo this is in reality just a debug
 
         if PID < 0.0:
             return 0.0

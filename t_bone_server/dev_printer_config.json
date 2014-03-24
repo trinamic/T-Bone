@@ -5,7 +5,7 @@
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 10000,
+        "bow-acceleration": 20.0,
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
@@ -28,7 +28,7 @@
         "steps-per-mm": 1420.8984,
         "max-speed": 300,
         "max-acceleration": 3000,
-        "bow-acceleration": 10000,
+        "bow-acceleration": 20.0,
         "time-reference": "time",
         "end-stops": {
             "left": {
@@ -88,7 +88,8 @@
                 "Kd": 1.66
             }
         },
-        "default-speed": 10
+        "default-speed": 10,
+        "fan-duty-cycle":20.0
     },
     "extruder": {
         "motor": 3,

@@ -82,7 +82,7 @@ class Printer(Thread):
         self.default_speed = printer_config['default-speed']
 
         #todo this is the fan and should be configured
-        PWM.start(self._FAN_OUTPUT, 30.0, 1000, 0)
+        PWM.start(self._FAN_OUTPUT, printer_config['fan-duty-cycle'], 1000, 0)
 
         if 'heated-bed' in printer_config:
             bed_heater_config = printer_config['heated-bed']
