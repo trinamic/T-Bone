@@ -211,7 +211,7 @@ class Machine():
             command.arguments.append(float(motor['speed']))
             command.arguments.append(float(motor['acceleration']))
             command.arguments.append(int(motor['startBow']))
-            _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
+            _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
                          motor['speed'])
 
         reply = self.machine_connection.send_command(command)

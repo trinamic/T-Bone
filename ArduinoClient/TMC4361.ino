@@ -242,6 +242,7 @@ unsigned long right_homing_point)
           else {
             writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
           }
+          last_target[motor_nr]=0;
           homed=0xff;
         }     
       } 
@@ -335,6 +336,8 @@ inline void signal_start() {
     //clear the event register
     readRegister(i, TMC4361_EVENTS_REGISTER);
     writeRegister(i, TMC4361_POS_COMP_REGISTER,next_pos_comp[i]);
+  }
+  for (char i=0; i< nr_of_coordinated_motors; i++) {
     if (target_motor_status & _BV(i)) {
       unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
       if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
@@ -360,6 +363,9 @@ inline void signal_start() {
 #endif
 #ifdef DEBUG_MOTION_TRACE
   Serial.println('-');
+#endif
+#ifdef DEBUG_MOTION_START
+  Serial.println('S');
 #endif
 #ifdef DEBUG_X_POS
   Serial.println();
@@ -515,6 +521,7 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 
