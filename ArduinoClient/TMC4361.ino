@@ -371,6 +371,7 @@ void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,position);
   writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,position);
   writeRegister(motor_nr, TMC4361_POS_COMP_REGISTER,position);
+  last_target[motor_nr]=position;
 }
 
 const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
@@ -514,56 +515,6 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

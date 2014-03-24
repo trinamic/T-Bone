@@ -19,7 +19,7 @@
 //#define DEBUG_ENDSTOPS
 //#define DEBUG_ENDSTOPS_DETAIL
 
-//#define DEBUG_MOTION
+#define DEBUG_MOTION
 //#define DEBUG_MOTION_TRACE
 //#define DEBUG_MOTION_TRACE_SHORT
 //#define DEBUG_MOTOR_QUEUE
@@ -80,17 +80,17 @@ TMC4361_info motors[nr_of_coordinated_motors] = {
   {
     INT_4361_1_PIN,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION              }
+    DEFAULT_STEPS_PER_REVOLUTION                  }
   ,
   {
     INT_4361_2_PIN,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION               }
+    DEFAULT_STEPS_PER_REVOLUTION                   }
   ,
   {
     INT_4361_3_PIN,4, motor_3_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION               }
+    DEFAULT_STEPS_PER_REVOLUTION                   }
 };
 
 
@@ -133,7 +133,7 @@ void setup() {
 
   //initialize SPI
   SPI.begin();
-  SPI.setClockDivider(SPI_CLOCK_DIV2);
+  //SPI.setClockDivider(SPI_CLOCK_DIV2);
 
   // Use HWBE as Output
   DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
@@ -173,18 +173,17 @@ void setup() {
 
 }
 
+unsigned long last_millis=0;
+
 void loop() {
   //move if neccessary
   checkMotion();
   // Process incoming serial data, and perform callbacks
   messenger.feedinSerialData();
-  /* TODO as real watchdog?
-   if (watchDogMetro.check()) {
-   watchDogPing();
-   }
-   */
-  if (millis()%1000==0) {
+
+  if (millis()-last_millis>1000) {
     watchDogPing();
+    last_millis=millis();
   }
 }
 
@@ -200,6 +199,8 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
+
 
 
 
