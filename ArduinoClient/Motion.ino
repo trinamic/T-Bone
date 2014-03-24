@@ -62,7 +62,7 @@ void checkMotion() {
       target_motor_status = next_target_motor_status;
 #ifdef DEBUG_MOTION_TRACE_SHORT
       Serial.print(F("# -> "));
-      Serial.println(target_motor_status);
+      Serial.println(target_motor_status,BIN);
 #endif
       tmc5041_prepare_next_motion();
       signal_start();
@@ -232,73 +232,4 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

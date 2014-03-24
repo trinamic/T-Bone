@@ -289,6 +289,8 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   Serial.print(F(" ["));
   Serial.print(last_target[motor_nr]);
   Serial.print(F(" -> "));
+  Serial.print(target_pos);
+  Serial.print(F(" -> "));
   Serial.print(aim_target);
   Serial.print(F("], vMax="));
   Serial.print(vMax);
@@ -311,8 +313,8 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
 
   //TODO pos comp is not shaddowwed
   next_pos_comp[motor_nr] = target_pos;
-
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
+
   last_target[motor_nr]=target_pos;
 }
 
@@ -507,6 +509,7 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 
