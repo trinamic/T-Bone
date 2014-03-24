@@ -46,7 +46,7 @@ void initialzeTMC4361() {
     writeRegister(i, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     writeRegister(i, TMC4361_SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     writeRegister(i,TMC4361_CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
-    writeRegister(i,TMC4361_START_DELAY_REGISTER, 256); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
+    writeRegister(i,TMC4361_START_DELAY_REGISTER, 257); //NEEDED so THAT THE SQUIRREL CAN RECOMPUTE EVERYTHING!
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
     writeRegister(i, TMC4361_START_CONFIG_REGISTER, 0
