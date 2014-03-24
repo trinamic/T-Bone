@@ -54,8 +54,7 @@ void initialzeTMC4361() {
     | _BV(4)  //use shaddow motion profiles
     | _BV(5) //external start is an start
     );   
-    writeRegister(i, TMC4361_INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
-    
+
     last_target[i]=0;
   }
 }
