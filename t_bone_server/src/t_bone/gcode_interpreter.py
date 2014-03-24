@@ -110,14 +110,11 @@ def read_gcode_to_printer(line, printer):
             printer.set_fan(0)
     elif "M109" == gcode.code:
         options = _decode_positions(gcode, line)
-        #Wait for bed temperature to reach target temp
+        #Set extruder heater temperature in degrees celsius and wait for this temperature to be achieved
         #Example: M190 S60"
         if 's' in options:
             temperature = options['s']
-            if printer.extruder_heater.get_set_temperature() < temperature:
-                _logger.warn("The set temperature of %s can never reach the target temperature of %s",
-                             printer.heated_bed.set_temperature, temperature)
-                return
+            printer.extruder_heater.set_temperature(temperature)
             while printer.extruder_heater.temperature < temperature:
                 #todo a timeout value would be great?
                 pass
