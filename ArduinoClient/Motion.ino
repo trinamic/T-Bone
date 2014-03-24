@@ -58,13 +58,16 @@ void checkMotion() {
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));
 #endif
-#ifdef DEBUG_MOTION_TRACE_SHORT
-      Serial.println('#');
-#endif
       motor_status=0;
       target_motor_status = next_target_motor_status;
+#ifdef DEBUG_MOTION_TRACE_SHORT
+      Serial.print(F("# -> "));
+      Serial.println(target_motor_status);
+#endif
       tmc5041_prepare_next_motion();
       signal_start();
+        move_executing = true;
+
       next_move_prepared=false;
     }
 
