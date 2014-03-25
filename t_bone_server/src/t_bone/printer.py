@@ -188,11 +188,9 @@ class Printer(Thread):
     def set_position(self, positions):
         if not positions:
             return
-        new_move = {'type': 'set_position'}
-        for axis, value in positions.iteritems():
-            new_move['s%s' % axis] = value
+        positions['type'] = 'set_position'
         #todo and what if there is no movement??
-        self._print_queue.add_movement(new_move)
+        self._print_queue.add_movement(positions)
 
     def relative_move_to(self, position):
         movement = {}
@@ -694,7 +692,11 @@ class PrintQueue():
                 'l': 0.0,
             }
             move['target_speed'] = 0
-            move['type'] = 'set_pos'
+            move['type'] = 'set_position'
+            for axis, value in target_position.iteritems():
+                if not axis == 'type':
+                    move['s%s' % axis] = value
+
 
         return move
 
