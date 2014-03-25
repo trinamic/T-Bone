@@ -104,12 +104,13 @@ def read_gcode_to_printer(line, printer):
         options = _decode_positions(gcode, line)
         if 's' in options:
             fan_speed = options['s'] / 255.0
-            printer.set_fan(fan_speed)
+           # printer.set_fan(fan_speed)
         else:
             _logger.info("No fan speed given in %", gcode)
     elif "M107" == gcode.code:
         try:
-            printer.set_fan(0)
+            #printer.set_fan(0)
+            pass
         except RuntimeError as e:
             _logger.error("Unable to set printer fan to 0:%s", e)
     elif "M109" == gcode.code:
