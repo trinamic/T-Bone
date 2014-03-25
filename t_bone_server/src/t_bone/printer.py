@@ -55,6 +55,7 @@ class Printer(Thread):
 
         self._homing_timeout = 10
         self._print_queue_wait_time = 0.1
+        self.homed = False
 
         #todo why didn't this work as global constant?? - should be confugired anyway
         self._FAN_OUTPUT = beaglebone_helpers.pwm_config[2]['out']

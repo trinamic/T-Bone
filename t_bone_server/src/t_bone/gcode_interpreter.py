@@ -59,10 +59,11 @@ def read_gcode_to_printer(line, printer):
     elif "G21" == gcode.code:
         _logger.info("Using metric units according to the g code")
     elif "G28" == gcode.code:
-        #TODO in'st taht also to enqueue??
+        #TODO in'st that also to enqueue??
         positions = _decode_positions(gcode, line)
         homing_axis = []
-        if positions:
+        if not printer.homed and positions:
+            printer.homed = True
             for axis_name in positions:
                 if axis_name in printer.axis:
                     if printer.axis[axis_name]['homeable']:
