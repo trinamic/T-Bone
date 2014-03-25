@@ -394,6 +394,8 @@ class Printer(Thread):
         #we need the stepping rations for variuos calclutaions later
         self._x_step_conversion = float(self.axis['x']['steps_per_mm']) / float(self.axis['y']['steps_per_mm'])
         self._y_step_conversion = float(self.axis['y']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
+        self._e_x_step_conversion = float(self.axis['e']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
+        self._e_y_step_conversion = float(self.axis['e']['steps_per_mm']) / float(self.axis['y']['steps_per_mm'])
 
         self._extract_homing_information()
 
@@ -544,15 +546,15 @@ class Printer(Thread):
                 ]
         if e_move_config:
             if x_move_config:
-                factor = abs(move_vector['e'] / move_vector['x'] * self._x_step_conversion)
-                e_move_config['speed'] = factor * movement['speed']['x']
-                x_move_config['acceleration'] = factor * x_move_config['acceleration'] # todo or the max of the config/scaled??
-                x_move_config['startBow'] = factor * x_move_config['startBow']
+                factor = abs(move_vector['e'] / move_vector['x'] * self._e_x_step_conversion)
+                e_move_config['speed'] = factor * x_move_config['speed']
+                e_move_config['acceleration'] = factor * x_move_config['acceleration'] # todo or the max of the config/scaled??
+                e_move_config['startBow'] = factor * x_move_config['startBow']
             elif y_move_config:
-                factor = abs(move_vector['e'] / move_vector['y'] * self._y_step_conversion)
-                e_move_config['speed'] = factor * movement['speed']['y']
-                x_move_config['acceleration'] = factor * y_move_config['acceleration'] # todo or the max of the config/scaled??
-                x_move_config['startBow'] = factor * y_move_config['startBow']
+                factor = abs(move_vector['e'] / move_vector['y'] * self._e_y_step_conversion)
+                e_move_config['speed'] = factor * y_move_config['speed']
+                e_move_config['acceleration'] = factor * y_move_config['acceleration'] # todo or the max of the config/scaled??
+                e_move_config['startBow'] = factor * y_move_config['startBow']
             move_commands.append(e_move_config)
 
         if z_move_config:

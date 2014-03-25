@@ -189,11 +189,11 @@ void checkMotion() {
       else {
 #ifdef DEBUG_MOTION_STATUS
         //TODO come up with a sensbilde warning
-        Serial.println(F("Move Queue emptied!"));
+//        Serial.println(F("Move Queue emptied!"));
 #endif
 #ifdef DEBUG_MOTION
         //TODO come up with a sensbilde warning
-        Serial.println(F("Move Queue emptied!"));
+//        Serial.println(F("Move Queue emptied!"));
 #endif
         //TODO so we know that there is currently no move executing??
         move_executing = false;
