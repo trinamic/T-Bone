@@ -209,6 +209,7 @@ class Printer(Thread):
             self._print_queue.add_movement(position)
         else:
             self.start_print()
+            position['type'] = 'move'
             self._print_queue.add_movement(position)
             self.finish_print()
 
