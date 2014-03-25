@@ -239,7 +239,7 @@ class Machine():
                         command_max_buffer_length = int(reply.arguments[1])
                         command_buffer_free = command_max_buffer_length - command_buffer_length
                         buffer_free = (command_buffer_free > _min_command_buffer_free_space)
-                        if (wait_time > _buffer_warn_waittime):
+                        if wait_time > _buffer_warn_waittime:
                             _logger.warning(
                                 "Waiting for free arduino command buffer: %s free of % s total, waiting for %s free",
                                 command_buffer_free, command_buffer_length, _min_command_buffer_free_space)

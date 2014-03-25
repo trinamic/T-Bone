@@ -1,10 +1,3 @@
-volatile boolean next_move_prepared = false;
-volatile boolean move_executing = false;
-volatile unsigned int motor_status;
-volatile unsigned char target_motor_status;
-volatile unsigned char next_target_motor_status;
-char direction[nr_of_coordinated_motors];
-unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 
 void startMotion(char initial_min_buffer_depth) {
   if (initial_min_buffer_depth > DEFAULT_COMMAND_BUFFER_DEPTH) {
@@ -154,6 +147,11 @@ void checkMotion() {
           Serial.println(next_target_motor_status,BIN);
           Serial.println();
 #endif
+#ifdef DEBUG_MOTION_SHORT
+          Serial.print('>');
+          Serial.println(next_target_motor_status,BIN);
+          Serial.println();
+#endif
         } 
         else if (move.type == set_position) {
 #ifdef DEBUG_SET_POS
@@ -189,11 +187,11 @@ void checkMotion() {
       else {
 #ifdef DEBUG_MOTION_STATUS
         //TODO come up with a sensbilde warning
-        Serial.println(F("Move Queue emptied!"));
+//        Serial.println(F("Move Queue emptied!"));
 #endif
 #ifdef DEBUG_MOTION
         //TODO come up with a sensbilde warning
-        Serial.println(F("Move Queue emptied!"));
+//        Serial.println(F("Move Queue emptied!"));
 #endif
         //TODO so we know that there is currently no move executing??
         move_executing = false;

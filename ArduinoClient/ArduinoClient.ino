@@ -32,8 +32,9 @@
 //#define DEBUG_SPI
 
 //#define DEBUG_STATUS
+#define DEBUG_STATUS_SHORT
 //#define DEBUG_TMC5041_STATUS
-//#define DEBUG_TMC4361_STATUS
+#define DEBUG_TMC4361_STATUS
 
 //how many motors do we know?
 const char nr_of_coordinated_motors = 3;
@@ -104,6 +105,17 @@ TMC4361_info motors[nr_of_coordinated_motors] = {
 motion_state current_motion_state = no_motion;
 //this bitfiled store which motors are invesed - _BV(1) means the motor is inversed)
 unsigned char inverted_motors;
+
+
+
+volatile boolean next_move_prepared = false;
+volatile boolean move_executing = false;
+volatile unsigned int motor_status;
+volatile unsigned char target_motor_status;
+volatile unsigned char next_target_motor_status;
+char direction[nr_of_coordinated_motors];
+unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
+
 
 //config
 
