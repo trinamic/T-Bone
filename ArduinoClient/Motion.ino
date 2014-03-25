@@ -154,6 +154,11 @@ void checkMotion() {
           Serial.println(next_target_motor_status,BIN);
           Serial.println();
 #endif
+#ifdef DEBUG_MOTION_SHORT
+          Serial.print('>');
+          Serial.println(next_target_motor_status,BIN);
+          Serial.println();
+#endif
         } 
         else if (move.type == set_position) {
 #ifdef DEBUG_SET_POS

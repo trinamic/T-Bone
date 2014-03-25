@@ -645,6 +645,22 @@ void watchDogPing() {
   }  
   Serial.println();
 #endif
+#ifdef DEBUG_STATUS_SHORT
+  Serial.print('Q');
+  Serial.print(moveQueue.count());
+  if (current_motion_state==no_motion) {
+    Serial.println('s');
+  } 
+  else if (current_motion_state==in_motion) {
+    Serial.println('m');
+  } 
+  else if (current_motion_state==finishing_motion) {
+    Serial.println('f');
+  } 
+  else {
+    Serial.println(F("Unkmown motion"));
+  }  
+#endif
 #ifdef DEBUG_TMC5041_STATUS
   Serial.print(F("#1: "));
   Serial.print(readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1),HEX);
