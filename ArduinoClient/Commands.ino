@@ -305,7 +305,11 @@ char readMovementParameters(movement* move) {
     isWaypoint = true;
   } 
   else {
-    messenger.sendCmd (kError,-2);
+    messenger.sendCmdStart(kError);
+    messenger.sendCmdArg(-2);
+    messenger.sendCmdArg(movementType);
+    messenger.sendCmdEnd();
+
     return -3;
   }  
   double vMax = messenger.readFloatArg();
