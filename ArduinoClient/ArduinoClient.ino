@@ -106,6 +106,17 @@ motion_state current_motion_state = no_motion;
 //this bitfiled store which motors are invesed - _BV(1) means the motor is inversed)
 unsigned char inverted_motors;
 
+
+
+volatile boolean next_move_prepared = false;
+volatile boolean move_executing = false;
+volatile unsigned int motor_status;
+volatile unsigned char target_motor_status;
+volatile unsigned char next_target_motor_status;
+char direction[nr_of_coordinated_motors];
+unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
+
+
 //config
 
 QueueArray<movement> moveQueue = QueueArray<movement>(COMMAND_QUEUE_LENGTH);
