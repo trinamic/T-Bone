@@ -88,7 +88,7 @@
             }
         },
         "default-speed": 10,
-        "fan-duty-cycle":20.0,
+        "fan-duty-cycle":100.0,
         "fan-frequency": 280
     },
     "extruder": {
@@ -106,7 +106,7 @@
             "pwm": 1,
             "sensor": 1,
             "type": "epcos-100k",
-            "max-duty-cycle": 50,
+            "max-duty-cycle": 100,
             "pid-config": {
                 "Kp": 1.66,
                 "Ki": 0.22,
