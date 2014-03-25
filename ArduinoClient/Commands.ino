@@ -307,15 +307,14 @@ char readMovementParameters(movement* move) {
   else {
     /*
     TODO this occassionally does not work - is this an indication for a serial speed problem (noise)
-    
+   */   
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(-2);
     messenger.sendCmdArg(movementType);
     messenger.sendCmdEnd();
 
     return -3;
-    */
-    isWaypoint = false;
+    //isWaypoint = false;
     
   }  
   double vMax = messenger.readFloatArg();

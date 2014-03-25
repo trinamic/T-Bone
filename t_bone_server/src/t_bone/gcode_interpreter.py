@@ -111,7 +111,7 @@ def read_gcode_to_printer(line, printer):
         try:
             printer.set_fan(0)
         except RuntimeError as e:
-            _logger.error("Unable to set printer fan to 0:%s", 0, e)
+            _logger.error("Unable to set printer fan to 0:%s", e)
     elif "M109" == gcode.code:
         options = _decode_positions(gcode, line)
         #Set extruder heater temperature in degrees celsius and wait for this temperature to be achieved
