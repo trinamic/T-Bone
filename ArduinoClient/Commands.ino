@@ -642,6 +642,22 @@ void watchDogPing() {
   Serial.println(readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2),HEX);
   Serial.println();
 #endif
+#ifdef DEBUG_TMC4361_STATUS
+  for (char i=0; i<nr_of_coordinated_motors;i++) {
+    Serial.print(readRegister(i, TMC4361_STATUS_REGISTER),HEX);
+    Serial.print(' ');
+    Serial.print(readRegister(i, TMC4361_START_CONFIG_REGISTER),HEX);
+    Serial.print(' ');
+    Serial.print(readRegister(i, TMC4361_X_ACTUAL_REGISTER),DEC);
+    Serial.print(' ');
+    Serial.print(readRegister(i, TMC4361_X_TARGET_REGISTER),DEC);
+    Serial.print(' ');
+    Serial.print(readRegister(i, TMC4361_V_ACTUAL_REGISTER),DEC);
+    Serial.print(' ');
+    Serial.println(readRegister(i, TMC4361_V_MAX_REGISTER),DEC);
+  }
+  Serial.println();
+#endif
 }
 
 void watchDogStart() {

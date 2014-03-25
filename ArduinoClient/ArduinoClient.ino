@@ -19,20 +19,21 @@
 //#define DEBUG_ENDSTOPS
 //#define DEBUG_ENDSTOPS_DETAIL
 
-#define DEBUG_MOTION
+//#define DEBUG_MOTION
+#define DEBUG_MOTION_SHORT
 //#define DEBUG_MOTION_TRACE
 #define DEBUG_MOTION_TRACE_SHORT
 //#define DEBUG_MOTION_START
 //#define DEBUG_MOTOR_QUEUE
 //#define DEBUG_MOTION_STATUS
 //#define DEBUG_X_POS
-#define DEBUG_SET_POS
+//#define DEBUG_SET_POS
 
 //#define DEBUG_SPI
 
 //#define DEBUG_STATUS
 //#define DEBUG_TMC5041_STATUS
-
+//#define DEBUG_TMC4361_STATUS
 
 //how many motors do we know?
 const char nr_of_coordinated_motors = 3;

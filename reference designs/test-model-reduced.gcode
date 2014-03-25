@@ -20,10 +20,10 @@
 G21 ; set units to millimeters
 M107
 M190 S5 ; wait for bed temperature to be reached
-M104 S205 ; set temperature
+M104 S20 ; set temperature
 G28 ; home all axes
 G1 Z5 F5000 ; lift nozzle
-M109 S205 ; wait for temperature to be reached
+M109 S20 ; wait for temperature to be reached
 G90 ; use absolute coordinates
 G92 E0
 M82 ; use absolute distances for extrusion

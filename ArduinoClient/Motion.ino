@@ -53,7 +53,7 @@ void checkMotion() {
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
 
     if ((target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status)
-   || (next_move_prepared && !move_executing)) {
+      || (next_move_prepared && !move_executing)) {
       //TODO we need some kind of 'At least here'??
 #ifdef DEBUG_MOTION_TRACE
       Serial.println(F("all motors reached target!"));
@@ -66,8 +66,8 @@ void checkMotion() {
 #endif
       tmc5041_prepare_next_motion();
       signal_start();
-        move_executing = true;
 
+      move_executing = true;
       next_move_prepared=false;
     }
 
@@ -189,9 +189,14 @@ void checkMotion() {
       else {
 #ifdef DEBUG_MOTION_STATUS
         //TODO come up with a sensbilde warning
-        // Serial.println(F("Move Queue emptied!"));
+        Serial.println(F("Move Queue emptied!"));
 #endif
-        //TODO should we react in any way to it?
+#ifdef DEBUG_MOTION
+        //TODO come up with a sensbilde warning
+        Serial.println(F("Move Queue emptied!"));
+#endif
+        //TODO so we know that there is currently no move executing??
+        move_executing = false;
       }
     }
   }
@@ -232,4 +237,5 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
