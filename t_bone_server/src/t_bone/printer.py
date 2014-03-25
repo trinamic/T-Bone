@@ -188,14 +188,11 @@ class Printer(Thread):
     def set_position(self, positions):
         if not positions:
             return
-        for axis, position in positions.iteritems():
-            if axis in self.axis:
-                #todo this may break for z axis
-                motor = self.axis[axis]['motor']
-                step_position = convert_mm_to_steps(position, self.axis[axis]['steps_per_mm'])
-                self.machine.set_pos(motor, step_position)
-            else:
-                _logger.warn("Ignoring unkon axis %s" % axis)
+        new_move = {'type': 'set_position'}
+        for axis, value in positions.iteritems():
+            new_move['s%s' % axis] = value
+        #todo and what if there is no movement??
+        self._print_queue.add_movement(new_move)
 
     def relative_move_to(self, position):
         movement = {}
@@ -209,6 +206,7 @@ class Printer(Thread):
     # tuple with x/y/e coordinates - if left out no change is intended
     def move_to(self, position):
         if self.printing:
+            position['type'] = 'move'
             self._print_queue.add_movement(position)
         else:
             self.start_print()
@@ -216,11 +214,25 @@ class Printer(Thread):
             self.finish_print()
 
     def execute_movement(self, movement):
-        step_pos, step_speed_vector = self._add_movement_calculations(movement)
-        x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement,
-                                                                                                step_pos,
-                                                                                                step_speed_vector)
-        self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
+        if movement['type'] == 'move':
+            step_pos, step_speed_vector = self._add_movement_calculations(movement)
+            x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement,
+                                                                                                    step_pos,
+                                                                                                    step_speed_vector)
+            self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
+        elif movement['type'] == 'set_position':
+            for axis in self.axis:
+                set_pos_name = "s%s"%axis
+                if set_pos_name in movement:
+                    position = movement[set_pos_name]
+                    if axis in self.axis:
+                        #todo this may break for z axis
+                        motor = self.axis[axis]['motor']
+                        step_position = convert_mm_to_steps(position, self.axis[axis]['steps_per_mm'])
+                        self.machine.set_pos(motor, step_position)
+                    else:
+                        _logger.warn("Ignoring unkon axis %s" % axis)
+
 
     def set_fan(self, value):
         if value < 0:
@@ -561,9 +573,8 @@ class PrintQueue():
         self.default_target_speed = default_target_speed
 
     def add_movement(self, target_position, timeout=None):
-        move = {}
         #calculate the target
-        self._extract_movement_values(move, target_position)
+        move = self._extract_movement_values(target_position)
         #and see how fast we can allowable go
         #TODO currently the maximum achievable speed only considers x & y movements
         maximum_achievable_speed = self._maximum_achievable_speed(move)
@@ -599,44 +610,8 @@ class PrintQueue():
         self.queue.put(executed_move, timeout=timeout)
         _logger.debug("adding to execution queue, now at %s/%s entries", len(self.planning_list), self.queue.qsize())
 
-    def _extract_movement_values(self, move, target_position):
-        #extract values
-        if 'x' in target_position:
-            move['x'] = target_position['x']
-        else:
-            if self.previous_movement:
-                move['x'] = self.previous_movement['x']
-            else:
-                move['x'] = 0
-        if 'y' in target_position:
-            move['y'] = target_position['y']
-        else:
-            if self.previous_movement:
-                move['y'] = self.previous_movement['y']
-            else:
-                move['y'] = 0
-        if 'z' in target_position:
-            move['z'] = target_position['z']
-        else:
-            if self.previous_movement:
-                move['z'] = self.previous_movement['z']
-            else:
-                move['z'] = 0
-        if 'e' in target_position:
-            move['e'] = target_position['e']
-        else:
-            if self.previous_movement:
-                move['e'] = self.previous_movement['e']
-            else:
-                move['e'] = 0
-        if 'target_speed' in target_position:
-            move['target_speed'] = target_position['target_speed']
-        elif self.previous_movement:
-            move['target_speed'] = self.previous_movement['target_speed']
-        elif self.default_target_speed:
-            move['target_speed'] = self.default_target_speed
-        else:
-            raise PrinterError("movement w/o a set speed and no default speed is set!")
+    def _extract_movement_values(self, target_position):
+        move = {}
         if self.previous_movement:
             last_x = self.previous_movement['x']
             last_y = self.previous_movement['y']
@@ -648,19 +623,80 @@ class PrintQueue():
             last_z = 0
             last_e = 0
             #logg this move
-        _logger.debug("moving to: X:%s, Y:%s, Z:%s", move['x'], move['z'], move['z'])
 
-        move['delta_x'] = move['x'] - last_x
-        move['delta_y'] = move['y'] - last_y
-        move['delta_z'] = move['z'] - last_z
-        move['delta_e'] = move['e'] - last_e
-        move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_z'], move['delta_e'])
-        try:
-            move_vector['v'] = move['target_speed'] / move_vector['l']
-        except ZeroDivisionError:
-            move_vector['v'] = 0
-        #save the move vector for later use ...
-        move['relative_move_vector'] = move_vector
+        if target_position['type'] == 'move':
+            move['type'] = 'move'
+            #extract values
+            if 'x' in target_position:
+                move['x'] = target_position['x']
+            else:
+                if self.previous_movement:
+                    move['x'] = self.previous_movement['x']
+                else:
+                    move['x'] = 0
+            if 'y' in target_position:
+                move['y'] = target_position['y']
+            else:
+                if self.previous_movement:
+                    move['y'] = self.previous_movement['y']
+                else:
+                    move['y'] = 0
+            if 'z' in target_position:
+                move['z'] = target_position['z']
+            else:
+                if self.previous_movement:
+                    move['z'] = self.previous_movement['z']
+                else:
+                    move['z'] = 0
+            if 'e' in target_position:
+                move['e'] = target_position['e']
+            else:
+                if self.previous_movement:
+                    move['e'] = self.previous_movement['e']
+                else:
+                    move['e'] = 0
+            if 'target_speed' in target_position:
+                move['target_speed'] = target_position['target_speed']
+            elif self.previous_movement:
+                move['target_speed'] = self.previous_movement['target_speed']
+            elif self.default_target_speed:
+                move['target_speed'] = self.default_target_speed
+            else:
+                raise PrinterError("movement w/o a set speed and no default speed is set!")
+            _logger.debug("moving to: X:%s, Y:%s, Z:%s", move['x'], move['z'], move['z'])
+
+            move['delta_x'] = move['x'] - last_x
+            move['delta_y'] = move['y'] - last_y
+            move['delta_z'] = move['z'] - last_z
+            move['delta_e'] = move['e'] - last_e
+            move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_z'], move['delta_e'])
+            try:
+                move_vector['v'] = move['target_speed'] / move_vector['l']
+            except ZeroDivisionError:
+                move_vector['v'] = 0
+            #save the move vector for later use ...
+            move['relative_move_vector'] = move_vector
+        elif target_position['type'] == 'set_position':
+            #a set position also means that we do not move it …
+            move['x'] = last_x
+            move['y'] = last_y
+            move['z'] = last_z
+            move['e'] = last_e
+            move['delta_x'] = 0
+            move['delta_y'] = 0
+            move['delta_z'] = 0
+            move['delta_e'] = 0
+            move['relative_move_vector'] = {
+                'x': 0.0,
+                'z': 0.0,
+                'y': 0.0,
+                'e': 0.0,
+                'l': 0.0,
+            }
+            move['target_speed'] = 0
+            move['type'] = 'set_pos'
+
+        return move
 
     def _maximum_achievable_speed(self, move):
         if self.previous_movement:

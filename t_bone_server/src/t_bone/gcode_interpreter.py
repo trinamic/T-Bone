@@ -59,6 +59,7 @@ def read_gcode_to_printer(line, printer):
     elif "G21" == gcode.code:
         _logger.info("Using metric units according to the g code")
     elif "G28" == gcode.code:
+        #TODO in'st taht also to enqueue??
         positions = _decode_positions(gcode, line)
         homing_axis = []
         if positions:
