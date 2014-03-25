@@ -543,7 +543,18 @@ class Printer(Thread):
                     x_move_config
                 ]
         if e_move_config:
+            if x_move_config:
+                factor = abs(move_vector['e'] / move_vector['x'] * self._x_step_conversion)
+                e_move_config['speed'] = factor * movement['speed']['x']
+                x_move_config['acceleration'] = factor * x_move_config['acceleration'] # todo or the max of the config/scaled??
+                x_move_config['startBow'] = factor * x_move_config['startBow']
+            elif y_move_config:
+                factor = abs(move_vector['e'] / move_vector['y'] * self._y_step_conversion)
+                e_move_config['speed'] = factor * movement['speed']['y']
+                x_move_config['acceleration'] = factor * y_move_config['acceleration'] # todo or the max of the config/scaled??
+                x_move_config['startBow'] = factor * y_move_config['startBow']
             move_commands.append(e_move_config)
+
         if z_move_config:
             move_commands.extend(z_move_config)
 
@@ -617,7 +628,6 @@ class PrintQueue():
             last_y = 0
             last_z = 0
             last_e = 0
-            #logg this move
 
         if target_position['type'] == 'move':
             move['type'] = 'move'
