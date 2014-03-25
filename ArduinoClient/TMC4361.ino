@@ -322,7 +322,7 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
     Serial.print(target_pos);
   }  
   Serial.print(F(" t "));
-  Serial.print(aim_target);
+  Serial.println(aim_target);
 #endif
 
   long fixed_a_max = FIXED_22_2_MAKE(aMax);
@@ -383,16 +383,18 @@ inline void signal_start() {
 }
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
+#ifdef DEBUG_MOTION_SHORT
+  Serial.print('M');
+  Serial.print(motor_nr);
+  Serial.println(F(":=0"));
+#endif
   //we write x_actual, x_target and pos_comp to the same value to be safe 
+  writeRegister(motor_nr, TMC4361_V_MAX_REGISTER,0);
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0);   
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,position);
   writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,position);
   writeRegister(motor_nr, TMC4361_POS_COMP_REGISTER,position);
-  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0
-    | _BV(0) //x_target requires start
-  | _BV(4)  //use shaddow motion profiles
-  | _BV(5) //external start is an start
-  );   
+  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
   last_target[motor_nr]=position;
 }
 
@@ -537,6 +539,7 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   endstop_config &= clearing_pattern;
   return endstop_config;
 }  
+
 
 
 
