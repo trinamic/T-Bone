@@ -138,14 +138,14 @@ class PID:
     Discrete PID control
     """
 
-    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_max=10.0, Integrator_min=-10.0):
+    def __init__(self, P=2.0, I=0.0, D=1.0, Derivator=0, Integrator=0, Integrator_min=0.0, Integrator_max=100.0):
         self.Kp = float(P)
         self.Ki = float(I)
         self.Kd = float(D)
         self.Derivator = float(Derivator)
         self.Integrator = float(Integrator)
-        self.Integrator_max = Integrator_max
-        self.Integrator_min = Integrator_min
+        self.Integrator_max = Integrator_max / I
+        self.Integrator_min = Integrator_min / I
 
         self.set_point = 0.0
         self.error = 0.0
