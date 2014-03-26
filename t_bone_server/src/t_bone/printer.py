@@ -581,7 +581,7 @@ class Printer(Thread):
 
 
 class PrintQueue():
-    def __init__(self, axis_config, min_length, max_length, default_target_speed=None):
+    def __init__(self, axis_config, min_length, max_length, default_target_speed=None, led_manager=None):
         self.axis = axis_config
         self.planning_list = list()
         self.queue_size = min_length - 1  #since we got one extra
@@ -589,6 +589,7 @@ class PrintQueue():
         self.previous_movement = None
         #we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
+        self.led_manager = led_manager
 
     def add_movement(self, target_position, timeout=None):
         #calculate the target
@@ -794,6 +795,9 @@ class PrintQueue():
 
 
     def _recalculate_move_speeds(self, move):
+        if self.led_manager:
+            self.led_manager.light(2, True)
+
         x_bow_ = self.axis['x']['bow']
         y_bow_ = self.axis['y']['bow']
 
@@ -829,6 +833,9 @@ class PrintQueue():
                 })
             movement['speed'] = find_shortest_vector(speed_vectors)
             max_speed = movement['speed']
+
+        if self.led_manager:
+            self.led_manager.light(2, False)
 
 
 #from https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L579
