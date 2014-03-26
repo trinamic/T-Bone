@@ -14,6 +14,7 @@ from heater import Heater, Thermometer, PID
 from machine import Machine
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
     convert_velocity_clock_ref_to_realtime_ref, convert_acceleration_clock_ref_to_realtime_ref
+from t_bone.LEDS import LedManager
 
 
 __author__ = 'marcus'
@@ -56,6 +57,8 @@ class Printer(Thread):
         self._homing_timeout = 10
         self._print_queue_wait_time = 0.1
         self.homed = False
+
+        self.led_manager = LedManager()
 
         #todo why didn't this work as global constant?? - should be confugired anyway
         self._FAN_OUTPUT = beaglebone_helpers.pwm_config[2]['out']
@@ -111,12 +114,14 @@ class Printer(Thread):
                                        max_length=self.print_queue_max_length, default_target_speed=self.default_speed)
         self.machine.start_motion()
         self.printing = True
+        self.led_manager.light(1, True)
+
 
     def finish_print(self):
         self._print_queue.finish()
         self.machine.finish_motion()
         self.printing = False
-        pass
+        self.led_manager.light(1, False)
 
     def read_motor_positons(self):
         positions = {}
@@ -222,7 +227,7 @@ class Printer(Thread):
             self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
         elif movement['type'] == 'set_position':
             for axis in self.axis:
-                set_pos_name = "s%s"%axis
+                set_pos_name = "s%s" % axis
                 if set_pos_name in movement:
                     position = movement[set_pos_name]
                     #todo this may break for z axis
@@ -239,6 +244,7 @@ class Printer(Thread):
         PWM.set_duty_cycle(self._FAN_OUTPUT, value * 100.0)
 
     def run(self):
+        self.led_manager.light(0, True)
         while self.running:
             if self.printing:
                 try:
@@ -249,7 +255,7 @@ class Printer(Thread):
                     _logger.debug("Print Queue did not return a value - this can be pretty normal")
             else:
                 time.sleep(0.1)
-
+        self.led_manager.light(0, False)
 
     def _configure_axis(self, axis, config):
         #let's see if we got one or more motors
@@ -550,12 +556,14 @@ class Printer(Thread):
             if x_move_config:
                 factor = abs(move_vector['e'] / move_vector['x'] * self._e_x_step_conversion)
                 e_move_config['speed'] = factor * x_move_config['speed']
-                e_move_config['acceleration'] = factor * x_move_config['acceleration'] # todo or the max of the config/scaled??
+                e_move_config['acceleration'] = factor * x_move_config[
+                    'acceleration']  # todo or the max of the config/scaled??
                 e_move_config['startBow'] = factor * x_move_config['startBow']
             elif y_move_config:
                 factor = abs(move_vector['e'] / move_vector['y'] * self._e_y_step_conversion)
                 e_move_config['speed'] = factor * y_move_config['speed']
-                e_move_config['acceleration'] = factor * y_move_config['acceleration'] # todo or the max of the config/scaled??
+                e_move_config['acceleration'] = factor * y_move_config[
+                    'acceleration']  # todo or the max of the config/scaled??
                 e_move_config['startBow'] = factor * y_move_config['startBow']
             move_commands.append(e_move_config)
 
@@ -707,7 +715,6 @@ class PrintQueue():
             for axis, value in target_position.iteritems():
                 if not axis == 'type':
                     move['s%s' % axis] = value
-
 
         return move
 
