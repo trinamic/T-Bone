@@ -392,7 +392,8 @@ class Printer(Thread):
                                       analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
         bed_pid_controller = PID(P=heater_config['pid-config']['Kp'],
                                  I=heater_config['pid-config']['Ki'],
-                                 D=heater_config['pid-config']['Kd'])
+                                 D=heater_config['pid-config']['Kd'],
+                                 Integrator_max=heater_config['max-duty-cycle'])
         heater = Heater(thermometer=bed_thermometer, pid_controller=bed_pid_controller,
                         output=beaglebone_helpers.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
                         current_measurement=current_pin, machine=self.machine)

@@ -104,7 +104,7 @@
         "heater": {
             "pwm": 1,
             "type": "epcos-100k",
-            "max-duty-cycle": 50,
+            "max-duty-cycle": 60,
             "pid-config": {
                 "Kp": 15.0,
                 "Ki": 1.0,
