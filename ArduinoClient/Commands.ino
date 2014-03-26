@@ -307,7 +307,7 @@ char readMovementParameters(movement* move) {
    */   
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(-2);
-    messenger.sendCmdArg(movementType);
+    messenger.sendCmdArg(movementType,DEC);
     messenger.sendCmdEnd();
 
     return -3;
