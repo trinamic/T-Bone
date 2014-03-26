@@ -291,10 +291,7 @@ void onMove() {
 
 char readMovementParameters(movement* move) {
   long newPos = messenger.readLongArg();
-  if (newPos<0) {
-    messenger.sendCmd (kError,-10); //TODO really?
-    return -2;
-  }
+
   char movementType = (char)messenger.readIntArg();
   boolean isWaypoint;
   if (movementType == 's') {

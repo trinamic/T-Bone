@@ -8,7 +8,7 @@ from printer import PrinterError
 
 __author__ = 'marcus'
 
-_text_and_number_pattern = re.compile('([a-zA-Z]+)(\d+(.\d+)?)')
+_text_and_number_pattern = re.compile('([a-zA-Z]+)(\-?\d+(.\d+)?)')
 _logger = logging.getLogger(__name__)
 
 
