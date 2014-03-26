@@ -59,7 +59,7 @@ class Heater(Thread):
             self._set_temperature = temperature
             self._pid_controller.setPoint(temperature)
         else:
-            _logger.warn("Temperature %s", temperature)
+            _logger.warn("Temperature %s too high, got ignored", temperature)
 
     def get_set_temperature(self):
         return self._set_temperature
