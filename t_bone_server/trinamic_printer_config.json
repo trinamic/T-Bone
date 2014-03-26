@@ -94,7 +94,7 @@
     "extruder": {
         "motor": 3,
         "current": 0.8,
-        "steps-per-mm": 8254.561,
+        "steps-per-mm": 11792.23,
         "max-speed": 300,
         "max-acceleration": 3000,
         "bow-acceleration": 10000,
