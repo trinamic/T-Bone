@@ -62,23 +62,24 @@ def read_gcode_to_printer(line, printer):
         #TODO in'st that also to enqueue??
         positions = _decode_positions(gcode, line)
         homing_axis = []
-        if not printer.homed and positions:
+        if not printer.homed:
             printer.homed = True
-            for axis_name in positions:
-                if axis_name in printer.axis:
-                    if printer.axis[axis_name]['homeable']:
-                        _logger.info("Configuring axis %s for homing", axis_name)
-                        homing_axis.append(axis_name)
+            if positions:
+                for axis_name in positions:
+                    if axis_name in printer.axis:
+                        if printer.axis[axis_name]['homeable']:
+                            _logger.info("Configuring axis %s for homing", axis_name)
+                            homing_axis.append(axis_name)
+                        else:
+                            _logger.warn("Ignoring not homeable axis %s for homing", axis_name)
                     else:
-                        _logger.warn("Ignoring not homeable axis %s for homing", axis_name)
-                else:
-                    _logger.warn("Ignoring unknown axis %s for homing", axis_name)
-        else:
-            for axis_name, axis in printer.axis.iteritems():
-                if axis['homeable']:
-                    homing_axis.append(axis_name)
-        _logger.info("Homing axis %s", homing_axis)
-        printer.home(homing_axis)
+                        _logger.warn("Ignoring unknown axis %s for homing", axis_name)
+            else:
+                for axis_name, axis in printer.axis.iteritems():
+                    if axis['homeable']:
+                        homing_axis.append(axis_name)
+            _logger.info("Homing axis %s", homing_axis)
+            printer.home(homing_axis)
     elif "G90" == gcode.code:
         _logger.info("Using absolute positions")
         #todo we can support relative positions - if we are a bit careful
@@ -105,7 +106,7 @@ def read_gcode_to_printer(line, printer):
         options = _decode_positions(gcode, line)
         if 's' in options:
             fan_speed = options['s'] / 255.0
-           # printer.set_fan(fan_speed)
+            # printer.set_fan(fan_speed)
         else:
             _logger.info("No fan speed given in %", gcode)
     elif "M107" == gcode.code:
