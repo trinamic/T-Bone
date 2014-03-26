@@ -14,7 +14,7 @@ from heater import Heater, Thermometer, PID
 from machine import Machine
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
     convert_velocity_clock_ref_to_realtime_ref, convert_acceleration_clock_ref_to_realtime_ref
-from t_bone.LEDS import LedManager
+from LEDS import LedManager
 
 
 __author__ = 'marcus'
