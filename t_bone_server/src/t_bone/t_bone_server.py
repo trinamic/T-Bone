@@ -194,7 +194,7 @@ def status():
 
 if __name__ == '__main__':
     #configure the overall logging
-    logging.basicConfig(filename='print.log', level=logging.INFO,
+    logging.basicConfig(filename='/var/log/t_bone.log', level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.info('Starting print server')
     #somehow we can get several initializations - hence we store a global printer
