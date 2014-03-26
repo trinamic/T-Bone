@@ -3,6 +3,36 @@ trinamic3d
 
 Trinamic3D
 
+Autostarting services
+---------------------
+
+from http://beaglebone.cameon.net/home/autostarting-services
+
+The easiest way is to just use the systemd service framework, like is already in use by the demo image.
+ 
+To add a new service, just create a file in /lib/systemd/system/myservice.service with content like:
+[Unit]
+Description=Reverse SSH Service
+ConditionPathExists=|/usr/bin
+After=network.target
+ 
+[Service]
+ExecStart=/usr/bin/wall "Hello world!"
+Restart=always
+RestartSec=10
+StartLimitInterval=0
+ 
+[Install]
+WantedBy=multi-user.target
+ And then make a symlink to this file in /etc/systemd/system/multi-user.target.wants/.
+ 
+The service will start automatically on startup. You can also start and stop it manually, and query the status:
+ 
+systemctl status myservice.service
+systemctl start myservice.service
+systemctl stop myservice.service
+
+
 Arduino Leonardo Pinout
 -----------------------
 
