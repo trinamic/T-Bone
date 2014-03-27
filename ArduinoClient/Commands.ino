@@ -316,7 +316,7 @@ char readMovementParameters(movement* move) {
   }  
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
-    messenger.sendCmd (kError,3);
+    messenger.sendCmd (kError,-3);
     return -4;
   }
   double aMax = messenger.readFloatArg();
