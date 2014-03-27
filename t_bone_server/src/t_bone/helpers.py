@@ -21,7 +21,7 @@ def convert_acceleration_clock_ref_to_realtime_ref(acceleration):
 
 
 def calculate_relative_vector(delta_x, delta_y, delta_z, delta_e):
-    length = sqrt(delta_x ** 2 + delta_y ** 2 + delta_z ** 2) # + delta_e**2)
+    length = sqrt(delta_x ** 2 + delta_y ** 2 + delta_z ** 2 + delta_e**2)
     if length == 0:
         return {
             'x': 0.0,
