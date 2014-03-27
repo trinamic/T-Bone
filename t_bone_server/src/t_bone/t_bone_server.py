@@ -91,6 +91,9 @@ def print_page():
     template_dictionary = templating_defaults()
     files = [f for f in listdir(app.config['UPLOAD_FOLDER'])
              if isfile(app.config['UPLOAD_FOLDER'] + "/" + f) and fnmatch.fnmatch(f, '*.gcode')]
+    #todo would like to http://stackoverflow.com/questions/6591931/getting-file-size-in-python
+    #http://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+    #http://stackoverflow.com/questions/237079/how-to-get-file-creation-modification-date-times-in-python
     template_dictionary['files'] = files
     if _printer.prepared_file:
         template_dictionary['print_file'] = _printer.prepared_file.rsplit('/', 1)[1]
