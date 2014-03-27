@@ -5,7 +5,7 @@ import unittest
 
 from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, \
     has_length
-from src.trinamic_3d_printer.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
+from t_bone.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
 
 
 class VectorTests(unittest.TestCase):
@@ -15,17 +15,28 @@ class VectorTests(unittest.TestCase):
             'x': {
                 'max_acceleration': 1,
                 'max_speed': 1,
-                'bow': 1
+                'bow': 1,
+                'steps_per_mm': 1
             },
             'y': {
                 'max_acceleration': 1,
                 'max_speed': 1,
-                'bow': 1
+                'bow': 1,
+                'steps_per_mm': 1
+            },
+            'z': {
+                'steps_per_mm': 1
+            },
+            'e': {
+                'steps_per_mm': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=2, max_length=5)
+        queue.default_target_speed = 1
+
         for i in range(5):
             position = {
+                'type': 'move',
                 'x': i,
                 'y': i,
                 'f': 1
@@ -33,6 +44,7 @@ class VectorTests(unittest.TestCase):
             queue.add_movement(position, timeout=default_timeout)
         try:
             queue.add_movement({
+                                   'type': 'move',
                                    'x': 0,
                                    'y': 1
                                }, timeout=default_timeout)
@@ -60,15 +72,24 @@ class VectorTests(unittest.TestCase):
             'x': {
                 'max_acceleration': 1,
                 'max_speed': 1,
-                'bow': 1
+                'bow': 1,
+                'steps_per_mm': 1
             },
             'y': {
                 'max_acceleration': 1,
                 'max_speed': 1,
-                'bow': 1
+                'bow': 1,
+                'steps_per_mm': 1
+            },
+            'z': {
+                'steps_per_mm': 1
+            },
+            'e': {
+                'steps_per_mm': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=2, max_length=5)
+        queue.default_target_speed = 1
 
         class QueueEmptyThread(Thread):
             def __init__(self, queue):
@@ -87,6 +108,7 @@ class VectorTests(unittest.TestCase):
         try:
             for i in range(25):
                 position = {
+                    'type': 'move',
                     'x': i,
                     'y': i,
                     'f': 1
@@ -99,6 +121,7 @@ class VectorTests(unittest.TestCase):
             emptyerThread.running = False
             queue.add_movement(
                 {
+                    'type': 'move',
                     'x': 0,
                     'y': 0
                 })
@@ -113,19 +136,30 @@ class VectorTests(unittest.TestCase):
             'x': {
                 'max_acceleration': 0.5,
                 'max_speed': max_speed_x,
-                'bow': 1
+                'bow': 1,
+                'steps_per_mm': 1
             },
             'y': {
                 'max_acceleration': 0.5,
                 'max_speed': max_speed_y,
-                'bow': 1
+                'bow': 1,
+                'steps_per_mm': 1
+            },
+            'z': {
+                'steps_per_mm': 1
+            },
+            'e': {
+                'steps_per_mm': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
+        queue.default_target_speed = 5
+
         #TODO add a movement to check if it accelerates correctly
         #we do not need any real buffer
         for i in range(6):
             queue.add_movement({
+                'type': 'move',
                 'x': i + 1,
                 'y': i + 1,
                 'f': 10
@@ -139,6 +173,7 @@ class VectorTests(unittest.TestCase):
         assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01))  #becaus we go 1/1 each time
         assert_that(last_movement['speed']['y'], close_to(max_speed_y, 0.01))
         queue.add_movement({
+            'type': 'move',
             'x': 7,
             'y': 6
         })
@@ -156,6 +191,7 @@ class VectorTests(unittest.TestCase):
         assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5))  #becaus we go 1/1 each time
         assert_that(previous_movement['speed']['y'], close_to(max_speed_y, 0.5))
         queue.add_movement({
+            'type': 'move',
             'x': 7,
             'y': 7
         })
@@ -173,6 +209,7 @@ class VectorTests(unittest.TestCase):
         assert_that(previous_movement['speed']['y'], close_to(max_speed_y, 0.5))
         # let's go back to zero to begin a new test
         queue.add_movement({
+            'type': 'move',
             'x': 0,
             'y': 7
         })
@@ -183,6 +220,7 @@ class VectorTests(unittest.TestCase):
         previous_movement = queue.planning_list[-1]
         assert_that(previous_movement['y_stop'], equal_to(True))
         queue.add_movement({
+            'type': 'move',
             'x': 0,
             'y': 0
         })
@@ -195,6 +233,7 @@ class VectorTests(unittest.TestCase):
         #speed up
         for i in range(4):
             queue.add_movement({
+                'type': 'move',
                 'x': i + 1,
                 'y': i + 1,
             })
@@ -203,6 +242,7 @@ class VectorTests(unittest.TestCase):
         assert_that(last_movement['speed']['y'], close_to(max_speed_y, 0.01))
         #and check if we can do a full stop
         queue.add_movement({
+            'type': 'move',
             'x': 3,
             'y': 3
         })
@@ -223,25 +263,25 @@ class VectorTests(unittest.TestCase):
 
 
     def test_vector_math(self):
-        result = calculate_relative_vector(1, 1)
+        result = calculate_relative_vector(1, 1, 0, 1)
         assert_that(result, not_none())
         assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['l'], close_to(1.4, 0.1))
 
-        result = calculate_relative_vector(23, 23)
+        result = calculate_relative_vector(23, 23, 0, 0)
         assert_that(result, not_none())
         assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
         assert_that(result['l'], close_to(32.5, 0.1))
 
-        result = calculate_relative_vector(0, 0)
+        result = calculate_relative_vector(0, 0, 0, 12)
         assert_that(result, not_none())
         assert_that(result['x'], equal_to(0))
         assert_that(result['y'], equal_to(0))
         assert_that(result['l'], equal_to(0))
 
-        result = calculate_relative_vector(0, 20)
+        result = calculate_relative_vector(0, 20, 0, 0)
         assert_that(result, not_none())
         assert_that(result['x'], equal_to(0))
         assert_that(result['y'], equal_to(1))
@@ -291,7 +331,8 @@ class VectorTests(unittest.TestCase):
                 'bow': 1,
                 'bow_step': 7,
                 'scale': 7,
-                'motor': 0
+                'motor': 0,
+                'steps_per_mm': 7
             },
             'y': {
                 'max_acceleration': 0.5,
@@ -300,73 +341,94 @@ class VectorTests(unittest.TestCase):
                 'bow': 1,
                 'bow_step': 11,
                 'scale': 11,
-                'motor': 1
+                'motor': 1,
+                'steps_per_mm': 11
+            },
+            'z': {
+                'steps_per_mm': 1,
+                'max_speed': 10
+            },
+            'e': {
+                'steps_per_mm': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
         queue.default_target_speed = max_speed
         #add some circle
         queue.add_movement({
+            'type': 'move',
             'x': 1,
             'y': 0
             #movement 0
         })
         queue.add_movement({
+            'type': 'move',
             'x': 2,
             'y': 0
             #movement 1
         })
         queue.add_movement({
+            'type': 'move',
             'x': 3,
             'y': 0
             #movement 2
         })
         queue.add_movement({
+            'type': 'move',
             'x': 4,
             'y': 1
             #movement 3
         })
         queue.add_movement({
+            'type': 'move',
             'x': 4,
             'y': 2
             #movement 4
         })
         queue.add_movement({
+            'type': 'move',
             'x': 4,
             'y': 3
             #movement 5
         })
         queue.add_movement({
+            'type': 'move',
             'x': 3,
             'y': 4
             #movement 6
         })
         queue.add_movement({
+            'type': 'move',
             'x': 2,
             'y': 4
             #movement 7
         })
         queue.add_movement({
+            'type': 'move',
             'x': 0,
             'y': 4
             #movement 8
         })
         queue.add_movement({
+            'type': 'move',
             'x': 0,
             'y': 2
             #movement 9
         })
         queue.add_movement({
+            'type': 'move',
             'x': 0,
             'y': 1
             #movement 10
         })
         queue.add_movement({
+            'type': 'move',
             'x': 1,
             'y': 0
             #movement 11
         })
         queue.add_movement({
+            'type': 'move',
             'x': 2,
             'y': 0
             #movement 12
@@ -442,6 +504,7 @@ class VectorTests(unittest.TestCase):
 
         #ok so far so good - but let's see if this is correctly converted to a motion
         printer = Printer(serial_port="none", reset_pin="X")
+        printer.default_speed = 1
         printer.axis = axis_config
         printer._postconfig()
 
@@ -458,36 +521,41 @@ class VectorTests(unittest.TestCase):
         move_configs = []
         for movement in planned_list:
             nr_of_commands += 1
-            delta_x, delta_y, move_vector, step_pos, step_speed_vector = printer._add_movement_calculations(movement)
+            step_pos, step_speed_vector = printer._add_movement_calculations(movement)
             assert_that(step_pos['x'], equal_to(movement['x'] * 7))
             assert_that(step_pos['y'], equal_to(movement['y'] * 11))
             assert_that(step_speed_vector['x'], equal_to(int(movement['speed']['x'] * 7)))
             assert_that(step_speed_vector['y'], equal_to(int(movement['speed']['y'] * 11)))
-            x_move_config, y_move_config = printer._generate_move_config(movement, step_pos, step_speed_vector)
-            assert_that(x_move_config['motor'], equal_to(0))
-            assert_that(y_move_config['motor'], equal_to(1))
-            assert_that(x_move_config['acceleration'], equal_to(1))
-            assert_that(y_move_config['acceleration'], equal_to(2))
-            assert_that(x_move_config['startBow'], equal_to(7))
-            assert_that(y_move_config['startBow'], equal_to(11))
-            assert_that(x_move_config['target'], equal_to(movement['x'] * 7))
-            assert_that(y_move_config['target'], equal_to(movement['y'] * 11))
-            assert_that(x_move_config['speed'], equal_to(abs(int(movement['speed']['x'] * 7))))
-            assert_that(y_move_config['speed'], equal_to(abs(int(movement['speed']['y'] * 11))))
+            x_move_config, y_move_config, z_move_config, e_move_config = printer._generate_move_config(movement,
+                                                                                                       step_pos,
+                                                                                                       step_speed_vector)
+            if x_move_config:
+                assert_that(x_move_config['motor'], equal_to(0))
+                assert_that(x_move_config['acceleration'], equal_to(1))
+                assert_that(x_move_config['startBow'], equal_to(7))
+                assert_that(x_move_config['target'], equal_to(movement['x'] * 7))
+                assert_that(x_move_config['speed'], equal_to(abs(int(movement['speed']['x'] * 7))))
+
+            if y_move_config:
+                assert_that(y_move_config['motor'], equal_to(1))
+                assert_that(y_move_config['acceleration'], equal_to(2))
+                assert_that(y_move_config['startBow'], equal_to(11))
+                assert_that(y_move_config['target'], equal_to(movement['y'] * 11))
+                assert_that(y_move_config['speed'], equal_to(abs(int(movement['speed']['y'] * 11))))
             ##collect the move configs for later analyisis
             move_configs.append({
                 'x': x_move_config,
                 'y': y_move_config
             })
             #move a bit just like the real thing
-            printer._move(delta_x, delta_y, move_vector, step_pos, x_move_config, y_move_config)
+            printer._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
 
         assert_that(nr_of_commands, equal_to(12))
         assert_that(len(move_configs), equal_to(12))
 
         for i in range(0, 2):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
-            assert_that(move_configs[i]['y']['type'], equal_to('stop'))
+            assert_that(move_configs[i]['y'], equal_to(None))
         assert_that(move_configs[3]['x']['type'], equal_to('stop'))
         for i in range(3, 5):
             assert_that(move_configs[i]['y']['type'], equal_to('way'))
