@@ -5,7 +5,7 @@
         "steps-per-mm": 1280,
         "max-speed": 300,
         "max-acceleration": 150,
-        "bow-acceleration": 20.0,,
+        "bow-acceleration": 20.0,
         "time-reference": "time",
         "inverted": false,
         "inverted_comment": "not fully functional yet",
@@ -28,7 +28,7 @@
         "steps-per-mm": 1280,
         "max-speed": 300,
         "max-acceleration": 150,
-        "bow-acceleration": 20.0,,
+        "bow-acceleration": 20.0,
         "time-reference": "time",
         "end-stops": {
             "left": {
