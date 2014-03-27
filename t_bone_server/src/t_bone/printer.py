@@ -8,7 +8,7 @@ from threading import Thread
 
 from numpy import sign
 import time
-import beaglebone_helpers
+import beagle_bone_pins
 from heater import Heater, Thermometer, PID
 
 from machine import Machine
@@ -61,7 +61,7 @@ class Printer(Thread):
         self.led_manager = LedManager()
 
         #todo why didn't this work as global constant?? - should be confugired anyway
-        self._FAN_OUTPUT = beaglebone_helpers.pwm_config[2]['out']
+        self._FAN_OUTPUT = beagle_bone_pins.pwm_config[2]['out']
 
         #finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
@@ -384,18 +384,18 @@ class Printer(Thread):
         max_duty_cycle = None
         if 'max-duty-cycle' in heater_config:
             max_duty_cycle = heater_config['max-duty-cycle']
-        if 'current_input' in beaglebone_helpers.pwm_config[pwm_number]:
-            current_pin = beaglebone_helpers.pwm_config[pwm_number]['current_input']
+        if 'current_input' in beagle_bone_pins.pwm_config[pwm_number]:
+            current_pin = beagle_bone_pins.pwm_config[pwm_number]['current_input']
         else:
             current_pin = None
         bed_thermometer = Thermometer(themistor_type=heater_config['type'],
-                                      analog_input=beaglebone_helpers.pwm_config[pwm_number]['temp'])
+                                      analog_input=beagle_bone_pins.pwm_config[pwm_number]['temp'])
         bed_pid_controller = PID(P=heater_config['pid-config']['Kp'],
                                  I=heater_config['pid-config']['Ki'],
                                  D=heater_config['pid-config']['Kd'],
                                  Integrator_max=heater_config['max-duty-cycle'])
         heater = Heater(thermometer=bed_thermometer, pid_controller=bed_pid_controller,
-                        output=beaglebone_helpers.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
+                        output=beagle_bone_pins.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
                         current_measurement=current_pin, machine=self.machine)
         return heater
 
