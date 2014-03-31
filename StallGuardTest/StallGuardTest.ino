@@ -24,6 +24,8 @@ const char nr_of_coordinated_motors = 3;
 const unsigned long slow_run = 4; //steps/s
 const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION; //steps/s
 
+const int current_in_ma = 1000;
+
 void setup() {
   prepareTMC4361();
 }
