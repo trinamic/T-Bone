@@ -25,20 +25,25 @@ void find_sg_value() {
     status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
   }
 
-  for (char threshold=-63;threshold<=64;threshold++) {
-    motors[motor_to_test].tmc260.setStallGuardThreshold(threshold,0);
+  char threshold=-63;
+  for (;threshold<=64;threshold++) {
+    motors[motor_to_test].tmc260.setStallGuardThreshold(threshold,1);
     set260Register(motor_to_test,motors[motor_to_test].tmc260.getStallGuard2RegisterValue());
     long x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
     //wait some full steps
     long new_x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
-    while (new_x_actual-x_actual<microsteps*2) {
+    while (new_x_actual-x_actual<microsteps*9) {
       new_x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
     } 
     long result = (long)readRegister(motor_to_test,TMC4361_COVER_DRIVER_LOW_REGISTER);
     result = (result >> 10);
-    Serial.print(threshold,DEC);
-    Serial.print(" -> ");
-    Serial.println(result,HEX);
+    if (result>0) {
+      Serial.print(threshold,DEC);
+      Serial.print(" -> ");
+      Serial.println(result,HEX);
+      threshold -=1;
+      break;
+    }
   }
   Serial.println();
 
@@ -47,6 +52,9 @@ void find_sg_value() {
 
   writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
+
+
+
 
 
 
