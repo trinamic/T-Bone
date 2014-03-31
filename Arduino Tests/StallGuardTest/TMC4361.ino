@@ -4,25 +4,6 @@ const unsigned long default_4361_start_config = 0
 | _BV(5) //external start is an start
 ;
 
-
-TMC4361_info motors[nr_of_coordinated_motors] = {
-  {
-    INT_4361_1_PIN,0, NULL, 
-    TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION                  }
-  ,
-  {
-    INT_4361_2_PIN,1, NULL, 
-    TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION                   }
-  ,
-  {
-    INT_4361_3_PIN,4, NULL, 
-    TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION                   }
-};
-
-
 void initTMC4361() {
   pinModeFast(START_SIGNAL_PIN,INPUT);
   digitalWriteFast(START_SIGNAL_PIN,LOW);
