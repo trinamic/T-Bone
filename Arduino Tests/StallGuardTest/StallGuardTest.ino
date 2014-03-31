@@ -5,7 +5,7 @@
 #include "constants.h"
 #include "types.h"
 
-#define DEBUG_SPI
+//#define DEBUG_SPI
 
 #define CS_4361_1_PIN 4
 #define CS_4361_2_PIN 12
@@ -24,9 +24,10 @@
 #define CLOCK_FREQUENCY 16000000ul
 #define TMC_260_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 
+const int microsteps = 256;
 const char nr_of_coordinated_motors = 3;
-const unsigned long slow_run = 4; //steps/s
-const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION; //steps/s
+const unsigned long slow_run = 4*microsteps; //steps/s
+const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION*microsteps; //steps/s
 
 const char motor_to_test = 0;
 const int test_current_in_ma = 1000;
@@ -47,6 +48,7 @@ void setup() {
 
 void loop() {
   Serial.println("yay");
+  find_sg_value();
   delay(1000);
   // put your main code here, to run repeatedly: 
   

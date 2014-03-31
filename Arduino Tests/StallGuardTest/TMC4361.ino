@@ -85,5 +85,19 @@ const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, 
   return NULL;
 }
 
+inline void signal_start() {
+  //prepare the pos compr registers
+  for (char i=0; i< nr_of_coordinated_motors; i++) {
+    //clear the event register
+    readRegister(i, TMC4361_EVENTS_REGISTER);
+  }
+
+  digitalWriteFast(START_SIGNAL_PIN,LOW);
+  delayMicroseconds(3); //the call by itself may have been eough
+  digitalWriteFast(START_SIGNAL_PIN,HIGH);
+}
+
+
+
 
 
