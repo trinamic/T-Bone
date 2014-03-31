@@ -19,6 +19,12 @@ void find_sg_value() {
   writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(slow_run));
   signal_start();
 
+  //Wait until we have speeded up enough
+  unsigned long status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+  while (status & _BV(2)==0) {
+    status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+  }
+
   for (char threshold=-63;threshold<=64;threshold++) {
     motors[motor_to_test].tmc260.setStallGuardThreshold(threshold,0);
     set260Register(motor_to_test,motors[motor_to_test].tmc260.getStallGuard2RegisterValue());
@@ -41,6 +47,7 @@ void find_sg_value() {
 
   writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
+
 
 
 
