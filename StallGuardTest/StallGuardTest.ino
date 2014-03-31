@@ -19,6 +19,7 @@
 #define DEFAULT_CURRENT_IN_MA 10
 #define TMC260_SENSE_RESISTOR_IN_MO 150
 #define DEFAULT_STEPS_PER_REVOLUTION 200
+#define CLOCK_FREQUENCY 16000000ul
 
 const char nr_of_coordinated_motors = 3;
 const unsigned long slow_run = 4; //steps/s

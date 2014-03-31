@@ -1,3 +1,8 @@
+const unsigned long default_4361_start_config = 0
+| _BV(0) //x_target requires start
+| _BV(4)  //use shaddow motion profiles
+| _BV(5) //external start is an start
+;
 
 
 TMC4361_info motors[nr_of_coordinated_motors] = {
@@ -74,8 +79,6 @@ void initTMC4361() {
     unsigned long filter = (2<<16) | (4<<20);
     Serial.println(filter);
     writeRegister(i,TMC4361_INPUT_FILTER_REGISTER,filter);
-
-    last_target[i]=0;
   }
 }
 
@@ -92,5 +95,15 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
+const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, unsigned int steps) {
+  //configure the motor type
+  unsigned long motorconfig = 0x00; //we want 256 microsteps
+  motorconfig |= steps<<4;
+  writeRegister(motor_nr,TMC4361_STEP_CONF_REGISTER,motorconfig);
+  motors[motor_nr].steps_per_revolution = steps;
+  return NULL;
+}
+
 
 
