@@ -27,7 +27,7 @@ const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION; //steps/s
 const int current_in_ma = 1000;
 
 void setup() {
-  prepareTMC4361();
+  initTMC4361();
 }
 
 void loop() {
