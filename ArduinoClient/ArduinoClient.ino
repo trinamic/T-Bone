@@ -200,19 +200,6 @@ void loop() {
   }
 }
 
-inline void resetTMC4361(boolean shutdown, boolean bringup) {
-  if (shutdown) {
-    // Use HWBE pin to reset motion controller TMC4361
-    PORTE &= ~(_BV(2));          //to check (reset for motion controller)
-  }
-  if (shutdown && bringup) {
-    delay(1);
-  }
-  if (bringup) {
-    PORTE |= _BV(2);
-  }
-}
-
 
 
 
