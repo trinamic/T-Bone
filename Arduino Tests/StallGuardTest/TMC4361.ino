@@ -58,7 +58,6 @@ void initTMC4361() {
     setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
     writeRegister(i, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
     unsigned long filter = (2<<16) | (4<<20);
-    Serial.println(filter);
     writeRegister(i,TMC4361_INPUT_FILTER_REGISTER,filter);
   }
 }

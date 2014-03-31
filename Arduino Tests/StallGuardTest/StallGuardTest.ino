@@ -5,6 +5,8 @@
 #include "constants.h"
 #include "types.h"
 
+#define DEBUG_SPI
+
 #define CS_4361_1_PIN 4
 #define CS_4361_2_PIN 12
 #define CS_4361_3_PIN 6
@@ -26,13 +28,26 @@ const char nr_of_coordinated_motors = 3;
 const unsigned long slow_run = 4; //steps/s
 const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION; //steps/s
 
-const int current_in_ma = 1000;
+const char motor_to_test = 0;
+const int test_current_in_ma = 1000;
 
 void setup() {
+    //initialize SPI
+  SPI.begin();
+  Serial.begin(115200);
+
+    // Use HWBE as Output
+  DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
+
+  Serial.println("starting");
   initTMC4361();
+  intializeTMC260();
+  setCurrentTMC260(motor_to_test, test_current_in_ma);
 }
 
 void loop() {
+  Serial.println("yay");
+  delay(1000);
   // put your main code here, to run repeatedly: 
   
 }
