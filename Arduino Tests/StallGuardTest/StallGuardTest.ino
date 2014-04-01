@@ -26,7 +26,7 @@
 
 const int microsteps = 256;
 const char nr_of_coordinated_motors = 3;
-const unsigned long slow_run = 2*microsteps; //steps/s
+const unsigned long slow_run = 4*microsteps; //steps/s
 const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION*microsteps; //steps/s
 const long homed_too_far = microsteps * 400ul * 6; //if we moved that much we have long crushed into the mechanic
 
@@ -45,10 +45,11 @@ void setup() {
   initTMC4361();
   intializeTMC260();
   setCurrentTMC260(motor_to_test, test_current_in_ma);
+
+  home_on_sg();
 }
 
 void loop() {
-  home_on_sg();
   delay(1000);
   // put your main code here, to run repeatedly: 
 }

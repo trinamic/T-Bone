@@ -18,7 +18,7 @@ char find_sg_value() {
 
 
   //char threshold=-63;
-  char threshold=-1; //we know it is at six - some speedup 
+  char threshold=2; //we know it is at two - some speedup 
   for (;threshold<=64;threshold++) {
     long search_speed = (threshold%2!=0)? slow_run: -slow_run;
     writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(search_speed));
