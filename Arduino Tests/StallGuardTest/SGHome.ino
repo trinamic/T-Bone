@@ -17,7 +17,8 @@ char find_sg_value() {
   writeRegister(motor_to_test, TMC4361_BOW_4_REGISTER, fast_run*10);
 
 
-  char threshold=-63;
+  //char threshold=-63;
+  char threshold=5; //we know it is at six - some speedup 
   for (;threshold<=64;threshold++) {
     long search_speed = (threshold%2!=0)? slow_run: -slow_run;
     writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(search_speed));
@@ -56,7 +57,7 @@ char find_sg_value() {
 void home_on_sg() {
   //find the SG value
   char threshold = find_sg_value();
-  Serial.print("SG optimal at");
+  Serial.print("SG optimal at ");
   Serial.println(threshold,DEC);
 
   //and again we go in velocity mode
@@ -68,29 +69,12 @@ void home_on_sg() {
 
   //configure stall gaurd stop in squirrel  
   writeRegister(motor_to_test, TMC4361_V_STALL_LIMIT_REGISTER, fast_run-1l); //consider stall guard only if speed is high enough
-  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_STOP_ON_STALL_ENDSTOP_REGISTER_PATTERN); //stop on stall guard
-
-
 
   //we write down where we started
   long starting_point = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
-  long left_stop = starting_point;
-  long right_stop = starting_point;
-  
-  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(fast_run));
-  signal_start();
 
-  //Wait until we have speeded up enough
-  unsigned long status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
-  while (status & TMC4361_STOP_ON_STALL_STATUS_REGISTER_PATTERN == 0) {
-    status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
-    right_stop = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
-    if (right_stop-starting_point>homed_too_far) {
-      right_stop = starting_point;
-      break;
-    }
-  }
-  
+  long right_stop = find_end_stop(false,starting_point);
+
   Serial.print("homed from ");
   Serial.print(starting_point);
   Serial.print(" to ");
@@ -98,6 +82,42 @@ void home_on_sg() {
 
   writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
+
+long find_end_stop(boolean left, long starting_point) {
+  long stop = starting_point;
+  
+  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_DRIVE_AFTER_STALL_ENDSTOP_REGISTER_PATTERN); //if we stalled go again anyway
+  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_STOP_ON_STALL_ENDSTOP_REGISTER_PATTERN); //stop on stall guard
+
+  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(fast_run));
+  signal_start();
+
+  //Wait until we have speeded up enough
+  unsigned long status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+  while ((status & TMC4361_STOP_ON_STALL_STATUS_REGISTER_PATTERN) == 0) {
+    status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+    stop = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
+    if (abs(stop-starting_point)>homed_too_far) {
+      Serial.print(stop);
+      Serial.println(" is too far");
+      stop = starting_point;
+      break;
+    }
+  }
+  Serial.print("settling at status ");
+  Serial.println(status,HEX);
+
+  long result = (long)readRegister(motor_to_test,TMC4361_COVER_DRIVER_LOW_REGISTER);
+  Serial.println(result,HEX);
+  result = (result >> 10);
+  Serial.println(result,DEC);
+  
+  return stop;
+}
+
+
+
+
 
 
 
