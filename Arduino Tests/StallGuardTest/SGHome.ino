@@ -1,5 +1,5 @@
 //here we go with the real homing action
-void find_sg_value() {
+char find_sg_value() {
   writeRegister(motor_to_test, TMC4361_START_CONFIG_REGISTER,0 
     | _BV(5) //start is start
   | _BV(0) //X_TARGET needs start
@@ -31,6 +31,7 @@ void find_sg_value() {
 
     motors[motor_to_test].tmc260.setStallGuardThreshold(threshold,1);
     set260Register(motor_to_test,motors[motor_to_test].tmc260.getStallGuard2RegisterValue());
+
     long x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
     //wait some full steps
     long new_x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
@@ -40,11 +41,8 @@ void find_sg_value() {
     long result = (long)readRegister(motor_to_test,TMC4361_COVER_DRIVER_LOW_REGISTER);
     result = (result >> 10);
     if (result > 0) {
-      Serial.print(threshold,DEC);
-      Serial.print(" -> ");
-      Serial.println(result,HEX);
       threshold -=1;
-      break;
+      return threshold;
     } 
   }
   Serial.println();
@@ -54,6 +52,13 @@ void find_sg_value() {
 
   writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
+
+void home_on_sg() {
+  char threshold = find_sg_value();
+  Serial.println(threshold,DEC);
+
+}
+
 
 
 

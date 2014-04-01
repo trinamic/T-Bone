@@ -47,11 +47,9 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("yay");
-  find_sg_value();
+  home_on_sg();
   delay(1000);
   // put your main code here, to run repeatedly: 
-  
 }
 
 
