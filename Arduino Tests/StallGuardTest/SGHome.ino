@@ -16,23 +16,25 @@ void find_sg_value() {
   writeRegister(motor_to_test, TMC4361_BOW_3_REGISTER, fast_run*10);
   writeRegister(motor_to_test, TMC4361_BOW_4_REGISTER, fast_run*10);
 
-  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(slow_run));
-  signal_start();
-
-  //Wait until we have speeded up enough
-  unsigned long status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
-  while (status & _BV(2)==0) {
-    status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
-  }
 
   char threshold=-63;
   for (;threshold<=64;threshold++) {
+    long search_speed = (threshold%2!=0)? slow_run: -slow_run;
+    writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(search_speed));
+    signal_start();
+
+    //Wait until we have speeded up enough
+    unsigned long status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+    while (status & _BV(2)==0) {
+      status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+    }
+
     motors[motor_to_test].tmc260.setStallGuardThreshold(threshold,1);
     set260Register(motor_to_test,motors[motor_to_test].tmc260.getStallGuard2RegisterValue());
     long x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
     //wait some full steps
     long new_x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
-    while (new_x_actual-x_actual<microsteps*9) {
+    while (abs(new_x_actual-x_actual)<microsteps*9) {
       new_x_actual = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
     } 
     long result = (long)readRegister(motor_to_test,TMC4361_COVER_DRIVER_LOW_REGISTER);
@@ -44,9 +46,6 @@ void find_sg_value() {
       threshold -=1;
       break;
     } 
-    else {
-      Serial.println(threshold,DEC);
-    }
   }
   Serial.println();
 
@@ -55,6 +54,8 @@ void find_sg_value() {
 
   writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
+
+
 
 
 
