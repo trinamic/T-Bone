@@ -37,12 +37,15 @@ void find_sg_value() {
     } 
     long result = (long)readRegister(motor_to_test,TMC4361_COVER_DRIVER_LOW_REGISTER);
     result = (result >> 10);
-    if (result>0) {
+    if (result > 0) {
       Serial.print(threshold,DEC);
       Serial.print(" -> ");
       Serial.println(result,HEX);
       threshold -=1;
       break;
+    } 
+    else {
+      Serial.println(threshold,DEC);
     }
   }
   Serial.println();
@@ -52,6 +55,7 @@ void find_sg_value() {
 
   writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
+
 
 
 
