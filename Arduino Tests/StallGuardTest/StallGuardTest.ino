@@ -27,11 +27,11 @@
 const int microsteps = 256;
 const char nr_of_coordinated_motors = 3;
 const unsigned long slow_run = 4*microsteps; //steps/s
-const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION*microsteps; //steps/s
-const long homed_too_far = microsteps * 200ul * 10000ul; //if we moved that much we have long crushed into the mechanic
+const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION*microsteps*20; //steps/s
+const long homed_too_far = microsteps * 400ul * 6; //if we moved that much we have long crushed into the mechanic
 
 const char motor_to_test = 0;
-const int test_current_in_ma = 1000;
+const int test_current_in_ma = 200;
 
 void setup() {
     //initialize SPI

@@ -18,7 +18,7 @@ char find_sg_value() {
 
 
   //char threshold=-63;
-  char threshold=5; //we know it is at six - some speedup 
+  char threshold=0; //we know it is at six - some speedup 
   for (;threshold<=64;threshold++) {
     long search_speed = (threshold%2!=0)? slow_run: -slow_run;
     writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(search_speed));
@@ -60,8 +60,6 @@ void home_on_sg() {
   Serial.print("SG optimal at ");
   Serial.println(threshold,DEC);
 
-  //and again we go in velocity mode
-  writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,0); //nice S-Ramps in velocity mode
 
   //Set the SG value for readout
   motors[motor_to_test].tmc260.setStallGuardThreshold(threshold,1);
@@ -73,24 +71,35 @@ void home_on_sg() {
   //we write down where we started
   long starting_point = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
 
-  long right_stop = find_end_stop(false,starting_point);
+  long left_stop = find_end_stop(true);
+  long right_stop = find_end_stop(false);
 
   Serial.print("homed from ");
   Serial.print(starting_point);
   Serial.print(" to ");
+  Serial.print(left_stop);
+  Serial.print(" to ");
   Serial.println(right_stop);
-
-  writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
 }
 
-long find_end_stop(boolean left, long starting_point) {
+long find_end_stop(boolean left) {
+  //and again we go in velocity mode
+  writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,0); //nice S-Ramps in velocity mode
+
+  long starting_point = readRegister(motor_to_test,TMC4361_X_ACTUAL_REGISTER);
   long stop = starting_point;
-  
-  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_DRIVE_AFTER_STALL_ENDSTOP_REGISTER_PATTERN); //if we stalled go again anyway
+
+  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_STOP_ON_STALL_ENDSTOP_REGISTER_PATTERN | TMC4361_DRIVE_AFTER_STALL_ENDSTOP_REGISTER_PATTERN); //somebody may want to move later
   writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_STOP_ON_STALL_ENDSTOP_REGISTER_PATTERN); //stop on stall guard
 
-  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(fast_run));
+  long speed = left ? -fast_run : fast_run;
+
+  Serial.print("Homing with ");
+  Serial.println(speed);
+
+  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(speed));
   signal_start();
+
 
   //Wait until we have speeded up enough
   unsigned long status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
@@ -107,13 +116,31 @@ long find_end_stop(boolean left, long starting_point) {
   Serial.print("settling at status ");
   Serial.println(status,HEX);
 
-  long result = (long)readRegister(motor_to_test,TMC4361_COVER_DRIVER_LOW_REGISTER);
-  Serial.println(result,HEX);
-  result = (result >> 10);
-  Serial.println(result,DEC);
-  
+  //finally stop
+  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, 0);
+  signal_start();
+
+  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, TMC4361_STOP_ON_STALL_ENDSTOP_REGISTER_PATTERN | TMC4361_DRIVE_AFTER_STALL_ENDSTOP_REGISTER_PATTERN); //somebody may want to move later
+  writeRegister(motor_to_test, TMC4361_REFERENCE_CONFIG_REGISTER, 0); //back to default
+
+
+  writeRegister(motor_to_test, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps
+
+  //go back to remove the stall status
+  writeRegister(motor_to_test, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(fast_run));
+  signal_start();
+  writeRegister(motor_to_test, TMC4361_X_TARGET_REGISTER, starting_point);
+  status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+  while ((status & _BV(0)) == 0) {
+    status = readRegister(motor_to_test,TMC4361_STATUS_REGISTER);
+  }
+
   return stop;
 }
+
+
+
+
 
 
 
