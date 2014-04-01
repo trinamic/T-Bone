@@ -20,18 +20,18 @@
 
 #define DEFAULT_CURRENT_IN_MA 10
 #define TMC260_SENSE_RESISTOR_IN_MO 150
-#define DEFAULT_STEPS_PER_REVOLUTION 200
+#define DEFAULT_STEPS_PER_REVOLUTION 200ul
 #define CLOCK_FREQUENCY 16000000ul
 #define TMC_260_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
 
 const int microsteps = 256;
 const char nr_of_coordinated_motors = 3;
-const unsigned long slow_run = 4*microsteps; //steps/s
-const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION*microsteps*20; //steps/s
+const unsigned long slow_run = 2*microsteps; //steps/s
+const unsigned long fast_run = DEFAULT_STEPS_PER_REVOLUTION*microsteps; //steps/s
 const long homed_too_far = microsteps * 400ul * 6; //if we moved that much we have long crushed into the mechanic
 
 const char motor_to_test = 0;
-const int test_current_in_ma = 200;
+const int test_current_in_ma = 600;
 
 void setup() {
     //initialize SPI
