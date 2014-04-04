@@ -2,25 +2,22 @@
     "x-axis": {
         "motor": 2,
         "current": 1.0,
-        "acceleration-current":1.2,
-        "high-speed-current":1.2,
-        "hold-current":0.5,
-        "current-scaling": {
-            "downscale-delay":100
-        },
-        "micro-steps":256,
-        "fullstep-speed":5.0,
+        "acceleration-current": 1.2,
+        "high-speed-current": 1.2,
+        "hold-current": 0.5,
+        "downscale-delay": 100,
+        "micro-steps": 256,
+        "full-step-speed": 25.0,
         "steps-per-mm": 1280,
         "max-speed": 100,
         "max-acceleration": 150,
         "bow-acceleration": 100.0,
         "time-reference": "time",
         "inverted": false,
-        "inverted_comment": "not fully functional yet",
         "end-stops": {
             "left": {
                 "polarity": "virtual",
-		"position": 220
+                "position": 220
             },
             "right": {
                 "polarity": "negative"
@@ -33,14 +30,12 @@
     "y-axis": {
         "motor": 1,
         "current": 1.0,
-        "acceleration-current":1.2,
-        "high-speed-current":1.2,
-        "hold-current":0.5,
-        "current-scaling": {
-            "downscale-delay":100
-        },
-        "micro-steps":256,
-        "fullstep-speed":5.0,
+        "acceleration-current": 1.2,
+        "high-speed-current": 1.2,
+        "hold-current": 0.5,
+        "downscale-delay": 100,
+        "micro-steps": 256,
+        "full-step-speed": 25.0,
         "steps-per-mm": 1280,
         "max-speed": 100,
         "max-acceleration": 150,
@@ -52,7 +47,7 @@
             },
             "right": {
                 "polarity": "virtual",
-		"position": 200
+                "position": 200
             }
         },
         "home-speed": 300,
@@ -98,13 +93,13 @@
             "type": "epcos-100k-reprapteile",
             "max-duty-cycle": 100,
             "pid-config": {
-                "Kp":20.0,
+                "Kp": 20.0,
                 "Ki": 160.0,
-                "Kd":1.66
+                "Kd": 1.66
             }
         },
         "default-speed": 10,
-        "fan-duty-cycle":100.0,
+        "fan-duty-cycle": 100.0,
         "fan-frequency": 500
     },
     "extruder": {
