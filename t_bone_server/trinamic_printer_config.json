@@ -2,8 +2,16 @@
     "x-axis": {
         "motor": 2,
         "current": 1.0,
+        "acceleration-current":1.2,
+        "high-speed-current":1.2,
+        "hold-current":0.5,
+        "current-scaling": {
+            "downscale-delay":100
+        },
+        "micro-steps":256,
+        "fullstep-speed":5.0,
         "steps-per-mm": 1280,
-        "max-speed": 300,
+        "max-speed": 100,
         "max-acceleration": 150,
         "bow-acceleration": 100.0,
         "time-reference": "time",
@@ -25,8 +33,16 @@
     "y-axis": {
         "motor": 1,
         "current": 1.0,
+        "acceleration-current":1.2,
+        "high-speed-current":1.2,
+        "hold-current":0.5,
+        "current-scaling": {
+            "downscale-delay":100
+        },
+        "micro-steps":256,
+        "fullstep-speed":5.0,
         "steps-per-mm": 1280,
-        "max-speed": 300,
+        "max-speed": 100,
         "max-acceleration": 150,
         "bow-acceleration": 100.0,
         "time-reference": "time",
