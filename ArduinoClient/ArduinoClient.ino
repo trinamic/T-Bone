@@ -19,7 +19,7 @@
 //#define DEBUG_ENDSTOPS
 //#define DEBUG_ENDSTOPS_DETAIL
 
-#define DEBUG_MOTION
+//#define DEBUG_MOTION
 //#define DEBUG_MOTION_SHORT
 //#define DEBUG_MOTION_TRACE
 //#define DEBUG_MOTION_TRACE_SHORT
@@ -43,7 +43,7 @@ const char nr_of_motors = nr_of_coordinated_motors + nr_of_controlled_motors;
 const char homing_max_following_motors = nr_of_controlled_motors - 1;
 
 //how much space do we have to store commands
-#define COMMAND_QUEUE_LENGTH 65
+#define COMMAND_QUEUE_LENGTH 50
 
 //standards
 #define TMC_260_CONFIG 0x8440000a //SPI-Out: block/low/high_time=8/4/4 Takte; CoverLength=autom; TMC26x
