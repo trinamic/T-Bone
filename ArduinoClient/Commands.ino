@@ -49,9 +49,11 @@ void attachCommandCallbacks() {
 
 // Fehlerfunktion wenn ein Kommand nicht bekannt ist
 void OnUnknownCommand() {
-  messenger.sendCmd(kError,F("UC"));
-  Serial.print(messenger.CommandID());
-}
+    messenger.sendCmdStart(kError);
+    messenger.sendCmdArg('U');
+    messenger.sendCmdArg(messenger.CommandID(),DEC);
+    messenger.sendCmdEnd();
+ }
 
 void onInit() {
   //initialize the 43x
