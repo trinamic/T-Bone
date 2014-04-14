@@ -230,10 +230,14 @@ class Printer(Thread):
                 set_pos_name = "s%s" % axis
                 if set_pos_name in movement:
                     position = movement[set_pos_name]
-                    #todo this may break for z axis
-                    motor = self.axis[axis]['motor']
-                    step_position = convert_mm_to_steps(position, self.axis[axis]['steps_per_mm'])
-                    self.machine.set_pos(motor, step_position)
+                    axis_ = self.axis[axis]
+                    step_position = convert_mm_to_steps(position, axis_['steps_per_mm'])
+                    if 'motor' in axis:
+                        motor = axis_['motor']
+                        self.machine.set_pos(motor, step_position)
+                    elif 'motors' in axis:
+                        for motor in axis['motors']:
+                            self.machine.set_pos(motor, step_position)
 
 
     def set_fan(self, value):
