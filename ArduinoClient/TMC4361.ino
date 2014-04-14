@@ -62,7 +62,8 @@ void initialzeTMC4361() {
     //TODO shouldn't we add target_reached - just for good measure??
     setStepsPerRevolutionTMC4361(i,motors[i].steps_per_revolution);
     writeRegister(i, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
-    unsigned long filter = (2<<16) | (4<<20);
+    unsigned long filter = (0x20000ul /*2<<16*/) | (0x400000ul /*4<<20*/); //filter start
+    filter |= (2<<8) | (0x4000ul /*4<<20*/); //filter ref
     Serial.println(filter);
     writeRegister(i,TMC4361_INPUT_FILTER_REGISTER,filter);
 
@@ -210,6 +211,8 @@ unsigned long right_homing_point)
           Serial.print(actual);
           Serial.print(F(" - going back to "));
           Serial.println(go_back_to);
+          Serial.print(F("Status "));
+          Serial.println(status,HEX);
 #endif
         } 
         else {
