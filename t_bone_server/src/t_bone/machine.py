@@ -32,6 +32,7 @@ class Machine():
         self.machine_connection = None
         self.command_queue = Queue()
         self.batch_mode = False
+        self.machineSerial = None
 
     def connect(self):
         _logger.info("resetting arduino at %s", self.serial_port)
@@ -54,6 +55,8 @@ class Machine():
     def disconnect(self):
         if self.machine_connection:
             self.machine_connection.run_on = False
+        if self.machineSerial:
+            self.machineSerial.close()
 
     def set_current(self, motor=None, current=None):
         command = MachineCommand()

@@ -68,6 +68,13 @@ class Printer(Thread):
         self.running = True
         self.start()
 
+    def stop(self):
+        if self.running:
+            self.running = False
+        if self.isAlive():
+            self.join()
+        self.machine.disconnect()
+
     def axis_names(self):
         return _axis_names
 

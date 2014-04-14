@@ -197,6 +197,19 @@ def status():
     )
     pass
 
+@app.route('/status')
+def restart_printer():
+    if _printer:
+        _printer.stop()
+    create_printer()
+
+def create_printer():
+    global _printer, config
+    _printer = beaglebone_helpers.create_printer()
+    config = json_config_file.read()
+    _printer.connect()
+    _printer.configure(config)
+
 
 if __name__ == '__main__':
     #configure the overall logging
@@ -208,11 +221,7 @@ if __name__ == '__main__':
         if not os.path.exists(UPLOAD_FOLDER):
             os.mkdir(UPLOAD_FOLDER)
         if not _printer:
-            _printer = beaglebone_helpers.create_printer()
-            config = json_config_file.read()
-            _printer.connect()
-            _printer.configure(config)
-            _printer.prepared_file = None
+            create_printer()
         logging.info('configured, starting web interface')
         #this has to be configured somewhere (json??)
         app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
