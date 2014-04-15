@@ -36,6 +36,8 @@
 //#define DEBUG_TMC5041_STATUS
 //#define DEBUG_TMC4361_STATUS
 
+#define RX_TX_BLINKY
+
 //how many motors do we know?
 const char nr_of_coordinated_motors = 3;
 const char nr_of_controlled_motors = 2;
@@ -82,17 +84,17 @@ TMC4361_info motors[nr_of_coordinated_motors] = {
   {
     INT_4361_1_PIN,0, motor_1_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO),
-    DEFAULT_STEPS_PER_REVOLUTION                  }
+    DEFAULT_STEPS_PER_REVOLUTION                    }
   ,
   {
     INT_4361_2_PIN,1, motor_2_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION                   }
+    DEFAULT_STEPS_PER_REVOLUTION                     }
   ,
   {
     INT_4361_3_PIN,4, motor_3_target_reached, 
     TMC26XGenerator(DEFAULT_CURRENT_IN_MA,TMC260_SENSE_RESISTOR_IN_MO), 
-    DEFAULT_STEPS_PER_REVOLUTION                   }
+    DEFAULT_STEPS_PER_REVOLUTION                     }
 };
 
 
@@ -195,10 +197,18 @@ void loop() {
   messenger.feedinSerialData();
 
   if (millis()-last_millis>1000) {
+#ifdef RX_TX_BLINKY
+    TXLED1;
+#endif
+
     watchDogPing();
     last_millis=millis();
+#ifdef RX_TX_BLINKY
+    TXLED0;
+#endif
   }
 }
+
 
 
 

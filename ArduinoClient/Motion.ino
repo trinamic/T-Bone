@@ -41,8 +41,8 @@ void resetMotion() {
 }
 
 void checkMotion() {
-  checkTMC5041Motion();
 
+  checkTMC5041Motion();
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
 
     if ((target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status)
@@ -67,6 +67,10 @@ void checkMotion() {
     if (!next_move_prepared) {
 #ifdef CALCULATE_OUTPUT
       digitalWriteFast(CALCULATE_OUTPUT,HIGH);
+#endif
+
+#ifdef RX_TX_BLINKY
+  RXLED1;
 #endif
 
       //This was needed to decode single move queues 
@@ -187,17 +191,18 @@ void checkMotion() {
       else {
 #ifdef DEBUG_MOTION_STATUS
         //TODO come up with a sensbilde warning
-//        Serial.println(F("Move Queue emptied!"));
+        //        Serial.println(F("Move Queue emptied!"));
 #endif
 #ifdef DEBUG_MOTION
         //TODO come up with a sensbilde warning
-//        Serial.println(F("Move Queue emptied!"));
+        //        Serial.println(F("Move Queue emptied!"));
 #endif
         //TODO so we know that there is currently no move executing??
         move_executing = false;
       }
     }
   }
+  RXLED0;
 }
 
 void motor_1_target_reached() {
@@ -235,5 +240,6 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+
 
 

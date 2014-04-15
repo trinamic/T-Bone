@@ -50,11 +50,11 @@ void attachCommandCallbacks() {
 
 // Fehlerfunktion wenn ein Kommand nicht bekannt ist
 void OnUnknownCommand() {
-    messenger.sendCmdStart(kError);
-    messenger.sendCmdArg('U');
-    messenger.sendCmdArg(messenger.CommandID(),DEC);
-    messenger.sendCmdEnd();
- }
+  messenger.sendCmdStart(kError);
+  messenger.sendCmdArg('U');
+  messenger.sendCmdArg(messenger.CommandID(),DEC);
+  messenger.sendCmdEnd();
+}
 
 void onInit() {
   //initialize the 43x
@@ -307,7 +307,7 @@ char readMovementParameters(movement* move) {
   else {
     /*
     TODO this occassionally does not work - is this an indication for a serial speed problem (noise)
-   */   
+     */
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(-2);
     messenger.sendCmdArg(movementType,DEC);
@@ -315,7 +315,7 @@ char readMovementParameters(movement* move) {
 
     return -3;
     //isWaypoint = false;
-    
+
   }  
   double vMax = messenger.readFloatArg();
   if (vMax<=0) {
@@ -618,6 +618,7 @@ void onCurrentReading() {
 }
 
 void watchDogPing() {
+
   messenger.sendCmdStart(kKeepAlive);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
@@ -647,17 +648,17 @@ void watchDogPing() {
 #ifdef DEBUG_STATUS_SHORT
   Serial.print('Q');
   Serial.print(moveQueue.count());
-  
+
   Serial.print('/');
   Serial.print(min_buffer_depth);
-  
+
   if (next_move_prepared) {
     Serial.print('+');
   }
   if (move_executing) {
     Serial.print('~');
   }
-  
+
   if (current_motion_state==no_motion) {
     Serial.println('s');
   } 
@@ -729,11 +730,11 @@ char decodeMotorNumber(const boolean complaint) {
 }
 
 void status_wait_ping(long* last_wait_time, int status) {
-      //do we have to ping??
-    if (millis()-(*last_wait_time)>1000) {
-      messenger.sendCmd(kWait,status);
-      *last_wait_time=millis();
-    }
+  //do we have to ping??
+  if (millis()-(*last_wait_time)>1000) {
+    messenger.sendCmd(kWait,status);
+    *last_wait_time=millis();
+  }
 }
 
 // see http://rollerprojects.com/2011/05/23/determining-sram-usage-on-arduino/ 
@@ -742,6 +743,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
 
 
 
