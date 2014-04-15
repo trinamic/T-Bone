@@ -728,6 +728,14 @@ char decodeMotorNumber(const boolean complaint) {
   }
 }
 
+void home_ping(long* last_wait_time, int status) {
+      //do we have to ping??
+    if (millis()-(*last_wait_time)>1000) {
+      messenger.sendCmd(kWait,status);
+      *last_wait_time=millis();
+    }
+}
+
 // see http://rollerprojects.com/2011/05/23/determining-sram-usage-on-arduino/ 
 int freeRam() {
   extern int __heap_start, *__brkval; 
