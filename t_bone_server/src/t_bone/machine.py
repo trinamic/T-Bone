@@ -330,9 +330,14 @@ class _MachineConnection:
             self.machine_serial.write(";\n")
             self.machine_serial.flush()
             try:
-                response = self.response_queue.get(timeout=timeout)
-                _logger.debug("Received %s as response to %s", response, command)
-                return response
+                while True:
+                    response = self.response_queue.get(timeout=timeout)
+                    if not response.command_number==-1:
+                        _logger.debug("Received %s as response to %s", response, command)
+                        return response
+                    else:
+                        #todo do we timeout here?
+                        _logger.debug("Still waiting: %s",response)
             except Empty:
                 #disconnect in panic
                 self.run_on = False
@@ -406,7 +411,9 @@ class MachineCommand():
         if self.command_number == 0:
             result = "Acknowledgement "
         if self.command_number < 0:
-            if self.command_number > -5:
+            if self.command_number == -1:
+                result = "Wait "
+            elif self.command_number > -5:
                 result = "Info "
             elif self.command_number > -9:
                 result = "Warning "
