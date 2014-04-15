@@ -19,7 +19,6 @@ def get_thermistor_reading(thermistor, value):
         thermistortable = thermistor_parcan_100k
     elif thermistor == "epcos-100k":
         thermistortable = thermistor_epcos_100k
-        thermistor_epcos_B57560G104F
     elif thermistor == "thermistor-epcos-B57560G104F":
         thermistortable = thermistor_epcos_B57560G104F
     elif j_head_thermistor == "j-head-thermistor":
