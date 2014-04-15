@@ -21,9 +21,10 @@ enum {
   kCurrentReading = 41,
   //Sonstiges
   kOK = 0,
+  kWait, -1,
   kError =  -9,
   kWarn = -5,
-  kInfo = -1,
+  kInfo = -2,
   kKeepAlive = -128,
 };
 
