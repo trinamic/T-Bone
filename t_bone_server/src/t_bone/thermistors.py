@@ -6,33 +6,33 @@ from numpy import NaN
 
 def get_thermistor_reading(thermistor, value):
     #find the thermistor
-    thermistortable = None
+    thermistor_table = None
     if thermistor == "100k":
-        thermistortable = bed_thermistor_100k
+        thermistor_table = bed_thermistor_100k
     elif thermistor == "200k":
-        thermistortable = bed_thermistor_200k
+        thermistor_table = bed_thermistor_200k
     elif thermistor == "mendel-parts":
-        thermistortable = mendel_parts_thermistor
+        thermistor_table = mendel_parts_thermistor
     elif thermistor == "10k":
-        thermistortable = thermistor_10k
+        thermistor_table = thermistor_10k
     elif thermistor == "parcan-100k":
-        thermistortable = thermistor_parcan_100k
+        thermistor_table = thermistor_parcan_100k
     elif thermistor == "epcos-100k":
-        thermistortable = thermistor_epcos_100k
+        thermistor_table = thermistor_epcos_100k
     elif thermistor == "thermistor-epcos-B57560G104F":
-        thermistortable = thermistor_epcos_B57560G104F
+        thermistor_table = thermistor_epcos_B57560G104F
     elif j_head_thermistor == "j-head-thermistor":
-        thermistortable = j_head_thermistor
+        thermistor_table = j_head_thermistor
     elif thermistor == "honeywell-100k":
-        thermistortable = thermistor_honeywell_100k
+        thermistor_table = thermistor_honeywell_100k
     elif thermistor == "honeywell-135_104_LAF_J01":
-        thermistortable = thermistor_honeywell_135_104_LAF_J01
+        thermistor_table = thermistor_honeywell_135_104_LAF_J01
     elif thermistor == "vishay-NTCS0603E3104FXT":
-        thermistortable = thermistor_vishay_NTCS0603E3104FXT
+        thermistor_table = thermistor_vishay_NTCS0603E3104FXT
     elif thermistor == "ge-sensing":
-        thermistortable = thermistor_ge_sensing
+        thermistor_table = thermistor_ge_sensing
     elif thermistor == "rs-198961":
-        thermistortable = thermistor_rs_198961
+        thermistor_table = thermistor_rs_198961
     if not thermistor:
         raise Exception("Unknown Thermistor" + thermistor)
 
@@ -42,15 +42,15 @@ def get_thermistor_reading(thermistor, value):
     upper_index = int(comparable_value)
     upper_temperature = None
     while upper_index <= 1024:
-        if upper_index in thermistortable:
-            upper_temperature = thermistortable[upper_index]
+        if upper_index in thermistor_table:
+            upper_temperature = thermistor_table[upper_index]
             break
         upper_index += 1
     lower_index = int(comparable_value)
     lower_temperature = None
     while lower_index >= 0:
-        if lower_index in thermistortable:
-            lower_temperature = thermistortable[lower_index]
+        if lower_index in thermistor_table:
+            lower_temperature = thermistor_table[lower_index]
             break
         lower_index -= 1
 
