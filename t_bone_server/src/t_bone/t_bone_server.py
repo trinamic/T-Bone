@@ -1,6 +1,7 @@
 from dircache import listdir
 import fnmatch
 from genericpath import isfile
+import json
 import logging
 import os
 from string import join
@@ -13,6 +14,7 @@ import beaglebone_helpers
 from gcode_interpreter import GCodePrintThread
 from t_bone import json_config_file
 
+T_BONE_LOG_FILE = '/var/log/t_bone.log'
 
 _logger = logging.getLogger(__name__)
 #this is THE printer - just a dictionary with anything
@@ -124,6 +126,16 @@ def move_axis(axis, amount):
     return "ok"
 
 
+@app.route('/config')
+def config():
+    template_dictionary = templating_defaults()
+    config = json_config_file.read()
+    #add pretty printe config to dict ...
+    template_dictionary['config_content'] = json.dumps(config, indent=4, separators=(',', ': '))
+
+    return render_template("config.html", **template_dictionary)
+
+
 @app.route('/home/<axis>')
 @busy_function
 def home_axis(axis):
@@ -216,7 +228,7 @@ def create_printer():
 
 if __name__ == '__main__':
     #configure the overall logging
-    logging.basicConfig(filename='/var/log/t_bone.log', level=logging.INFO,
+    logging.basicConfig(filename=T_BONE_LOG_FILE, level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.info('Starting print server')
     #somehow we can get several initializations - hence we store a global printer
@@ -234,6 +246,8 @@ if __name__ == '__main__':
             debug=True,
             use_reloader=False
         )
+    except KeyboardInterrupt:
+        _printer.stop()
     finally:
         #reset the printer
         _printer = None

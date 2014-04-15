@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Configuration{% endblock %}
+{% block content %}
+    <div class="row" xmlns="http://www.w3.org/1999/html">
+        <h1>Printer configuration</h1>
+
+        <p>Edit and save the printer configuration</p>
+    </div>
+    <form action="/config" method="post">
+        <div class="form-group">
+            <p>
+                <label for="config-edit">Printer Configuration</label>
+                <textarea id="config-edit" name="config" class="form-control" rows="60">{{ config_content }}</textarea>
+            </p>
+            <p>
+            <button type="submit" class="btn btn-lg printer_function">Save Config
+            </button>
+            </p>
+        </div>
+    </form>
+{% endblock %}
