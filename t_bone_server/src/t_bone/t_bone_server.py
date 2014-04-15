@@ -6,7 +6,7 @@ import os
 from string import join
 import threading
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import flask
 from werkzeug.utils import secure_filename
 import beaglebone_helpers
@@ -197,11 +197,14 @@ def status():
     )
     pass
 
-@app.route('/status')
+
+@app.route('/restart')
 def restart_printer():
     if _printer:
         _printer.stop()
     create_printer()
+    return redirect("/", 302)
+
 
 def create_printer():
     global _printer, config

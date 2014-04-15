@@ -68,9 +68,6 @@
                 Extruder Temperature <span id="extruder-temperature-text">0</span>°C
                     — Target <span id="extruder-set-temperature-text">0</span>°C
             </p>
-            <form action="/restart">
-                <input type="submit" value="Restart printer"/>
-            </form>
 
             <div class="progress" id="printing-progress">
                 <div id="printing-progress-bar"
@@ -78,7 +75,7 @@
                      style="width: 0%"></div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <p>&nbsp;</p>
 
             <div class="progress" id="queue-status-progress" style="display: none">
@@ -86,6 +83,14 @@
                      class="progress-bar  progress-bar-info" role="progressbar"
                      style="width: {{ queue_percentage }}%"></div>
             </div>
+        </div>
+        <div class="col-md-1">
+            <p>&nbsp;</p>
+
+            <form action="/restart">
+                <input type="submit" class="btn-mini btn"
+                       value="Restart printer"/>
+            </form>
         </div>
         </p>
     </div>
