@@ -126,9 +126,20 @@ def move_axis(axis, amount):
     return "ok"
 
 
-@app.route('/config')
+@app.route('/config', methods=['GET', 'POST'])
 def config():
+    error = None
+    #first of all let's check if we have to save a changed config
+    if request.method == 'POST':
+        if 'config_content' in request.form:
+            try:
+                data = json.loads(request.form['config_content'])
+                json_config_file.write(data)
+            except Exception as e:
+                error = e.message
     template_dictionary = templating_defaults()
+    if error:
+        template_dictionary['config_write_error'] = error
     config = json_config_file.read()
     #add pretty printe config to dict ...
     template_dictionary['config_content'] = json.dumps(config, indent=4, separators=(',', ': '))
