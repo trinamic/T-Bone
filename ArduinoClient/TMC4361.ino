@@ -133,12 +133,20 @@ unsigned long right_homing_point)
   writeRegister(motor_nr,TMC4361_BOW_4_REGISTER,homming_jerk);
 
   //TODO obey the timeout!!
+  long start = millis();
+  long last_wait_time = start;
+
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
 #ifdef DEBUG_HOMING_STATUS
   unsigned long old_status = -1;
 #endif
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
+    //do we have to ping??
+    if (millis()-last_wait_time>1000) {
+      messenger.sendCmd(kWait,homed);
+      last_wait_time=millis();
+    }
     if (homed==0 || homed==1) {
       double homing_speed=homing_fast_speed; 
       if (homed==1) {
@@ -557,6 +565,7 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 
 
