@@ -142,7 +142,7 @@ unsigned long right_homing_point)
   unsigned long old_status = -1;
 #endif
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
-    home_ping(&last_wait_time, homed);
+    status_wait_ping(&last_wait_time, homed);
     if (homed==0 || homed==1) {
       double homing_speed=homing_fast_speed; 
       if (homed==1) {
@@ -247,7 +247,7 @@ unsigned long right_homing_point)
           }
 #endif
           status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
-          home_ping(&last_wait_time, homed);
+          status_wait_ping(&last_wait_time, homed);
         }
         if (homed==0) {
           homed = 1;
@@ -261,6 +261,7 @@ unsigned long right_homing_point)
             delay(10ul);
             status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
             while (!(status & _BV(0))) {
+              status_wait_ping(&last_wait_time, homed);
               status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
             } 
           } 
@@ -562,6 +563,7 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 
 

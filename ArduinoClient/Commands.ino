@@ -728,7 +728,7 @@ char decodeMotorNumber(const boolean complaint) {
   }
 }
 
-void home_ping(long* last_wait_time, int status) {
+void status_wait_ping(long* last_wait_time, int status) {
       //do we have to ping??
     if (millis()-(*last_wait_time)>1000) {
       messenger.sendCmd(kWait,status);

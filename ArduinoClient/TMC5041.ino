@@ -201,21 +201,21 @@ unsigned char calculateCurrentValue(int current) {
 }
 
 void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean isWayPoint) {
-  #ifdef DEBUG_MOTION_SHORT
+#ifdef DEBUG_MOTION_SHORT
   Serial.print('m');
   Serial.print(motor,DEC);
   Serial.print(F(" t "));
   Serial.println(target);
 #endif
 #ifdef DEBUG_MOTION
-    Serial.print(F("5041 #1 is going to "));
-    Serial.print(tmc5031_next_movement[0].target,DEC);
-    Serial.print(F(" @ "));
-    Serial.println(tmc5031_next_movement[0].vMax,DEC);
+  Serial.print(F("5041 #1 is going to "));
+  Serial.print(tmc5031_next_movement[0].target,DEC);
+  Serial.print(F(" @ "));
+  Serial.println(tmc5031_next_movement[0].vMax,DEC);
 #endif
-    tmc5031_next_movement[motor].target = target;
-    tmc5031_next_movement[motor].vMax = vMax;
-    tmc5031_next_movement[motor].aMax = aMax;
+  tmc5031_next_movement[motor].target = target;
+  tmc5031_next_movement[motor].vMax = vMax;
+  tmc5031_next_movement[motor].aMax = aMax;
 }
 
 void tmc5041_prepare_next_motion() {
@@ -304,6 +304,8 @@ char* followers)
    */
 
   //TODO obey the timeout!!
+  long last_wait_time = millis();
+
   unsigned char homed = 0; //this is used to track where at homing we are 
   long target = 0;
 #ifdef DEBUG_HOMING_STATUS_5041
@@ -322,6 +324,7 @@ char* followers)
   }
 
   while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
+    status_wait_ping(&last_wait_time, homed);
     unsigned long status=0;
     if (homed==0 || homed==1) {
       unsigned long homing_speed=(unsigned long) homing_fast_speed; 
@@ -561,6 +564,7 @@ ISR(PCINT0_vect)
 {
   tmc5041_read_position_read_status = true;
 }
+
 
 
 
