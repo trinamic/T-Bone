@@ -322,7 +322,8 @@ class _MachineConnection:
                 for param in command.arguments[:-1]:
                     try:
                         float_repr = float(param)
-                        self.machine_serial.write("%0.3f" % float_repr)
+                        self.machine_serial.write("%.3g" % float_repr)
+                        #todo on the other hand an e representation may as well be helpful?
                     except ValueError:
                         self.machine_serial.write(repr(param))
                     self.machine_serial.write(",")

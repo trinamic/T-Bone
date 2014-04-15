@@ -232,6 +232,8 @@ def restart_printer():
 def create_printer():
     global _printer, config
     _printer = beaglebone_helpers.create_printer()
+    _printer.prepared_file = None
+
     config = json_config_file.read()
     _printer.connect()
     _printer.configure(config)
