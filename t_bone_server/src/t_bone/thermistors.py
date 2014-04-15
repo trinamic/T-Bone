@@ -3,6 +3,7 @@
 #see https:  #raw.github.com/ErikZalm/Marlin/Marlin_v1/Marlin/thermistortables.h
 from numpy import NaN
 
+_logger = logging.getLogger(__name__)
 
 def get_thermistor_reading(thermistor, value):
     #find the thermistor
@@ -69,7 +70,7 @@ def get_thermistor_reading(thermistor, value):
     elif upper_temperature:
         return upper_temperature
     else:
-        #todo log or so?
+        _logger.error("Unable to convert value %s for thermistor %s", value, thermistor)
         return NaN
 
 
