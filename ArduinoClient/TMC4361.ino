@@ -186,10 +186,10 @@ unsigned long right_homing_point)
           Serial.println(homed,DEC);
 #endif
           if (homing_right) {
-            target += 1000l;
+            target += 100000l;
           } 
           else {
-            target -=1000l;
+            target -=100000l;
           }
           writeRegister(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_speed));
           writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,X_TARGET_IN_DIRECTION(motor_nr,target));

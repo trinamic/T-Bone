@@ -200,7 +200,6 @@ void loop() {
 #ifdef RX_TX_BLINKY
     TXLED1;
 #endif
-
     watchDogPing();
     last_millis=millis();
 #ifdef RX_TX_BLINKY
