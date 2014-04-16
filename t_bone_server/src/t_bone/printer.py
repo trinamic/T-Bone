@@ -291,7 +291,7 @@ class Printer(Thread):
         axis['max_speed_step'] = convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
         axis['max_acceleration'] = config['max-acceleration']
         axis['max_step_acceleration'] = convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
-        if axis['max_step_acceleration'] > (MAXIMUM_FREQUENCY_ACCELERATION):
+        if axis['max_step_acceleration'] > MAXIMUM_FREQUENCY_ACCELERATION:
             _logger.error("Acceleration of %s is high than %s for axis %s!", axis['max_step_acceleration'],
                           MAXIMUM_FREQUENCY_ACCELERATION, axis['name'])
             raise PrinterError("Accelration for axis " + axis['name'] + " to high")
