@@ -10,8 +10,8 @@
         "full-step-speed": 25.0,
         "steps-per-mm": 1280,
         "max-speed": 100,
-        "max-acceleration": 150,
-        "bow-acceleration": 100.0,
+        "max-acceleration": 1500.0,
+        "bow-acceleration": 1000.0,
         "time-reference": "time",
         "inverted": false,
         "end-stops": {
@@ -38,8 +38,8 @@
         "full-step-speed": 25.0,
         "steps-per-mm": 1280,
         "max-speed": 100,
-        "max-acceleration": 150,
-        "bow-acceleration": 100.0,
+        "max-acceleration": 1500.0,
+        "bow-acceleration": 1000.0,
         "time-reference": "time",
         "end-stops": {
             "left": {
@@ -50,8 +50,8 @@
                 "position": 200
             }
         },
-        "home-speed": 300,
-        "home-acceleration": 2000,
+        "home-speed": 100.0,
+        "home-acceleration": 2000.0,
         "home-precision-speed": 5
     },
     "z-axis": {
