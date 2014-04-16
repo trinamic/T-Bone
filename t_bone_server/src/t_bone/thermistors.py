@@ -1,6 +1,7 @@
 # coding=utf-8
 #thermistor table taken from current marlin software
 #see https:  #raw.github.com/ErikZalm/Marlin/Marlin_v1/Marlin/thermistortables.h
+import logging
 from numpy import NaN
 
 _logger = logging.getLogger(__name__)
