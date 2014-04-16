@@ -6,6 +6,7 @@ from numpy import NaN
 
 _logger = logging.getLogger(__name__)
 
+
 def get_thermistor_reading(thermistor, value):
     #find the thermistor
     thermistor_table = None
@@ -23,7 +24,7 @@ def get_thermistor_reading(thermistor, value):
         thermistor_table = thermistor_epcos_100k
     elif thermistor == "epcos-B57560G104F":
         thermistor_table = thermistor_epcos_B57560G104F
-    elif j_head_thermistor == "j-head":
+    elif thermistor == "j-head":
         thermistor_table = j_head_thermistor
     elif thermistor == "honeywell-100k":
         thermistor_table = thermistor_honeywell_100k
@@ -43,32 +44,32 @@ def get_thermistor_reading(thermistor, value):
     #find upper value
     upper_index = int(comparable_value)
     upper_temperature = None
-    while upper_index <= 1024:
+    while upper_index >= 0:
         if upper_index in thermistor_table:
             upper_temperature = thermistor_table[upper_index]
             break
-        upper_index += 1
+        upper_index -= 1
     lower_index = int(comparable_value)
     lower_temperature = None
-    while lower_index >= 0:
+    while lower_index <= 1024:
         if lower_index in thermistor_table:
             lower_temperature = thermistor_table[lower_index]
             break
-        lower_index -= 1
+        lower_index += 1
 
     #now decode it
     if upper_temperature and lower_temperature:
-        value_difference = float(lower_index - upper_index)
+        value_difference = float(upper_index - lower_index)
         if value_difference == 0.0:
             return upper_temperature
         else:
             temperature_difference = float(upper_temperature - lower_temperature)
             return float(lower_temperature) \
-                   + temperature_difference / value_difference * (upper_index - comparable_value)
+                   + temperature_difference / value_difference * (comparable_value - lower_index)
 
-    elif lower_temperature:
+    elif lower_temperature is not None:
         return lower_temperature
-    elif upper_temperature:
+    elif upper_temperature is not None:
         return upper_temperature
     else:
         _logger.error("Unable to convert value %s for thermistor %s", value, thermistor)

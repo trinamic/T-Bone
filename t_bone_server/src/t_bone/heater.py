@@ -144,8 +144,8 @@ class PID:
         self.Kd = float(D)
         self.Derivator = float(Derivator)
         self.Integrator = float(Integrator)
-        self.Integrator_max = Integrator_max / I
-        self.Integrator_min = Integrator_min / I
+        self.Integrator_max = Integrator_max / self.Ki
+        self.Integrator_min = Integrator_min / self.Ki
 
         self.set_point = 0.0
         self.error = 0.0
@@ -189,7 +189,6 @@ class PID:
             PID = self.P_value + self.I_value - self.D_value
 
         _logger.debug("PID is %s (%s of %s)", PID, current_value, self.set_point)
-        #todo this is in reality just a debug
 
         if PID < 0.0:
             return 0.0
