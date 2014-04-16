@@ -21,9 +21,9 @@ def get_thermistor_reading(thermistor, value):
         thermistor_table = thermistor_parcan_100k
     elif thermistor == "epcos-100k":
         thermistor_table = thermistor_epcos_100k
-    elif thermistor == "thermistor-epcos-B57560G104F":
+    elif thermistor == "epcos-B57560G104F":
         thermistor_table = thermistor_epcos_B57560G104F
-    elif j_head_thermistor == "j-head-thermistor":
+    elif j_head_thermistor == "j-head":
         thermistor_table = j_head_thermistor
     elif thermistor == "honeywell-100k":
         thermistor_table = thermistor_honeywell_100k

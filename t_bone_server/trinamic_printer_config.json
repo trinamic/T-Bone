@@ -114,7 +114,7 @@
         "inverted_comment": "not fully functional yet",
         "heater": {
             "pwm": 1,
-            "type": "epcos-100k",
+            "type": "epcos-B57560G104F",
             "max-duty-cycle": 60,
             "pid-config": {
                 "Kp": 15.0,
