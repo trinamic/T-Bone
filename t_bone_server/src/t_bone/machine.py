@@ -320,11 +320,10 @@ class _MachineConnection:
             if command.arguments:
                 self.machine_serial.write(",")
                 for param in command.arguments[:-1]:
-                    try:
-                        float_repr = float(param)
-                        self.machine_serial.write("%.6g" % float_repr)
+                    if isinstance(param, float):
+                        self.machine_serial.write("%.6g" % param)
                         #todo on the other hand an e representation may as well be helpful?
-                    except ValueError:
+                    else:
                         self.machine_serial.write(repr(param))
                     self.machine_serial.write(",")
                 self.machine_serial.write(repr(command.arguments[-1]))
