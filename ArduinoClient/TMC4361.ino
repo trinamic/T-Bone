@@ -357,20 +357,22 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
 
   last_target[motor_nr]=target_pos;
-
-#ifdef DEBUG_MOTION_REGISTERS
-  Serial.println('S');
-  Serial.println(motor_nr,DEC);
-  Serial.println((long)readRegister(motor_nr,TMC4361_X_TARGET_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_V_MAX_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_A_MAX_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_D_MAX_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_1_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_2_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_3_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
-  Serial.println();
-#endif
+  /*
+//Might be usefull, but takes a lot of space
+   #ifdef DEBUG_MOTION_REGISTERS
+   Serial.println('S');
+   Serial.println(motor_nr,DEC);
+   Serial.println((long)readRegister(motor_nr,TMC4361_X_TARGET_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_V_MAX_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_A_MAX_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_D_MAX_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_1_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_2_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_3_REGISTER));
+   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
+   Serial.println();
+   #endif
+   */
 }
 
 inline void signal_start() {
@@ -624,5 +626,6 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 

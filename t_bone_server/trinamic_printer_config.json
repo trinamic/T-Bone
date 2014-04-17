@@ -23,7 +23,7 @@
                 "polarity": "negative"
             }
         },
-        "home-speed": 50,
+        "home-speed": 100,
         "home-acceleration": 1000.0,
         "home-precision-speed": 5
     },
@@ -50,7 +50,7 @@
                 "position": 200
             }
         },
-        "home-speed": 50.0,
+        "home-speed": 100.0,
         "home-acceleration": 1000.0,
         "home-precision-speed": 5
     },
