@@ -103,7 +103,7 @@
 #define V_LOW_SENSE 0.325
 #define V_HIGH_SENSE 0.18
 #define SQRT_2 (1.414213562373095)
-#define TMC_5041_R_SENSE 0.27
+#define TMC_5041_R_SENSE 0.22        // Lars: 220mOhm on electronic
 
 //some nice calculation s
 //simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
