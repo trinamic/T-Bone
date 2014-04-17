@@ -1,6 +1,7 @@
 # coding=utf-8
 #thermistor table taken from current marlin software
 #see https:  #raw.github.com/ErikZalm/Marlin/Marlin_v1/Marlin/thermistortables.h
+#TODO is'nt it a good idea to also use https://github.com/ErikZalm/Marlin/blob/Marlin_v1/Marlin/createTemperatureLookupMarlin.py
 import logging
 from numpy import NaN
 
