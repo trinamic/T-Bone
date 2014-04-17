@@ -1,7 +1,7 @@
 {
     "x-axis": {
         "motor": 2,
-        "current": 1.0,
+        "current": 1.5,
         "acceleration-current": 1.2,
         "high-speed-current": 1.2,
         "hold-current": 0.5,
@@ -23,13 +23,13 @@
                 "polarity": "negative"
             }
         },
-        "home-speed": 300,
-        "home-acceleration": 2000,
+        "home-speed": 50,
+        "home-acceleration": 1000.0,
         "home-precision-speed": 5
     },
     "y-axis": {
         "motor": 1,
-        "current": 1.0,
+        "current": 1.5,
         "acceleration-current": 1.2,
         "high-speed-current": 1.2,
         "hold-current": 0.5,
@@ -50,8 +50,8 @@
                 "position": 200
             }
         },
-        "home-speed": 100.0,
-        "home-acceleration": 2000.0,
+        "home-speed": 50.0,
+        "home-acceleration": 1000.0,
         "home-precision-speed": 5
     },
     "z-axis": {
@@ -64,7 +64,7 @@
         "inverted_comment": "TMC5041 is easier to invert ...",
         "steps-per-mm": 32000.0,
         "max-speed": 10,
-        "max-acceleration": 50,
+        "max-acceleration": 1000,
         "time-reference": "clock signal",
         "end-stops": {
             "left": {
@@ -77,7 +77,7 @@
             }
         },
         "home-speed": 2,
-        "home-acceleration": 10000,
+        "home-acceleration": 1000.0,
         "home-precision-speed": 1,
         "home-retract": 3
     },
@@ -105,7 +105,7 @@
     "extruder": {
         "motor": 3,
         "current": 0.5,
-        "steps-per-mm": 1179.223,
+        "steps-per-mm": 11792.23,
         "max-speed": 300,
         "max-acceleration": 10,
         "bow-acceleration": 10,
