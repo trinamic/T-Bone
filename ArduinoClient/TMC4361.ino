@@ -277,6 +277,15 @@ unsigned long right_homing_point)
       } 
     } 
   }
+    
+  //reset everything to 0
+  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,0); //set maximum acceleration
+  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,0); //set maximum deceleration
+  writeRegister(motor_nr,TMC4361_BOW_1_REGISTER,0);
+  writeRegister(motor_nr,TMC4361_BOW_2_REGISTER,0);
+  writeRegister(motor_nr,TMC4361_BOW_3_REGISTER,0);
+  writeRegister(motor_nr,TMC4361_BOW_4_REGISTER,0);
+
   return NULL;
 }
 
@@ -375,8 +384,9 @@ inline void signal_start() {
     //and deliver some additional logging
 #ifdef DEBUG_MOTION_REGISTERS
     Serial.println(i,DEC);
-    Serial.println(readRegister(i,TMC4361_X_TARGET_REGISTER));
-    Serial.println(readRegister(i,TMC4361_POSITION_COMPARE_REGISTER));
+    Serial.println((long)readRegister(i,TMC4361_X_ACTUAL_REGISTER));
+    Serial.println((long)readRegister(i,TMC4361_X_TARGET_REGISTER));
+    Serial.println((long)readRegister(i,TMC4361_POSITION_COMPARE_REGISTER));
     Serial.println(readRegister(i,TMC4361_V_MAX_REGISTER));
     Serial.println(readRegister(i,TMC4361_A_MAX_REGISTER));
     Serial.println(readRegister(i,TMC4361_D_MAX_REGISTER));
