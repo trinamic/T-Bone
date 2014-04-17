@@ -564,19 +564,3 @@ ISR(PCINT0_vect)
 {
   tmc5041_read_position_read_status = true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

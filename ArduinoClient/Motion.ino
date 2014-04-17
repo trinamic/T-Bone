@@ -70,7 +70,7 @@ void checkMotion() {
 #endif
 
 #ifdef RX_TX_BLINKY
-  RXLED1;
+      RXLED1;
 #endif
 
       //This was needed to decode single move queues 
@@ -240,6 +240,3 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
-
-
-

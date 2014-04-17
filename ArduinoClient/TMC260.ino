@@ -43,9 +43,3 @@ void set260Register(unsigned char motor_number, unsigned long value) {
   writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
   writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
 }
-
-
-
-
-
-

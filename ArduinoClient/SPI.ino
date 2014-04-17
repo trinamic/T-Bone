@@ -89,10 +89,3 @@ long sendRegister(unsigned const char motor_nr, unsigned const char the_register
 
   return i_datagram;
 }
-
-
-
-
-
-
-
