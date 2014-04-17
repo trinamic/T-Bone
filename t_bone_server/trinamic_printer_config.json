@@ -64,7 +64,7 @@
         "inverted_comment": "TMC5041 is easier to invert ...",
         "steps-per-mm": 32000.0,
         "max-speed": 10,
-        "max-acceleration": 1000,
+        "max-acceleration": 100.0,
         "time-reference": "clock signal",
         "end-stops": {
             "left": {
@@ -77,7 +77,7 @@
             }
         },
         "home-speed": 2,
-        "home-acceleration": 1000.0,
+        "home-acceleration": 125.0,
         "home-precision-speed": 1,
         "home-retract": 3
     },
