@@ -352,6 +352,10 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
 }
 
 inline void signal_start() {
+#ifdef RX_TX_BLINKY
+  RXLED1;
+  TXLED1;
+#endif
   //prepare the pos compr registers
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     //clear the event register
@@ -365,7 +369,7 @@ inline void signal_start() {
   digitalWriteFast(START_SIGNAL_PIN,LOW);
   delayMicroseconds(3); //the call by itself may have been enough
   digitalWriteFast(START_SIGNAL_PIN,HIGH);
-  
+
   //now check for every motor if iis alreaday ove the target..
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     //and deliver some additional logging
@@ -412,6 +416,11 @@ inline void signal_start() {
 #ifdef DEBUG_MOTION_REGISTERS
   Serial.println();
 #endif
+#ifdef RX_TX_BLINKY
+  RXLED0;
+  TXLED0;
+#endif
+
 }
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
@@ -586,6 +595,7 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 
 
