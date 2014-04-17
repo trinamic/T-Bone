@@ -268,8 +268,6 @@ unsigned long right_homing_point)
           else {
             writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
             writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,0);
-            writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
-
           }
           last_target[motor_nr]=0;
           homed=0xff;
@@ -277,14 +275,16 @@ unsigned long right_homing_point)
       } 
     } 
   }
-    
+
   //reset everything to 0
-  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,0); //set maximum acceleration
-  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,0); //set maximum deceleration
+  writeRegister(motor_nr, TMC4361_V_MAX_REGISTER,0); 
+  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,0); 
+  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,0); 
   writeRegister(motor_nr,TMC4361_BOW_1_REGISTER,0);
   writeRegister(motor_nr,TMC4361_BOW_2_REGISTER,0);
   writeRegister(motor_nr,TMC4361_BOW_3_REGISTER,0);
   writeRegister(motor_nr,TMC4361_BOW_4_REGISTER,0);
+  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
 
   return NULL;
 }
@@ -352,12 +352,25 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   writeRegister(motor_nr, TMC4361_SH_BOW_2_REGISTER,jerk);
   writeRegister(motor_nr, TMC4361_SH_BOW_3_REGISTER,jerk);
   writeRegister(motor_nr, TMC4361_SH_BOW_4_REGISTER,jerk);
-
-  //TODO pos comp is not shaddowwed
+  //pos comp is not shaddowed
   next_pos_comp[motor_nr] = target_pos;
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
 
   last_target[motor_nr]=target_pos;
+
+#ifdef DEBUG_MOTION_REGISTERS
+  Serial.println('S');
+  Serial.println(motor_nr,DEC);
+  Serial.println((long)readRegister(motor_nr,TMC4361_X_TARGET_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_V_MAX_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_A_MAX_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_D_MAX_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_1_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_2_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_3_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
+  Serial.println();
+#endif
 }
 
 inline void signal_start() {
@@ -374,7 +387,7 @@ inline void signal_start() {
     //and mark it written 
     next_pos_comp[i] = 0;
   }
-  //starrt the motors, please
+  //start the motors, please
   digitalWriteFast(START_SIGNAL_PIN,LOW);
   delayMicroseconds(3); //the call by itself may have been enough
   digitalWriteFast(START_SIGNAL_PIN,HIGH);
@@ -383,6 +396,7 @@ inline void signal_start() {
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     //and deliver some additional logging
 #ifdef DEBUG_MOTION_REGISTERS
+    Serial.println('R');
     Serial.println(i,DEC);
     Serial.println((long)readRegister(i,TMC4361_X_ACTUAL_REGISTER));
     Serial.println((long)readRegister(i,TMC4361_X_TARGET_REGISTER));
@@ -439,14 +453,19 @@ void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
   Serial.print(motor_nr);
   Serial.println(F(":=0"));
 #endif
+  unsigned long oldStartRegister = readRegister(motor_nr, TMC4361_START_CONFIG_REGISTER);
+  //we want an immediate start
+  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0);  
+
   //we write x_actual, x_target and pos_comp to the same value to be safe 
   writeRegister(motor_nr, TMC4361_V_MAX_REGISTER,0);
-  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0);   
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,position);
   writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,position);
   writeRegister(motor_nr, TMC4361_POSITION_COMPARE_REGISTER,position);
-  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
   last_target[motor_nr]=position;
+
+  //back to normal
+  writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, oldStartRegister);  
 }
 
 const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
@@ -605,3 +624,5 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
+
