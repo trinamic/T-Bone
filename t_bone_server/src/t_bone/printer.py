@@ -199,13 +199,11 @@ class Printer(Thread):
             self.axis[home_axis]['homed'] = True
             self.axis_position[home_axis] = 0
 
-
     def set_position(self, positions):
-        if not positions:
-            return
-        positions['type'] = 'set_position'
-        #todo and what if there is no movement??
-        self._print_queue.add_movement(positions)
+        if positions:
+            positions['type'] = 'set_position'
+            #todo and what if there is no movement??
+            self._print_queue.add_movement(positions)
 
     def relative_move_to(self, position):
         movement = {}
@@ -235,16 +233,17 @@ class Printer(Thread):
                                                                                                     step_speed_vector)
             self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
         elif movement['type'] == 'set_position':
-            for axis in self.axis:
-                set_pos_name = "s%s" % axis
+            for axis_name in self.axis:
+                set_pos_name = "s%s" % axis_name
                 if set_pos_name in movement:
                     position = movement[set_pos_name]
-                    axis_ = self.axis[axis]
-                    step_position = convert_mm_to_steps(position, axis_['steps_per_mm'])
-                    if 'motor' in axis:
-                        motor = axis_['motor']
+                    axis = self.axis[axis_name]
+                    step_position = convert_mm_to_steps(position, axis['steps_per_mm'])
+                    if 'motor' in axis and axis['motor']:
+                        #todo one of the above should be enough
+                        motor = axis['motor']
                         self.machine.set_pos(motor, step_position)
-                    elif 'motors' in axis:
+                    elif 'motors' in axis and axis['motors']:
                         for motor in axis['motors']:
                             self.machine.set_pos(motor, step_position)
 
