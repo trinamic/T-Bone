@@ -299,7 +299,7 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
-  direction[motor_nr]=(target_pos)>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
+  next_direction[motor_nr]=(target_pos)>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
   if (isWaypoint) {
     aim_target = target_pos+(target_pos-last_pos); // 2*(target_pos-last_pos)+last_pos;
   } 
@@ -388,6 +388,7 @@ inline void signal_start() {
     writeRegister(i, TMC4361_POSITION_COMPARE_REGISTER,next_pos_comp[i]);
     //and mark it written 
     next_pos_comp[i] = 0;
+    direction[i] = next_direction[i];
   }
   //start the motors, please
   digitalWriteFast(START_SIGNAL_PIN,LOW);
