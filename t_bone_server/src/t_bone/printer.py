@@ -605,7 +605,7 @@ class Printer(Thread):
             self.axis_position[axis_name] = movement[axis_name]
 
         if move_commands:
-            #we move only if ther eis something to move …
+            #we move only if there is something to move …
             self.machine.move_to(move_commands)
 
 
