@@ -301,7 +301,7 @@ class Printer(Thread):
         if axis['max_step_acceleration'] > MAXIMUM_FREQUENCY_ACCELERATION:
             _logger.error("Acceleration of %s is higher than %s for axis %s!", axis['max_step_acceleration'],
                           MAXIMUM_FREQUENCY_ACCELERATION, axis_name)
-            raise PrinterError("Accelration for axis " + axis_name + " too high")
+            raise PrinterError("Acceleration for axis " + axis_name + " too high")
         if 'bow-acceleration' in config:
             axis['bow'] = config['bow-acceleration']
             axis['bow_step'] = convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
@@ -328,7 +328,7 @@ class Printer(Thread):
                 _logger.error("Homing acceleration of %s is higher than %s for axis %s!",
                               convert_mm_to_steps(config['home-acceleration'], config['steps-per-mm']),
                               MAXIMUM_FREQUENCY_ACCELERATION, axis_name)
-            raise PrinterError("Acceelration for axis " + axis_name + " too high")
+            raise PrinterError("Acceleration for axis " + axis_name + " too high")
         else:
             axis['home_acceleration'] = config['max-acceleration']
         if 'home-retract' in config:
