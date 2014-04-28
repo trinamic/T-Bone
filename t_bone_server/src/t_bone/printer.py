@@ -143,61 +143,64 @@ class Printer(Thread):
 
     def home(self, axis):
         for home_axis in axis:
-            _logger.info("Homing axis \'%s\' to zero", home_axis)
-            #read the homing config for the axis
-            home_speed = self.axis[home_axis]['home_speed']
-            home_precision_speed = self.axis[home_axis]['home_precision_speed']
-            home_acceleration = self.axis[home_axis]['home_acceleration']
-            home_retract = self.axis[home_axis]['home_retract']
-            #TODO we just enforce the existence of a left axis - is there a simpler way?
-            if self.axis[home_axis]['end-stops']['left']['type'] == 'virtual':
-                homing_right_position = convert_mm_to_steps(self.axis[home_axis]['end-stops']['left']['distance']
-                                                            , self.axis[home_axis]['steps_per_mm'])
+            if not self.axis[home_axis]['end-stops'] or not self.axis[home_axis]['end-stops']['left']:
+                _logger.debug("Axis %s does not have endstops - or an left end stop, cannot home it.", home_axis)
             else:
-                homing_right_position = 0
-            #convert everything from mm to steps
-            home_speed = convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
-            home_precision_speed = convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
-            home_acceleration = convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
-            if self.axis[home_axis]['clock-referenced']:
-                home_speed = convert_velocity_clock_ref_to_realtime_ref(home_speed)
-                home_precision_speed = convert_velocity_clock_ref_to_realtime_ref(home_precision_speed)
-                home_acceleration = convert_acceleration_clock_ref_to_realtime_ref(home_acceleration)
-                #no home jerk - since this only applies to 5041 axis w/o jerk control
-            home_retract = convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
-            #make a config out of it
-            if self.axis[home_axis]['motor']:
-                homing_config = {
-                    'motor': self.axis[home_axis]['motor'],
-                    'timeout': 0,
-                    'home_speed': home_speed,
-                    'home_slow_speed': home_precision_speed,
-                    'home_retract': home_retract,
-                    'acceleration': home_acceleration,
-                    'homing_right_position': homing_right_position,
-                }
-                if self.axis[home_axis]['bow_step']:
-                    homing_config['jerk'] = self.axis[home_axis]['bow_step']
-            else:
-                #todo we should check if there is a motor for the left endstop??
-                homing_config = {
-                    'motor': self.axis[home_axis]['end-stops']['left']['motor'],
-                    'followers': self.axis[home_axis]['motors'],
-                    'timeout': 0,
-                    'home_speed': home_speed,
-                    'home_slow_speed': home_precision_speed,
-                    'home_retract': home_retract,
-                    'acceleration': home_acceleration,
-                    'homing_right_position': homing_right_position,
-                }
-                if self.axis[home_axis]['bow_step']:
-                    homing_config['bow'] = self.axis[home_axis]['bow_step']
+                _logger.info("Homing axis \'%s\' to zero", home_axis)
+                #read the homing config for the axis
+                home_speed = self.axis[home_axis]['home_speed']
+                home_precision_speed = self.axis[home_axis]['home_precision_speed']
+                home_acceleration = self.axis[home_axis]['home_acceleration']
+                home_retract = self.axis[home_axis]['home_retract']
+                #TODO we just enforce the existence of a left endstop - is there a simpler way?
+                if self.axis[home_axis]['end-stops']['left']['type'] == 'virtual':
+                    homing_right_position = convert_mm_to_steps(self.axis[home_axis]['end-stops']['left']['distance']
+                                                                , self.axis[home_axis]['steps_per_mm'])
+                else:
+                    homing_right_position = 0
+                #convert everything from mm to steps
+                home_speed = convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
+                home_precision_speed = convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
+                home_acceleration = convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
+                if self.axis[home_axis]['clock-referenced']:
+                    home_speed = convert_velocity_clock_ref_to_realtime_ref(home_speed)
+                    home_precision_speed = convert_velocity_clock_ref_to_realtime_ref(home_precision_speed)
+                    home_acceleration = convert_acceleration_clock_ref_to_realtime_ref(home_acceleration)
+                    #no home jerk - since this only applies to 5041 axis w/o jerk control
+                home_retract = convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
+                #make a config out of it
+                if self.axis[home_axis]['motor']:
+                    homing_config = {
+                        'motor': self.axis[home_axis]['motor'],
+                        'timeout': 0,
+                        'home_speed': home_speed,
+                        'home_slow_speed': home_precision_speed,
+                        'home_retract': home_retract,
+                        'acceleration': home_acceleration,
+                        'homing_right_position': homing_right_position,
+                    }
+                    if self.axis[home_axis]['bow_step']:
+                        homing_config['jerk'] = self.axis[home_axis]['bow_step']
+                else:
+                    #todo we should check if there is a motor for the left endstop??
+                    homing_config = {
+                        'motor': self.axis[home_axis]['end-stops']['left']['motor'],
+                        'followers': self.axis[home_axis]['motors'],
+                        'timeout': 0,
+                        'home_speed': home_speed,
+                        'home_slow_speed': home_precision_speed,
+                        'home_retract': home_retract,
+                        'acceleration': home_acceleration,
+                        'homing_right_position': homing_right_position,
+                    }
+                    if self.axis[home_axis]['bow_step']:
+                        homing_config['bow'] = self.axis[home_axis]['bow_step']
 
-            #and do the homing
-            self.machine.home(homing_config, timeout=self._homing_timeout)
-            #better but still not good - we should have a better concept of 'axis'
-            self.axis[home_axis]['homed'] = True
-            self.axis_position[home_axis] = 0
+                #and do the homing
+                self.machine.home(homing_config, timeout=self._homing_timeout)
+                #better but still not good - we should have a better concept of 'axis'
+                self.axis[home_axis]['homed'] = True
+                self.axis_position[home_axis] = 0
 
     def set_position(self, positions):
         if positions:
