@@ -15,9 +15,8 @@ void startMotion(char initial_min_buffer_depth) {
     digitalWrite(motors[i].target_reached_interrupt_pin,LOW);
     attachInterrupt(motors[i].target_reached_interrupt_nr,motors[i].target_reached_interrupt_routine, FALLING);
     writeRegister(i, TMC4361_INTERRUPT_CONFIG_REGISTER, _BV(0) | _BV(1)); //POS_COMP_REACHED or TARGET_REACHED count as target reached
-    // Lars: writeRegister(unsigned const char cs_squirrel, ... i = 0, 1, 2 ??? have to be CS signal or not?!
   }
-  next_move_prepared=false; //TODO in theory this is not needed
+  next_move_prepared=false; //TODO in theory this is not needed  
   current_motion_state = in_motion;
   target_motor_status=0;
   next_target_motor_status=0;
@@ -43,8 +42,8 @@ void resetMotion() {
 
 void checkMotion() {
   checkTMC5041Motion();
+  checkTMC4361Motion();
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
-
     if ((target_motor_status!=0 && (motor_status & target_motor_status) == target_motor_status)
       || (next_move_prepared && !move_executing)) {
       //TODO we need some kind of 'At least here'??
@@ -240,3 +239,4 @@ inline void motor_target_reached(char motor_nr) {
 #endif
   }
 }
+

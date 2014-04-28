@@ -394,10 +394,9 @@ inline void signal_start() {
   delayMicroseconds(3); //the call by itself may have been enough
   digitalWriteFast(START_SIGNAL_PIN,HIGH);
 
-  //now check for every motor if iis alreaday ove the target..
-  for (char i=0; i< nr_of_coordinated_motors; i++) {
-    //and deliver some additional logging
 #ifdef DEBUG_MOTION_REGISTERS
+  //and deliver some additional logging
+  for (char i=0; i< nr_of_coordinated_motors; i++) {
     Serial.println('R');
     Serial.println(i,DEC);
     Serial.println((long)readRegister(i,TMC4361_X_ACTUAL_REGISTER));
@@ -411,33 +410,13 @@ inline void signal_start() {
     Serial.println(readRegister(i,TMC4361_BOW_3_REGISTER));
     Serial.println(readRegister(i,TMC4361_BOW_4_REGISTER));
     Serial.println();
-#endif
-    if (target_motor_status & _BV(i)) {// missing: & ~motor_status
-      unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
-      if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
-        || (direction[i]==-1 && motor_pos<=next_pos_comp[i])) {
-        motor_target_reached(i);
-#ifdef DEBUG_X_POS
-        Serial.print('*');
-#endif
-      }
-#ifdef DEBUG_X_POS
-      Serial.println();
-#endif
-    }
   }
-
+#endif
 #ifdef DEBUG_MOTION_TRACE
   Serial.println(F("Sent start signal"));
 #endif
-#ifdef DEBUG_MOTION_TRACE
-  Serial.println('-');
-#endif
 #ifdef DEBUG_MOTION_START
   Serial.println('S');
-#endif
-#ifdef DEBUG_X_POS
-  Serial.println();
 #endif
 #ifdef DEBUG_MOTION_REGISTERS
   Serial.println();
@@ -446,8 +425,27 @@ inline void signal_start() {
   RXLED0;
   TXLED0;
 #endif
-
 }
+
+//this method is needed to manually verify that the motors are to running beyond their targe
+void checkTMC4361Motion() {
+  if (target_motor_status & (_BV(nr_of_coordinated_motors)-1)) {
+    //now check for every motor if iis alreaday ove the target..
+    for (char i=0; i< nr_of_coordinated_motors; i++) {
+      //and deliver some additional logging
+      if (target_motor_status & _BV(i) & ~motor_status) {
+        unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
+        if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
+          || (direction[i]==-1 && motor_pos<=next_pos_comp[i])) {
+#ifdef DEBUG_MOTION_TRACE_SHORT
+          Serial.print('*');
+#endif
+          motor_target_reached(i);
+        }
+      }
+    }
+  }
+}  
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
 #ifdef DEBUG_MOTION_SHORT
@@ -626,6 +624,8 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
+
 
 
 
