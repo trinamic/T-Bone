@@ -596,6 +596,7 @@ class Printer(Thread):
             move_commands.append(e_move_config)
 
         if z_move_config:
+            #todo we know that the z_move config is a list - is this too specific?
             move_commands.extend(z_move_config)
 
         #we update our position
