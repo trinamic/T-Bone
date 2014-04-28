@@ -166,6 +166,7 @@ def _decode_positions(gcode, line):
             else:
                 _logger.warn("Unable to interpret position %s in %s", argument, line)
     if 'f' in positions:
+        #the feedrate is measured in mm/minute - but we use mm/second -> so recalculate everything
         positions['target_speed'] = positions['f'] / 60.0
     return positions
 
