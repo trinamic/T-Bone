@@ -341,7 +341,9 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
     Serial.print(target_pos);
   }  
   Serial.print(F(" t "));
-  Serial.println(aim_target);
+  Serial.print(aim_target);
+  Serial.print(F(" @ "));
+  Serial.println(vMax);
 #endif
 
   long fixed_a_max = FIXED_22_2_MAKE(aMax);

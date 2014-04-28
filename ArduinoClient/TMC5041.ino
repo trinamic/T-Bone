@@ -200,12 +200,14 @@ unsigned char calculateCurrentValue(int current) {
   return low_sense_current | 0x80;
 }
 
-void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolean isWayPoint) {
+void  moveMotorTMC5041(char motor_nr, long target_pos, double vMax, double aMax, boolean isWaypoint) {
 #ifdef DEBUG_MOTION_SHORT
-  Serial.print('m');
-  Serial.print(motor,DEC);
+  Serial.print('M');
+  Serial.print(motor_nr,DEC);
   Serial.print(F(" t "));
-  Serial.println(target);
+  Serial.print(target_pos);
+  Serial.print(F(" @ "));
+  Serial.println(vMax);
 #endif
 #ifdef DEBUG_MOTION
   Serial.print(F("5041 #1 is going to "));
@@ -213,9 +215,9 @@ void  moveMotorTMC5041(char motor, long target, double vMax, double aMax, boolea
   Serial.print(F(" @ "));
   Serial.println(tmc5031_next_movement[0].vMax,DEC);
 #endif
-  tmc5031_next_movement[motor].target = target;
-  tmc5031_next_movement[motor].vMax = vMax;
-  tmc5031_next_movement[motor].aMax = aMax;
+  tmc5031_next_movement[motor_nr].target = target_pos;
+  tmc5031_next_movement[motor_nr].vMax = vMax;
+  tmc5031_next_movement[motor_nr].aMax = aMax;
 }
 
 void tmc5041_prepare_next_motion() {
