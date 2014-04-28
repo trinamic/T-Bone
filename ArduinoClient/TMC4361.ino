@@ -1,3 +1,4 @@
+volatile long pos_comp[nr_of_coordinated_motors];
 volatile long next_pos_comp[nr_of_coordinated_motors];
 long last_target[nr_of_coordinated_motors];
 const unsigned long default_4361_start_config = 0
@@ -384,7 +385,8 @@ inline void signal_start() {
   for (char i=0; i< nr_of_coordinated_motors; i++) {
     //clear the event register
     readRegister(i, TMC4361_EVENTS_REGISTER);
-    //write the new pos_comp
+    pos_comp[i] = next_pos_comp[i];
+   //write the new pos_comp
     writeRegister(i, TMC4361_POSITION_COMPARE_REGISTER,next_pos_comp[i]);
     //and mark it written 
     next_pos_comp[i] = 0;
@@ -436,8 +438,8 @@ void checkTMC4361Motion() {
       //and deliver some additional logging
       if (target_motor_status & _BV(i) & ~motor_status) {
         unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
-        if ((direction[i]==1 && motor_pos>=next_pos_comp[i])
-          || (direction[i]==-1 && motor_pos<=next_pos_comp[i])) {
+        if ((direction[i]==1 && motor_pos>=pos_comp[i])
+          || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
 #ifdef DEBUG_MOTION_TRACE_SHORT
           Serial.print('*');
 #endif
