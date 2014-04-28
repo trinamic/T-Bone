@@ -273,6 +273,7 @@ class Printer(Thread):
         self.led_manager.light(0, False)
 
     def _configure_axis(self, axis, config):
+        axis_name = axis['name']
         #let's see if we got one or more motors
         if 'motor' in config:
             axis['motor'] = config['motor']
@@ -283,6 +284,10 @@ class Printer(Thread):
             raise PrinterError("you must configure one ('motor') or more 'motors' in the axis configuration")
 
         axis['steps_per_mm'] = config['steps-per-mm']
+        if 'step-scaling-correction' in config:
+            _logger.debug("Scaling axis %s stepping %s by %s", axis_name, axis['steps_per_mm'], config['step-scaling-correction'])
+            step_scaling_correction = float(config['step-scaling-correction'])
+            axis['steps_per_mm'] *= step_scaling_correction
         if 'time-reference' in config and config['time-reference'] == 'clock signal':
             axis['clock-referenced'] = True
         else:
@@ -295,15 +300,15 @@ class Printer(Thread):
         axis['max_step_acceleration'] = convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
         if axis['max_step_acceleration'] > MAXIMUM_FREQUENCY_ACCELERATION:
             _logger.error("Acceleration of %s is higher than %s for axis %s!", axis['max_step_acceleration'],
-                          MAXIMUM_FREQUENCY_ACCELERATION, axis['name'])
-            raise PrinterError("Accelration for axis " + axis['name'] + " too high")
+                          MAXIMUM_FREQUENCY_ACCELERATION, axis_name)
+            raise PrinterError("Accelration for axis " + axis_name + " too high")
         if 'bow-acceleration' in config:
             axis['bow'] = config['bow-acceleration']
             axis['bow_step'] = convert_mm_to_steps(config['bow-acceleration'], config['steps-per-mm'])
             if axis['bow_step'] > MAXIMUM_FREQUENCY_BOW:
                 _logger.error("Bow of %s is higher than %s for axis %s!", axis['bow_step'], MAXIMUM_FREQUENCY_BOW,
-                              axis['name'])
-                raise PrinterError("Bow for axis " + axis['name'] + " too high")
+                              axis_name)
+                raise PrinterError("Bow for axis " + axis_name + " too high")
         else:
             axis['bow'] = None
             axis['bow_step'] = None
@@ -322,8 +327,8 @@ class Printer(Thread):
                                    config['steps-per-mm']) > MAXIMUM_FREQUENCY_ACCELERATION:
                 _logger.error("Homing acceleration of %s is higher than %s for axis %s!",
                               convert_mm_to_steps(config['home-acceleration'], config['steps-per-mm']),
-                              MAXIMUM_FREQUENCY_ACCELERATION, axis['name'])
-            raise PrinterError("Acceelration for axis " + axis['name'] + " too high")
+                              MAXIMUM_FREQUENCY_ACCELERATION, axis_name)
+            raise PrinterError("Acceelration for axis " + axis_name + " too high")
         else:
             axis['home_acceleration'] = config['max-acceleration']
         if 'home-retract' in config:
@@ -333,7 +338,7 @@ class Printer(Thread):
 
         axis['end-stops'] = {}
         if 'end-stops' in config:
-            _logger.debug("Configuring endstops for axis %s", axis['name'])
+            _logger.debug("Configuring endstops for axis %s", axis_name)
             end_stops_config = config['end-stops']
             for end_stop_pos in ('left', 'right'):
                 if end_stop_pos in end_stops_config:
@@ -383,7 +388,7 @@ class Printer(Thread):
                                 motor = axis['motors'][0]
                             self.machine.configure_endstop(motor=motor, position=end_stop_pos, end_stop_config=end_stop)
         else:
-            _logger.debug("No endstops for axis %s", axis['name'])
+            _logger.debug("No endstops for axis %s", axis_name)
 
         current = config["current"]
         if axis["motor"]:

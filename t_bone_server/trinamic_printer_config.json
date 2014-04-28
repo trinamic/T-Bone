@@ -106,6 +106,7 @@
         "motor": 3,
         "current": 0.5,
         "steps-per-mm": 11792.23,
+        "step-scaling-correction":0.5,
         "max-speed": 300,
         "max-acceleration": 10,
         "bow-acceleration": 10,
