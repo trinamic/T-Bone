@@ -581,7 +581,7 @@ class Printer(Thread):
                     x_move_config
                 ]
         if e_move_config:
-            if x_move_config:
+            if x_move_config and not (y_move_config and move_vector['x'] < move_vector['y']):
                 factor = abs(move_vector['e'] / move_vector['x'] * self._e_x_step_conversion)
                 e_move_config['speed'] = factor * x_move_config['speed']
                 e_move_config['acceleration'] = factor * x_move_config[
