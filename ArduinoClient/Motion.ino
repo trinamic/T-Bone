@@ -42,7 +42,6 @@ void resetMotion() {
 }
 
 void checkMotion() {
-
   checkTMC5041Motion();
   if (current_motion_state==in_motion || current_motion_state==finishing_motion) {
 
