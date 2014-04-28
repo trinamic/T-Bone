@@ -515,6 +515,11 @@ boolean invertMotorTMC5041(char motor_nr, boolean inverted) {
 }
 
 void setMotorPositionTMC5041(unsigned char motor_nr, long position) {
+#ifdef DEBUG_MOTION_SHORT
+  Serial.print('m');
+  Serial.print(motor_nr);
+  Serial.println(F(":=0"));
+#endif
   //we write x_actual an x_target to the same value to be safe 
   if (motor_nr==0) {
     writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,position);
