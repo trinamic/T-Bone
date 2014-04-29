@@ -3,7 +3,7 @@ from Adafruit_BBIO import PWM
 from Queue import Queue, Empty
 from copy import deepcopy
 import logging
-from math import copysign
+from math import copysign, sqrt
 from threading import Thread
 
 from numpy import sign
@@ -285,7 +285,8 @@ class Printer(Thread):
 
         axis['steps_per_mm'] = config['steps-per-mm']
         if 'step-scaling-correction' in config:
-            _logger.debug("Scaling axis %s stepping %s by %s", axis_name, axis['steps_per_mm'], config['step-scaling-correction'])
+            _logger.debug("Scaling axis %s stepping %s by %s", axis_name, axis['steps_per_mm'],
+                          config['step-scaling-correction'])
             step_scaling_correction = float(config['step-scaling-correction'])
             axis['steps_per_mm'] *= step_scaling_correction
         if 'time-reference' in config and config['time-reference'] == 'clock signal':
@@ -837,38 +838,42 @@ class PrintQueue():
         x_bow_ = self.axis['x']['bow']
         y_bow_ = self.axis['y']['bow']
 
-        max_speed = move['speed']
+        target_speed = move['speed']
         #todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
+        #we go back in the list and ensure that we can achieve the target speed with acceleration
+        #and deceleration over the distance
         for movement in reversed(self.planning_list):
-            #todo in theory we can stop somewhere …
-            delta_x = movement['delta_x']
-            if sign(delta_x) == sign(max_speed['x']):
-                max_speed_x = get_target_velocity(max_speed['x'], delta_x, x_bow_)
-            else:
-                max_speed_x = get_target_velocity(0, delta_x, x_bow_)
-            delta_y = movement['delta_y']
-            if sign(delta_y) == sign(max_speed['y']):
-                max_speed_y = get_target_velocity(max_speed['y'], delta_y, y_bow_)
-            else:
-                max_speed_y = get_target_velocity(0, delta_y, y_bow_)
             speed_vectors = [
                 movement['speed']
             ]
             move_vector = movement['relative_move_vector']
             if move_vector['x'] != 0:
+                delta_x = movement['delta_x']
+                #do we have to turn around in x or can we go on
+                if sign(delta_x) == sign(target_speed['x']):
+                    max_speed_x = get_target_velocity(target_speed['x'], delta_x, x_bow_)
+                else:
+                    max_speed_x = get_target_velocity(0, delta_x, x_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_x,
                     'y': max_speed_x * move_vector['y'] / move_vector['x']
                 })
             if move_vector['y'] != 0:
+                delta_y = movement['delta_y']
+                #do we have to turn around in y or can we go on
+                if sign(delta_y) == sign(target_speed['y']):
+                    max_speed_y = get_target_velocity(target_speed['y'], delta_y, y_bow_)
+                else:
+                    max_speed_y = get_target_velocity(0, delta_y, y_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_y * move_vector['x'] / move_vector['y'],
                     'y': max_speed_y
                 })
             movement['speed'] = find_shortest_vector(speed_vectors)
-            max_speed = movement['speed']
+            #todo in theory we can stop if we did not change the speed vector ...
+            target_speed = movement['speed']
 
         if self.led_manager:
             self.led_manager.light(2, False)
@@ -876,9 +881,29 @@ class PrintQueue():
 
 #from https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L579
 def get_target_velocity(start_velocity, length, jerk):
-    target_velocity = pow(abs(length), 0.666666666666) * jerk
-    target_velocity = copysign(target_velocity, length) + start_velocity
+    #testing https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L634
+    if length == 0:
+        #it may be the case - so make it simple here …
+        return start_velocity
+    #clean up start velocity
+    start_velocity = abs(start_velocity)
+    JmL2 = jerk * length ** 2
+    Vi2 = start_velocity ** 2
+    Vi3x16 = 16 * start_velocity * Vi2
+    Ia = cbrt(3 * sqrt(3) * sqrt(27 * JmL2 ** 2 + (2 * JmL2 * Vi3x16)) + 27 * JmL2 + Vi3x16)
+    target_velocity = ((Ia / cbrt(2) + 4 * cbrt(2) * Vi2 / Ia - start_velocity) / 3)
+    #target_velocity = copysign(target_velocity, length) + start_velocity
     return target_velocity
+
+
+#from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
+def cbrt(x):
+    from math import pow
+
+    if x >= 0:
+        return pow(x, 1.0 / 3.0)
+    else:
+        return -pow(abs(x), 1.0 / 3.0)
 
 
 class PrinterError(Exception):
