@@ -4,7 +4,7 @@ from threading import Thread
 import unittest
 
 from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, \
-    has_length
+    has_length, none
 from t_bone.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
 
 
@@ -265,9 +265,9 @@ class VectorTests(unittest.TestCase):
     def test_vector_math(self):
         result = calculate_relative_vector(1, 1, 0, 1)
         assert_that(result, not_none())
-        assert_that(result['x'], close_to(1 / sqrt(2), 0.0001))
-        assert_that(result['y'], close_to(1 / sqrt(2), 0.0001))
-        assert_that(result['l'], close_to(1.4, 0.1))
+        assert_that(result['x'], close_to(1 / sqrt(3), 0.0001))
+        assert_that(result['y'], close_to(1 / sqrt(3), 0.0001))
+        assert_that(result['l'], close_to(1.7, 0.1))
 
         result = calculate_relative_vector(23, 23, 0, 0)
         assert_that(result, not_none())
@@ -279,7 +279,7 @@ class VectorTests(unittest.TestCase):
         assert_that(result, not_none())
         assert_that(result['x'], equal_to(0))
         assert_that(result['y'], equal_to(0))
-        assert_that(result['l'], equal_to(0))
+        assert_that(result['l'], equal_to(12))
 
         result = calculate_relative_vector(0, 20, 0, 0)
         assert_that(result, not_none())
@@ -349,7 +349,8 @@ class VectorTests(unittest.TestCase):
                 'max_speed': 10
             },
             'e': {
-                'steps_per_mm': 1
+                'steps_per_mm': 1,
+                'max_speed': 1
             }
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
@@ -565,19 +566,22 @@ class VectorTests(unittest.TestCase):
         for i in range(0, 3):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
         for i in range(0, 2):
-            assert_that(move_configs[i]['y']['type'], equal_to('stop'))
+            assert_that(move_configs[i]['y'], none())
         for i in range(3, 5):
             assert_that(move_configs[i]['y']['type'], equal_to('way'))
+        assert_that(move_configs[3]['x']['type'], equal_to('stop'))
         for i in range(4, 5):
-            assert_that(move_configs[i]['x']['type'], equal_to('stop'))
+            assert_that(move_configs[i]['x'], none())
         for i in range(6, 8):
             assert_that(move_configs[i]['x']['type'], equal_to('way'))
+        assert_that(move_configs[6]['y']['type'], equal_to('stop'))
         for i in range(7, 8):
-            assert_that(move_configs[i]['y']['type'], equal_to('stop'))
+            assert_that(move_configs[i]['y'], none())
         for i in range(9, 10):
             assert_that(move_configs[i]['y']['type'], equal_to('way'))
+        assert_that(move_configs[8]['x']['type'], equal_to('stop'))
         for i in range(9, 10):
-            assert_that(move_configs[i]['x']['type'], equal_to('stop'))
+            assert_that(move_configs[i]['x'], none())
 
         #ok what do we got in our machine move list??
         machine_move_list = printer.machine.move_list
@@ -610,9 +614,9 @@ class VectorTests(unittest.TestCase):
                     assert_that(y_move, equal_to(None))
                     y_move = machine_move
             if not x_move:
-                assert_that(x_move_config['speed'] == 0)
+                assert_that(x_move_config, none())
             if not y_move:
-                assert_that(y_move_config['speed'] == 0)
+                assert_that(y_move_config, none())
             if x_move and y_move:
                 ratio = float(x_move['speed']) / float(y_move['speed'])
                 assert_that(float(x_move['acceleration']) / float(y_move['acceleration']), close_to(ratio, 0.0001))

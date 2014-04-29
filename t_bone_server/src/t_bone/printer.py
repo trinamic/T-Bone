@@ -881,30 +881,9 @@ class PrintQueue():
 
 #from https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L579
 def get_target_velocity(start_velocity, length, jerk):
-    #testing https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L634
-    if length == 0:
-        #it may be the case - so make it simple here …
-        return start_velocity
-    #clean up start velocity
-    start_velocity = abs(start_velocity)
-    JmL2 = jerk * length ** 2
-    Vi2 = start_velocity ** 2
-    Vi3x16 = 16 * start_velocity * Vi2
-    Ia = cbrt(3 * sqrt(3) * sqrt(27 * JmL2 ** 2 + (2 * JmL2 * Vi3x16)) + 27 * JmL2 + Vi3x16)
-    target_velocity = ((Ia / cbrt(2) + 4 * cbrt(2) * Vi2 / Ia - start_velocity) / 3)
-    #target_velocity = copysign(target_velocity, length) + start_velocity
+    target_velocity = pow(abs(length), 0.666666666666) * jerk
+    target_velocity = copysign(target_velocity, length) + start_velocity
     return target_velocity
-
-
-#from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
-def cbrt(x):
-    from math import pow
-
-    if x >= 0:
-        return pow(x, 1.0 / 3.0)
-    else:
-        return -pow(abs(x), 1.0 / 3.0)
-
 
 class PrinterError(Exception):
     def __init__(self, msg):
