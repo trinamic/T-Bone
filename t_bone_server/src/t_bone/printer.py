@@ -531,7 +531,7 @@ class Printer(Thread):
             e_move_config = _axis_movement_template(self.axis['e'])
             e_move_config['target'] = step_pos['e']
             e_move_config['speed'] = abs(step_speed_vector['e'])
-            if 'e_stop' in movement:
+            if movement['e_stop']:
                 e_move_config['type'] = 'stop'
             else:
                 e_move_config['type'] = 'way'
@@ -654,6 +654,7 @@ class PrintQueue():
         if self.previous_movement:
             self.previous_movement['x_stop'] = True
             self.previous_movement['y_stop'] = True
+            self.previous_movement['e_stop'] = True
             self.planning_list.append(self.previous_movement)
             self.previous_movement = None
         while len(self.planning_list) > 0:
@@ -682,6 +683,7 @@ class PrintQueue():
         if target_position['type'] == 'move':
             move['type'] = 'move'
             #extract values
+            #todo this can be for loop over axis_names
             if 'x' in target_position:
                 move['x'] = target_position['x']
             else:
@@ -765,6 +767,7 @@ class PrintQueue():
             last_y_speed = 0
         delta_x = move['delta_x']
         delta_y = move['delta_y']
+        delta_e = move['delta_e']
         normalized_move_vector = move['relative_move_vector']
         #derrive the various speed vectors from the movement … for desired head and maximum axis speed
         speed_vectors = [
@@ -824,6 +827,11 @@ class PrintQueue():
             #we HAVE to turn around!
             if self.previous_movement:
                 self.previous_movement['y_stop'] = True
+        if self.previous_movement:
+            if delta_e != 0 and sign(delta_e) == sign(self.previous_movement['delta_e']):
+                self.previous_movement['e_stop'] = False
+            else:
+                self.previous_movement['e_stop'] = True
 
         max_local_speed_vector = find_shortest_vector(speed_vectors)
         #the minimum achievable speed is the minimum of all those local vectors
@@ -884,6 +892,7 @@ def get_target_velocity(start_velocity, length, jerk):
     target_velocity = pow(abs(length), 0.666666666666) * jerk
     target_velocity = copysign(target_velocity, length) + start_velocity
     return target_velocity
+
 
 class PrinterError(Exception):
     def __init__(self, msg):
