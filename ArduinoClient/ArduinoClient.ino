@@ -149,7 +149,7 @@ void setup() {
 
   //initialize SPI
   SPI.begin();
-  //SPI.setClockDivider(SPI_CLOCK_DIV2);
+  SPI.setClockDivider(SPI_CLOCK_DIV2);
 
   // Use HWBE as Output
   DDRE |= _BV(2);                    // set HWBE pin as output (Fuse HWBE disabled, point to check..)
