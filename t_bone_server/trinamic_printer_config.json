@@ -10,7 +10,7 @@
         "full-step-speed": 25.0,
         "steps-per-mm": 1280,
         "max-speed": 200,
-        "max-acceleration": 4000.0,
+        "max-acceleration": 3000.0,
         "bow-acceleration": 1000.0,
         "time-reference": "time",
         "inverted": false,
@@ -38,7 +38,7 @@
         "full-step-speed": 25.0,
         "steps-per-mm": 1280,
         "max-speed": 200,
-        "max-acceleration": 4000.0,
+        "max-acceleration": 3000.0,
         "bow-acceleration": 1000.0,
         "time-reference": "time",
         "end-stops": {
