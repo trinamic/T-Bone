@@ -889,6 +889,9 @@ class PrintQueue():
 
 #from https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L579
 def get_target_velocity(start_velocity, length, jerk):
+    if length == 0:
+        return start_velocity
+    #todo a) there are better formulas and b) it does not respect amax
     target_velocity = pow(abs(length), 0.666666666666) * jerk
     target_velocity = copysign(target_velocity, length) + start_velocity
     return target_velocity
