@@ -19,6 +19,9 @@ clock_frequency = 16000000
 
 _logger = logging.getLogger(__name__)
 
+MAXIMUM_FREQUENCY_ACCELERATION = 2 ** 22 - 2
+MAXIMUM_FREQUENCY_BOW = 2 ** 24 - 2
+
 
 class Machine():
     def __init__(self, serial_port, reset_pin):
@@ -209,8 +212,10 @@ class Machine():
             else:
                 command.arguments.append(ord('w'))
             command.arguments.append(float(motor['speed']))
-            command.arguments.append(float(motor['acceleration']))
-            command.arguments.append(int(motor['startBow']))
+            acceleration_ = min(float(motor['acceleration']), MAXIMUM_FREQUENCY_ACCELERATION)
+            command.arguments.append(acceleration_)
+            bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)
+            command.arguments.append(bow_)
             _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
                          motor['speed'])
 
