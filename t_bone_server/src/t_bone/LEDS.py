@@ -5,10 +5,10 @@ __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
 
 _led_pins = [
-    "P8_5",
-    "P8_6",
-    "P8_3",
-    "P8_4"
+    "P8_11",
+    "P8_12",
+    "P8_14",
+    "P8_16"
 ]
 
 
