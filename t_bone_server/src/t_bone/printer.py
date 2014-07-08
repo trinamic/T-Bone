@@ -783,8 +783,10 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
-                max_speed_x = get_target_velocity(last_x_speed, delta_x,
-                                                  self.axis['x']['bow'])  # TODO huh, no max acceleration??
+                max_speed_x = get_target_velocity(start_velocity=last_x_speed,
+                                                  length=delta_x,
+                                                  max_acceleration=self.axis['x']['max_acceleration'],
+                                                  jerk=self.axis['x']['bow'])
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
@@ -809,7 +811,10 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
                 #ww can accelerate further
-                max_speed_y = get_target_velocity(last_y_speed, delta_y, self.axis['y']['bow'])
+                max_speed_y = get_target_velocity(start_velocity=last_y_speed,
+                                                  length=delta_y,
+                                                  max_acceleration=self.axis['x']['max_acceleration'],
+                                                  jerk=self.axis['y']['bow'])
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
@@ -842,6 +847,8 @@ class PrintQueue():
 
         x_bow_ = self.axis['x']['bow']
         y_bow_ = self.axis['y']['bow']
+        x_max_acceleration = self.axis['x']['max_acceleration']
+        y_max_acceleration = self.axis['y']['max_acceleration']
 
         target_speed = move['speed']
         #todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
@@ -856,9 +863,15 @@ class PrintQueue():
                 delta_x = movement['delta_x']
                 #do we have to turn around in x or can we go on
                 if sign(delta_x) == sign(target_speed['x']):
-                    max_speed_x = get_target_velocity(target_speed['x'], delta_x, x_bow_)
+                    max_speed_x = get_target_velocity(start_velocity=target_speed['x'],
+                                                      length=delta_x,
+                                                      max_acceleration=x_max_acceleration,
+                                                      jerk=x_bow_)
                 else:
-                    max_speed_x = get_target_velocity(0, delta_x, x_bow_)
+                    max_speed_x = get_target_velocity(start_velocity=0.0,
+                                                      length=delta_x,
+                                                      max_acceleration=x_max_acceleration,
+                                                      jerk=x_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_x,
@@ -868,9 +881,15 @@ class PrintQueue():
                 delta_y = movement['delta_y']
                 #do we have to turn around in y or can we go on
                 if sign(delta_y) == sign(target_speed['y']):
-                    max_speed_y = get_target_velocity(target_speed['y'], delta_y, y_bow_)
+                    max_speed_y = get_target_velocity(start_velocity=target_speed['y'],
+                                                      length=delta_y,
+                                                      max_acceleration=y_max_acceleration,
+                                                      jerk=y_bow_)
                 else:
-                    max_speed_y = get_target_velocity(0, delta_y, y_bow_)
+                    max_speed_y = get_target_velocity(start_velocity=0.0,
+                                                      length=delta_y,
+                                                      max_acceleration=y_max_acceleration,
+                                                      jerk=y_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_y * move_vector['x'] / move_vector['y'],
@@ -884,21 +903,31 @@ class PrintQueue():
             self.led_manager.light(2, False)
 
 
-#from https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L579
-def get_target_velocity(start_velocity, length, jerk):
-    #testing https://github.com/synthetos/TinyG/blob/master/firmware/tinyg/plan_line.c#L634
-    if length == 0:
-        #it may be the case - so make it simple here …
-        return start_velocity
-    #clean up start velocity
-    start_velocity = abs(start_velocity)
-    length = abs(length)
-    JmL2 = jerk * length ** 2
-    Vi2 = start_velocity ** 2
-    Vi3x16 = 16 * start_velocity * Vi2
-    Ia = cbrt(3 * sqrt(3) * sqrt(27 * JmL2 ** 2 + (2 * JmL2 * Vi3x16)) + 27 * JmL2 + Vi3x16)
-    target_velocity = ((Ia / cbrt(2) + 4 * cbrt(2) * Vi2 / Ia - start_velocity) / 3)
-    return target_velocity
+def get_target_velocity(start_velocity, length, max_acceleration, jerk):
+    # according to 'constant jerk equations for a trajectory generator'
+    jerk_p2 = jerk ** 2
+    jerk_p3 = jerk ** 3
+    jerk_p2_pl5 = jerk_p2 + 5.0
+    term_1 = sqrt((8.0 * (jerk ** 6 + 3.0 * jerk ** 4.0 + 3.0 * jerk_p2 + 1.0) * start_velocity ** 3 + 9.0 * (
+        jerk_p3 + 5.0 * jerk) * length ** 2) * jerk / jerk_p2_pl5)
+    term_2 = pow(3 * jerk_p2 * length / (jerk_p2_pl5) + term_1 * jerk / (jerk_p2_pl5), (1.0 / 3.0))
+    ideal_s_curve_acceleration = term_2 \
+                                 - 2 * (jerk_p3 * start_velocity + jerk * start_velocity) \
+                                   / ((jerk_p2_pl5) * term_2)
+    if ideal_s_curve_acceleration <= max_acceleration:
+        # everything is fne we can go with a perfect s ramp
+        return ideal_s_curve_acceleration ** 2 / jerk + start_velocity
+    else:
+        # we have to include a constant acceleration phase
+        acceleration_p2 = max_acceleration ** 2
+        return 3 / 2 * acceleration_p2 / jerk + start_velocity \
+               - 1 / 6 * (9 * acceleration_p2 + 6 * jerk * start_velocity - sqrt(-12 * max_acceleration ** 4 * jerk_p2
+                                                                                 - 51 * max_acceleration ** 4
+                                                                                 + 72 * max_acceleration * jerk_p2 * length
+                                                                                 + 36 * jerk_p2 * start_velocity ** 2
+                                                                                 - 36 * (2 * acceleration_p2 * jerk_p3 -
+                                                                                         acceleration_p2 * jerk) * start_velocity)
+        ) / jerk
 
 
 #from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
