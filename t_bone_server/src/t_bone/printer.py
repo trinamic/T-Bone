@@ -783,18 +783,16 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
-                max_speed_x = get_target_velocity(start_velocity=last_x_speed,
-                                                  length=delta_x,
-                                                  max_acceleration=self.axis['x']['max_acceleration'],
-                                                  jerk=self.axis['x']['bow'])
+                start_velocity=last_x_speed
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['x_stop'] = True
-                max_speed_x = get_target_velocity(start_velocity=0,
-                                                  length=delta_x,
-                                                  max_acceleration=self.axis['x']['max_acceleration'],
-                                                  jerk=self.axis['x']['bow'])
+                start_velocity=0
+            max_speed_x = get_target_velocity(start_velocity=start_velocity,
+                                              length=delta_x,
+                                              max_acceleration=self.axis['x']['max_acceleration'],
+                                              jerk=self.axis['x']['bow'])
             speed_vectors.append({
                 #how fast can we accelerate in X direction anyway
                 'x': max_speed_x,
@@ -814,18 +812,16 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
                 #ww can accelerate further
-                max_speed_y = get_target_velocity(start_velocity=last_y_speed,
-                                                  length=delta_y,
-                                                  max_acceleration=self.axis['y']['max_acceleration'],
-                                                  jerk=self.axis['y']['bow'])
+                start_velocity=last_y_speed
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['y_stop'] = True
-                max_speed_y = get_target_velocity(start_velocity=0,
-                                                  length=delta_y,
-                                                  max_acceleration=self.axis['y']['max_acceleration'],
-                                                  jerk=self.axis['y']['bow'])
+                start_velocity=0
+            max_speed_y = get_target_velocity(start_velocity=start_velocity,
+                                              length=delta_y,
+                                              max_acceleration=self.axis['y']['max_acceleration'],
+                                              jerk=self.axis['y']['bow'])
             speed_vectors.append({
                 #how fast can we accelerate in X direction anyway
                 'x': max_speed_y * scaled_x,
@@ -869,15 +865,13 @@ class PrintQueue():
                 delta_x = movement['delta_x']
                 #do we have to turn around in x or can we go on
                 if sign(delta_x) == sign(target_speed['x']):
-                    max_speed_x = get_target_velocity(start_velocity=target_speed['x'],
-                                                      length=delta_x,
-                                                      max_acceleration=x_max_acceleration,
-                                                      jerk=x_bow_)
+                    start_velocity=target_speed['x']
                 else:
-                    max_speed_x = get_target_velocity(start_velocity=0.0,
-                                                      length=delta_x,
-                                                      max_acceleration=x_max_acceleration,
-                                                      jerk=x_bow_)
+                    start_velocity=0.0
+                max_speed_x = get_target_velocity(start_velocity=start_velocity,
+                                                  length=delta_x,
+                                                  max_acceleration=x_max_acceleration,
+                                                  jerk=x_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_x,
@@ -887,15 +881,13 @@ class PrintQueue():
                 delta_y = movement['delta_y']
                 #do we have to turn around in y or can we go on
                 if sign(delta_y) == sign(target_speed['y']):
-                    max_speed_y = get_target_velocity(start_velocity=target_speed['y'],
-                                                      length=delta_y,
-                                                      max_acceleration=y_max_acceleration,
-                                                      jerk=y_bow_)
+                    start_velocity=target_speed['y']
                 else:
-                    max_speed_y = get_target_velocity(start_velocity=0.0,
-                                                      length=delta_y,
-                                                      max_acceleration=y_max_acceleration,
-                                                      jerk=y_bow_)
+                    start_velocity=0.0
+                max_speed_y = get_target_velocity(start_velocity=start_velocity,
+                                                  length=delta_y,
+                                                  max_acceleration=y_max_acceleration,
+                                                  jerk=y_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_y * move_vector['x'] / move_vector['y'],
