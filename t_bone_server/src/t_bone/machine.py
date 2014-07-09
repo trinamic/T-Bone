@@ -211,7 +211,7 @@ class Machine():
                 command.arguments.append(ord('s'))
             else:
                 command.arguments.append(ord('w'))
-            command.arguments.append(float(motor['speed']))
+            command.arguments.append(abs(float(motor['speed'])))
             acceleration_ = min(float(motor['acceleration']), MAXIMUM_FREQUENCY_ACCELERATION)
             command.arguments.append(acceleration_)
             bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)

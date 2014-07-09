@@ -19,13 +19,13 @@ from LEDS import LedManager
 __author__ = 'marcus'
 _logger = logging.getLogger(__name__)
 _axis_config = {
-    #maps axis name to config entry
+    # maps axis name to config entry
     'x': 'x-axis',
     'y': 'y-axis',
     'z': 'z-axis',
     'e': 'extruder',
 }
-#order of the axis
+# order of the axis
 _axis_names = ('x', 'y', 'z')
 
 
@@ -465,10 +465,10 @@ class Printer(Thread):
         e_speed = min(abs(relative_move_vector['v'] * relative_move_vector['e']), self.axis['e']['max_speed'])
         step_speed_vector = {
             #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
-            'x': convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),
-            'y': convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']),
-            'z': convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']),
-            'e': convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm'])
+            'x': max(convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),1),
+            'y': max(convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']),1),
+            'z': max(convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']),1),
+            'e': max(convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm']),1)
         }
         return step_pos, step_speed_vector
 
@@ -783,12 +783,12 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 #ww can accelerate further
-                start_velocity=last_x_speed
+                start_velocity = last_x_speed
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['x_stop'] = True
-                start_velocity=0
+                start_velocity = 0
             max_speed_x = get_target_velocity(start_velocity=start_velocity,
                                               length=delta_x,
                                               max_acceleration=self.axis['x']['max_acceleration'],
@@ -812,12 +812,12 @@ class PrintQueue():
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
                 #ww can accelerate further
-                start_velocity=last_y_speed
+                start_velocity = last_y_speed
             else:
                 #we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['y_stop'] = True
-                start_velocity=0
+                start_velocity = 0
             max_speed_y = get_target_velocity(start_velocity=start_velocity,
                                               length=delta_y,
                                               max_acceleration=self.axis['y']['max_acceleration'],
@@ -865,9 +865,9 @@ class PrintQueue():
                 delta_x = movement['delta_x']
                 #do we have to turn around in x or can we go on
                 if sign(delta_x) == sign(target_speed['x']):
-                    start_velocity=target_speed['x']
+                    start_velocity = target_speed['x']
                 else:
-                    start_velocity=0.0
+                    start_velocity = 0.0
                 max_speed_x = get_target_velocity(start_velocity=start_velocity,
                                                   length=delta_x,
                                                   max_acceleration=x_max_acceleration,
@@ -881,9 +881,9 @@ class PrintQueue():
                 delta_y = movement['delta_y']
                 #do we have to turn around in y or can we go on
                 if sign(delta_y) == sign(target_speed['y']):
-                    start_velocity=target_speed['y']
+                    start_velocity = target_speed['y']
                 else:
-                    start_velocity=0.0
+                    start_velocity = 0.0
                 max_speed_y = get_target_velocity(start_velocity=start_velocity,
                                                   length=delta_y,
                                                   max_acceleration=y_max_acceleration,
@@ -902,6 +902,12 @@ class PrintQueue():
 
 
 def get_target_velocity(start_velocity, length, max_acceleration, jerk):
+    #the simple case is simple
+    if not length or length == 0:
+        return start_velocity
+    #sanitize the values
+    length = abs(length)
+    start_velocity = abs(start_velocity)
     # according to 'constant jerk equations for a trajectory generator'
     jerk_p2 = jerk ** 2
     jerk_p3 = jerk ** 3
@@ -909,23 +915,23 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
     term_1 = sqrt((8.0 * (jerk ** 6 + 3.0 * jerk ** 4.0 + 3.0 * jerk_p2 + 1.0) * start_velocity ** 3 + 9.0 * (
         jerk_p3 + 5.0 * jerk) * length ** 2) * jerk / jerk_p2_pl5)
     term_2 = pow(3 * jerk_p2 * length / (jerk_p2_pl5) + term_1 * jerk / (jerk_p2_pl5), (1.0 / 3.0))
+    if not jerk_p2_pl5 or not term_2:
+        #this can happen - we do not do anything then …
+        return start_velocity
     ideal_s_curve_acceleration = term_2 \
                                  - 2 * (jerk_p3 * start_velocity + jerk * start_velocity) \
                                    / ((jerk_p2_pl5) * term_2)
     if ideal_s_curve_acceleration <= max_acceleration:
         # everything is fne we can go with a perfect s ramp
-        return ideal_s_curve_acceleration ** 2 / jerk + start_velocity
+        velocity = ideal_s_curve_acceleration ** 2 / jerk + start_velocity
     else:
         # we have to include a constant acceleration phase
         acceleration_p2 = max_acceleration ** 2
-        return 3 / 2 * acceleration_p2 / jerk + start_velocity \
-               - 1 / 6 * (9 * acceleration_p2 + 6 * jerk * start_velocity - sqrt(-12 * max_acceleration ** 4 * jerk_p2
-                                                                                 - 51 * max_acceleration ** 4
-                                                                                 + 72 * max_acceleration * jerk_p2 * length
-                                                                                 + 36 * jerk_p2 * start_velocity ** 2
-                                                                                 - 36 * (2 * acceleration_p2 * jerk_p3 -
-                                                                                         acceleration_p2 * jerk) * start_velocity)
-        ) / jerk
+        velocity = 3 / 2 * acceleration_p2 / jerk + start_velocity - 1 / 6 * (
+        9 * acceleration_p2 + 6 * jerk * start_velocity - sqrt(
+            -12 * max_acceleration ** 4 * jerk_p2 - 51 * max_acceleration ** 4 + 72 * max_acceleration * jerk_p2 * length + 36 * jerk_p2 * start_velocity ** 2 - 36 * (
+            2 * acceleration_p2 * jerk_p3 - acceleration_p2 * jerk) * start_velocity)         ) / jerk
+    return copysign(velocity, start_velocity)
 
 
 #from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
