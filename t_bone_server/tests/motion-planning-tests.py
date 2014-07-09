@@ -5,7 +5,7 @@ import unittest
 
 from hamcrest import assert_that, not_none, equal_to, close_to, less_than_or_equal_to, greater_than, less_than, \
     has_length, none
-from t_bone.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer
+from t_bone.printer import calculate_relative_vector, find_shortest_vector, PrintQueue, Printer, get_target_velocity
 
 
 class VectorTests(unittest.TestCase):
@@ -625,3 +625,76 @@ class VectorTests(unittest.TestCase):
 
         for command_number, machine_command in enumerate(machine_move_list):
             compare_move_configs(machine_command, move_configs[command_number]['x'], move_configs[command_number]['y'])
+
+
+    def test_acceleration(self):
+        # we use prime numbers in the hope to get more distinguishable numbers
+        jerk = 3.0
+        max_acceleration = 5.0
+        for v0 in (0.0, 7.0):
+            time_to_max_acceleration = constant_jerk_time_to_acceleration(j=jerk, a0=0, a=max_acceleration)
+            # first of all we test an acceleration below the max acceleration
+            test_time = time_to_max_acceleration*2.0 - 1.0
+            # for the acceleration_phase
+            acceleration_time = test_time / 2.0
+            target_acceleration = constant_jerk_acceleration(jerk, acceleration_time)
+            target_velocity_1 = constant_jerk_speed(jerk, acceleration_time, v0=v0)
+            target_distance_1 = constant_jerk_displacement(jerk, acceleration_time, v0=v0)
+            # for the deceleration phase
+            target_velocity_2 = constant_jerk_speed(-jerk, acceleration_time,
+                                                    a0=target_acceleration, v0=target_velocity_1)
+            target_distance_2 = constant_jerk_displacement(-jerk, acceleration_time,
+                                                           a0=target_acceleration, v0=target_velocity_1,
+                                                           x0=target_distance_1)
+            # and now test the s curve acceleration
+            calculated_target_velocity = get_target_velocity(start_velocity=0,
+                                                                          length=target_distance_2,
+                                                                          max_acceleration=max_acceleration,
+                                                                          jerk=jerk)
+            assert_that(calculated_target_velocity, less_than(target_velocity_2))
+            # and now for some constant acceleration phase
+            constant_acceleration_time = 1.0
+            acceleration_time = time_to_max_acceleration
+            test_time = time_to_max_acceleration + constant_acceleration_time
+            target_acceleration = constant_jerk_acceleration(jerk, acceleration_time)
+            target_velocity_1 = constant_jerk_speed(jerk, acceleration_time, v0=v0)
+            target_distance_1 = constant_jerk_displacement(jerk, acceleration_time, v0=v0)
+            target_velocity_2 = constant_acceleration_speed(target_acceleration, constant_acceleration_time,
+                                                            v0=target_velocity_1)
+            target_distance_2 = constant_acceleration_displacement(target_acceleration, constant_acceleration_time,
+                                                                   v0=target_velocity_1)
+            target_velocity_3 = constant_jerk_speed(-jerk, acceleration_time,
+                                                    a0=target_acceleration, v0=target_velocity_2)
+            target_distance_3 = constant_jerk_displacement(-jerk, acceleration_time,
+                                                           a0=target_acceleration, v0=target_velocity_2)
+            calculated_target_velocity = get_target_velocity(start_velocity=0,
+                                                                          length=target_distance_1 + target_distance_2 + target_distance_3,
+                                                                          max_acceleration=max_acceleration,
+                                                                          jerk=jerk)
+            assert_that(calculated_target_velocity, less_than(target_velocity_3))
+
+        pass
+
+
+def constant_acceleration_speed(a, t, v0=0):
+    return v0 + a * t
+
+
+def constant_acceleration_displacement(a, t, v0=0, x0=0):
+    return x0 + v0 * t + 0.5 * a * t ** 2
+
+
+def constant_jerk_acceleration(j, t, a0=0):
+    return a0 + j * t
+
+
+def constant_jerk_time_to_acceleration(j, a, a0=0):
+    return (a - a0) / j
+
+
+def constant_jerk_speed(j, t, a0=0, v0=0):
+    return v0 + a0 * t + 0.5 * j * t ** 2
+
+
+def constant_jerk_displacement(j, t, a0=0, v0=0, x0=0):
+    return x0 + v0 * t + 0.

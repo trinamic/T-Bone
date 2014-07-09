@@ -59,10 +59,10 @@ class Printer(Thread):
 
         self.led_manager = LedManager()
 
-        #todo why didn't this work as global constant?? - should be confugired anyway
+        # todo why didn't this work as global constant?? - should be confugired anyway
         self._FAN_OUTPUT = beagle_bone_pins.pwm_config[2]['out']
 
-        #finally create the machine
+        # finally create the machine
         self.machine = Machine(serial_port=serial_port, reset_pin=reset_pin)
         self.running = True
         self.start()
@@ -91,7 +91,7 @@ class Printer(Thread):
         self._default_homing_retraction = printer_config['home-retract']
         self.default_speed = printer_config['default-speed']
 
-        #todo this is the fan and should be configured
+        # todo this is the fan and should be configured
         PWM.start(self._FAN_OUTPUT, printer_config['fan-duty-cycle'], printer_config['fan-frequency'], 0)
 
         if 'heated-bed' in printer_config:
@@ -99,7 +99,7 @@ class Printer(Thread):
             self.heated_bed = self._configure_heater(bed_heater_config)
 
         extruder_heater_config = config['extruder']['heater']
-        #we do not care if it the extruder heate may not be given in the config
+        # we do not care if it the extruder heate may not be given in the config
         # # - the whole point of additive printing is pretty dull w/o an heated extruder
         self.extruder_heater = self._configure_heater(extruder_heater_config)
 
@@ -144,18 +144,18 @@ class Printer(Thread):
                 _logger.debug("Axis %s does not have endstops - or an left end stop, cannot home it.", home_axis)
             else:
                 _logger.info("Homing axis \'%s\' to zero", home_axis)
-                #read the homing config for the axis
+                # read the homing config for the axis
                 home_speed = self.axis[home_axis]['home_speed']
                 home_precision_speed = self.axis[home_axis]['home_precision_speed']
                 home_acceleration = self.axis[home_axis]['home_acceleration']
                 home_retract = self.axis[home_axis]['home_retract']
-                #TODO we just enforce the existence of a left endstop - is there a simpler way?
+                # TODO we just enforce the existence of a left endstop - is there a simpler way?
                 if self.axis[home_axis]['end-stops']['left']['type'] == 'virtual':
                     homing_right_position = convert_mm_to_steps(self.axis[home_axis]['end-stops']['left']['distance']
                                                                 , self.axis[home_axis]['steps_per_mm'])
                 else:
                     homing_right_position = 0
-                #convert everything from mm to steps
+                # convert everything from mm to steps
                 home_speed = convert_mm_to_steps(home_speed, self.axis[home_axis]['steps_per_mm'])
                 home_precision_speed = convert_mm_to_steps(home_precision_speed, self.axis[home_axis]['steps_per_mm'])
                 home_acceleration = convert_mm_to_steps(home_acceleration, self.axis[home_axis]['steps_per_mm'])
@@ -202,7 +202,7 @@ class Printer(Thread):
     def set_position(self, positions):
         if positions:
             positions['type'] = 'set_position'
-            #todo and what if there is no movement??
+            # todo and what if there is no movement??
             self._print_queue.add_movement(positions)
 
     def relative_move_to(self, position):
@@ -240,7 +240,7 @@ class Printer(Thread):
                     axis = self.axis[axis_name]
                     step_position = convert_mm_to_steps(position, axis['steps_per_mm'])
                     if 'motor' in axis and axis['motor']:
-                        #todo one of the above should be enough
+                        # todo one of the above should be enough
                         motor = axis['motor']
                         self.machine.set_pos(motor, step_position)
                     elif 'motors' in axis and axis['motors']:
@@ -260,7 +260,7 @@ class Printer(Thread):
         while self.running:
             if self.printing:
                 try:
-                    #get the next movement from stack
+                    # get the next movement from stack
                     movement = self._print_queue.next_movement(self._print_queue_wait_time)
                     self.execute_movement(movement)
                 except Empty:
@@ -271,7 +271,7 @@ class Printer(Thread):
 
     def _configure_axis(self, axis, config):
         axis_name = axis['name']
-        #let's see if we got one or more motors
+        # let's see if we got one or more motors
         if 'motor' in config:
             axis['motor'] = config['motor']
         elif 'motors' in config:
@@ -292,7 +292,7 @@ class Printer(Thread):
             axis['clock-referenced'] = False
 
         axis['max_speed'] = config['max-speed']
-        #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
+        # todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
         axis['max_speed_step'] = convert_mm_to_steps(config['max-speed'], config['steps-per-mm'])
         axis['max_acceleration'] = config['max-acceleration']
         axis['max_step_acceleration'] = convert_mm_to_steps(config['max-acceleration'], config['steps-per-mm'])
@@ -350,7 +350,7 @@ class Printer(Thread):
                             'type': 'virtual',
                             'position': position
                         }
-                        #left endstop get's 0 posiotn - makes sense and distance for homing use
+                        # left endstop get's 0 posiotn - makes sense and distance for homing use
                         if end_stop_pos == 'left':
                             axis['end-stops'][end_stop_pos]['distance'] = axis['end-stops'][end_stop_pos]['position']
                             axis['end-stops'][end_stop_pos]['position'] = 0
@@ -374,7 +374,7 @@ class Printer(Thread):
                         self.machine.configure_endstop(motor=axis['motor'], position=end_stop_pos,
                                                        end_stop_config=end_stop)
                     else:
-                        #endstop config is a bit more complicated for multiple motors
+                        # endstop config is a bit more complicated for multiple motors
                         if end_stop_config['polarity'] == 'virtual':
                             for motor in axis['motors']:
                                 self.machine.configure_endstop(motor=motor, position=end_stop_pos,
@@ -395,7 +395,7 @@ class Printer(Thread):
             for motor in axis['motors']:
                 self.machine.set_current(motor, current)
 
-        #let's see if there are any inverted motors
+        # let's see if there are any inverted motors
         if 'motor' in config:
             if "inverted" in config and config["inverted"]:
                 axis['inverted'] = True
@@ -412,7 +412,7 @@ class Printer(Thread):
 
     def _configure_heater(self, heater_config):
         pwm_number = heater_config['pwm'] - 1
-        #do we have a maximum duty cycle??
+        # do we have a maximum duty cycle??
         max_duty_cycle = None
         if 'max-duty-cycle' in heater_config:
             max_duty_cycle = heater_config['max-duty-cycle']
@@ -432,7 +432,7 @@ class Printer(Thread):
         return heater
 
     def _postconfig(self):
-        #we need the stepping rations for variuos calclutaions later
+        # we need the stepping rations for variuos calclutaions later
         self._x_step_conversion = float(self.axis['x']['steps_per_mm']) / float(self.axis['y']['steps_per_mm'])
         self._y_step_conversion = float(self.axis['y']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
         self._e_x_step_conversion = float(self.axis['e']['steps_per_mm']) / float(self.axis['x']['steps_per_mm'])
@@ -464,11 +464,11 @@ class Printer(Thread):
         z_speed = min(abs(relative_move_vector['v'] * relative_move_vector['z']), self.axis['z']['max_speed'])
         e_speed = min(abs(relative_move_vector['v'] * relative_move_vector['e']), self.axis['e']['max_speed'])
         step_speed_vector = {
-            #todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
-            'x': max(convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']),1),
-            'y': max(convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']),1),
-            'z': max(convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']),1),
-            'e': max(convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm']),1)
+            # todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
+            'x': max(convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']), 1),
+            'y': max(convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']), 1),
+            'z': max(convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']), 1),
+            'e': max(convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm']), 1)
         }
         return step_pos, step_speed_vector
 
@@ -540,8 +540,8 @@ class Printer(Thread):
     def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config):
         move_vector = movement['relative_move_vector']
         move_commands = []
-        if x_move_config and not y_move_config:  #silly, but simpler to understand
-            #move x motor
+        if x_move_config and not y_move_config:  # silly, but simpler to understand
+            # move x motor
             _logger.debug("Moving X axis to %s", step_pos['x'])
 
             move_commands = [
@@ -549,14 +549,14 @@ class Printer(Thread):
             ]
 
         elif y_move_config and not x_move_config:  # still silly, but stil easier to understand
-            #move y motor to position
+            # move y motor to position
             _logger.debug("Moving Y axis to %s", step_pos['y'])
 
             move_commands = [
                 y_move_config
             ]
         elif x_move_config and y_move_config:
-            #ok we have to see which axis has bigger movement
+            # ok we have to see which axis has bigger movement
             if abs(movement['delta_x']) > abs(movement['delta_y']):
                 y_factor = abs(move_vector['y'] / move_vector['x'] * self._y_step_conversion)
                 _logger.debug(
@@ -566,7 +566,7 @@ class Printer(Thread):
                 y_move_config['acceleration'] = x_move_config[
                                                     'acceleration'] * y_factor  # todo or the max of the config/scaled??
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
-                #move
+                # move
                 move_commands = [
                     x_move_config,
                     y_move_config
@@ -580,7 +580,7 @@ class Printer(Thread):
                 x_move_config['acceleration'] = y_move_config[
                                                     'acceleration'] * x_factor  # todo or the max of the config/scaled??
                 x_move_config['startBow'] = y_move_config['startBow'] * x_factor
-                #move
+                # move
                 move_commands = [
                     y_move_config,
                     x_move_config
@@ -601,16 +601,16 @@ class Printer(Thread):
             move_commands.append(e_move_config)
 
         if z_move_config:
-            #todo we know that the z_move config is a list - is this too specific?
+            # todo we know that the z_move config is a list - is this too specific?
             move_commands.extend(z_move_config)
 
-        #we update our position
-        #todo isn't there a speedier way
+        # we update our position
+        # todo isn't there a speedier way
         for axis_name in self.axis:
             self.axis_position[axis_name] = movement[axis_name]
 
         if move_commands:
-            #we move only if there is something to move …
+            # we move only if there is something to move …
             self.machine.move_to(move_commands)
 
 
@@ -618,18 +618,18 @@ class PrintQueue():
     def __init__(self, axis_config, min_length, max_length, default_target_speed=None, led_manager=None):
         self.axis = axis_config
         self.planning_list = list()
-        self.queue_size = min_length - 1  #since we got one extra
+        self.queue_size = min_length - 1  # since we got one extra
         self.queue = Queue(maxsize=(max_length - min_length))
         self.previous_movement = None
-        #we will use the last_movement as special case since it may not fully configured
+        # we will use the last_movement as special case since it may not fully configured
         self.default_target_speed = default_target_speed
         self.led_manager = led_manager
 
     def add_movement(self, target_position, timeout=None):
-        #calculate the target
+        # calculate the target
         move = self._extract_movement_values(target_position)
-        #and see how fast we can allowable go
-        #TODO currently the maximum achievable speed only considers x & y movements
+        # and see how fast we can allowable go
+        # TODO currently the maximum achievable speed only considers x & y movements
         maximum_achievable_speed = self._maximum_achievable_speed(move)
         move['max_achievable_speed_vector'] = maximum_achievable_speed
         #and since we do not know it better the first guess is that the final speed is the max speed
@@ -679,8 +679,8 @@ class PrintQueue():
 
         if target_position['type'] == 'move':
             move['type'] = 'move'
-            #extract values
-            #todo this can be for loop over axis_names
+            # extract values
+            # todo this can be for loop over axis_names
             if 'x' in target_position:
                 move['x'] = target_position['x']
             else:
@@ -728,10 +728,10 @@ class PrintQueue():
                 move_vector['v'] = move['target_speed'] / move_vector['l']
             except ZeroDivisionError:
                 move_vector['v'] = 0
-            #save the move vector for later use ...
+            # save the move vector for later use ...
             move['relative_move_vector'] = move_vector
         elif target_position['type'] == 'set_position':
-            #a set position also means that we do not move it …
+            # a set position also means that we do not move it …
             move['x'] = last_x
             move['y'] = last_y
             move['z'] = last_z
@@ -766,7 +766,7 @@ class PrintQueue():
         delta_y = move['delta_y']
         delta_e = move['delta_e']
         normalized_move_vector = move['relative_move_vector']
-        #derrive the various speed vectors from the movement … for desired head and maximum axis speed
+        # derrive the various speed vectors from the movement … for desired head and maximum axis speed
         speed_vectors = [
             {
                 # add the desired speed vector as initial value
@@ -777,15 +777,15 @@ class PrintQueue():
         if delta_x != 0:
             scaled_y = normalized_move_vector['y'] / normalized_move_vector['x']
             speed_vectors.append({
-                #what would the speed vector for max x speed look like
+                # what would the speed vector for max x speed look like
                 'x': copysign(self.axis['x']['max_speed'], normalized_move_vector['x']),
                 'y': self.axis['x']['max_speed'] * copysign(scaled_y, normalized_move_vector['y'])
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
-                #ww can accelerate further
+                # ww can accelerate further
                 start_velocity = last_x_speed
             else:
-                #we HAVE to turn around!
+                # we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['x_stop'] = True
                 start_velocity = 0
@@ -794,27 +794,27 @@ class PrintQueue():
                                               max_acceleration=self.axis['x']['max_acceleration'],
                                               jerk=self.axis['x']['bow'])
             speed_vectors.append({
-                #how fast can we accelerate in X direction anyway
+                # how fast can we accelerate in X direction anyway
                 'x': max_speed_x,
                 'y': max_speed_x * scaled_y
             })
         else:
-            #we HAVE to turn around!
+            # we HAVE to turn around!
             if self.previous_movement:
                 self.previous_movement['x_stop'] = True
 
         if delta_y != 0:
             scaled_x = normalized_move_vector['x'] / normalized_move_vector['y']
             speed_vectors.append({
-                #what would the maximum speed vector for y movement look like
+                # what would the maximum speed vector for y movement look like
                 'x': self.axis['y']['max_speed'] * scaled_x,
                 'y': copysign(self.axis['y']['max_speed'], normalized_move_vector['y'])
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
-                #ww can accelerate further
+                # ww can accelerate further
                 start_velocity = last_y_speed
             else:
-                #we HAVE to turn around!
+                # we HAVE to turn around!
                 if self.previous_movement:
                     self.previous_movement['y_stop'] = True
                 start_velocity = 0
@@ -823,12 +823,12 @@ class PrintQueue():
                                               max_acceleration=self.axis['y']['max_acceleration'],
                                               jerk=self.axis['y']['bow'])
             speed_vectors.append({
-                #how fast can we accelerate in X direction anyway
+                # how fast can we accelerate in X direction anyway
                 'x': max_speed_y * scaled_x,
                 'y': max_speed_y
             })
         else:
-            #we HAVE to turn around!
+            # we HAVE to turn around!
             if self.previous_movement:
                 self.previous_movement['y_stop'] = True
         if self.previous_movement:
@@ -838,7 +838,7 @@ class PrintQueue():
                 self.previous_movement['e_stop'] = True
 
         max_local_speed_vector = find_shortest_vector(speed_vectors)
-        #the minimum achievable speed is the minimum of all those local vectors
+        # the minimum achievable speed is the minimum of all those local vectors
 
         return max_local_speed_vector
 
@@ -853,9 +853,9 @@ class PrintQueue():
         y_max_acceleration = self.axis['y']['max_acceleration']
 
         target_speed = move['speed']
-        #todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
-        #we go back in the list and ensure that we can achieve the target speed with acceleration
-        #and deceleration over the distance
+        # todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
+        # we go back in the list and ensure that we can achieve the target speed with acceleration
+        # and deceleration over the distance
         for movement in reversed(self.planning_list):
             speed_vectors = [
                 movement['speed']
@@ -902,39 +902,33 @@ class PrintQueue():
 
 
 def get_target_velocity(start_velocity, length, max_acceleration, jerk):
-    #the simple case is simple
+    # the simple case is simple
     if not length or length == 0:
         return start_velocity
-    #sanitize the values
-    length = abs(length)
-    start_velocity = abs(start_velocity)
+    # sanitize the values and convert to 'mathematics' form
+    s = abs(float(length))
+    v0 = abs(float(start_velocity))
+    j = jerk
     # according to 'constant jerk equations for a trajectory generator'
-    jerk_p2 = jerk ** 2
-    jerk_p3 = jerk ** 3
-    jerk_p2_pl5 = jerk_p2 + 5.0
-    term_1 = sqrt((8.0 * (jerk ** 6 + 3.0 * jerk ** 4.0 + 3.0 * jerk_p2 + 1.0) * start_velocity ** 3 + 9.0 * (
-        jerk_p3 + 5.0 * jerk) * length ** 2) * jerk / jerk_p2_pl5)
-    term_2 = pow(3 * jerk_p2 * length / (jerk_p2_pl5) + term_1 * jerk / (jerk_p2_pl5), (1.0 / 3.0))
-    if not jerk_p2_pl5 or not term_2:
-        #this can happen - we do not do anything then …
-        return start_velocity
-    ideal_s_curve_acceleration = term_2 \
-                                 - 2 * (jerk_p3 * start_velocity + jerk * start_velocity) \
-                                   / ((jerk_p2_pl5) * term_2)
+    sqrt_1_third = sqrt(1.0 / 3.0)
+    j_p2 = j ** 2
+    term1 = pow((1.0 / 2.0 * j_p2 * s + 1.0 / 6.0 * sqrt_1_third *
+                 sqrt((27.0 * j * s ** 2 + 32.0 * v0 ** 3) * j) * j),
+                (1.0 / 3.0))
+    ideal_s_curve_acceleration = -2.0 / 3.0 * j * v0 / term1 + term1
     if ideal_s_curve_acceleration <= max_acceleration:
         # everything is fne we can go with a perfect s ramp
-        velocity = ideal_s_curve_acceleration ** 2 / jerk + start_velocity
+        velocity = v0 + ideal_s_curve_acceleration ** 2 / j
     else:
         # we have to include a constant acceleration phase
-        acceleration_p2 = max_acceleration ** 2
-        velocity = 3 / 2 * acceleration_p2 / jerk + start_velocity - 1 / 6 * (
-        9 * acceleration_p2 + 6 * jerk * start_velocity - sqrt(
-            -12 * max_acceleration ** 4 * jerk_p2 - 51 * max_acceleration ** 4 + 72 * max_acceleration * jerk_p2 * length + 36 * jerk_p2 * start_velocity ** 2 - 36 * (
-            2 * acceleration_p2 * jerk_p3 - acceleration_p2 * jerk) * start_velocity)         ) / jerk
+        a=max_acceleration
+        ap_2 = a ** 2
+        velocity = -a + 3.0/2.0* ap_2 /j + v0 - 1.0/6.0*(9.0* ap_2 + 6.0*j*v0
+                                                         - sqrt(21.0*a**4 - 12.0* ap_2 * j_p2 + 72.0*a* j_p2 *s - 36.0* ap_2 *j*v0 + 36.0* j_p2 *v0**2))/j
     return copysign(velocity, start_velocity)
 
 
-#from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
+# from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
 def cbrt(x):
     from math import pow
 
