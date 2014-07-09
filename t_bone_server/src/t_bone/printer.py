@@ -465,8 +465,8 @@ class Printer(Thread):
         e_speed = min(abs(relative_move_vector['v'] * relative_move_vector['e']), self.axis['e']['max_speed'])
         step_speed_vector = {
             # todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
-            'x': max(convert_mm_to_steps(movement['speed']['x'], self.axis['x']['steps_per_mm']), 1),
-            'y': max(convert_mm_to_steps(movement['speed']['y'], self.axis['y']['steps_per_mm']), 1),
+            'x': max(convert_mm_to_steps(abs(movement['speed']['x']), self.axis['x']['steps_per_mm']), 1),
+            'y': max(convert_mm_to_steps(abs(movement['speed']['y']), self.axis['y']['steps_per_mm']), 1),
             'z': max(convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']), 1),
             'e': max(convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm']), 1)
         }
