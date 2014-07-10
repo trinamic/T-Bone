@@ -88,7 +88,7 @@
         },
         "homing-timeout": 15,
         "home-retract": 10,
-        "heated-bed-disabled": {
+        "heated-bed": {
             "pwm": 1,
             "type": "epcos-100k-reprapteile",
             "max-duty-cycle": 100,
