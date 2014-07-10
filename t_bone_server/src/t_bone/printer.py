@@ -163,9 +163,9 @@ class Printer(Thread):
                     home_speed = convert_velocity_clock_ref_to_realtime_ref(home_speed)
                     home_precision_speed = convert_velocity_clock_ref_to_realtime_ref(home_precision_speed)
                     home_acceleration = convert_acceleration_clock_ref_to_realtime_ref(home_acceleration)
-                    #no home jerk - since this only applies to 5041 axis w/o jerk control
+                    # no home jerk - since this only applies to 5041 axis w/o jerk control
                 home_retract = convert_mm_to_steps(home_retract, self.axis[home_axis]['steps_per_mm'])
-                #make a config out of it
+                # make a config out of it
                 if self.axis[home_axis]['motor']:
                     homing_config = {
                         'motor': self.axis[home_axis]['motor'],
@@ -403,7 +403,7 @@ class Printer(Thread):
                 axis['inverted'] = False
             self.machine.invert_motor(axis["motor"], axis['inverted'])
         else:
-            #todo this is ok - but no perfect structure
+            # todo this is ok - but no perfect structure
             if "inverted" in config:
                 axis['inverted'] = config["inverted"]
                 for motor in axis['motors']:
@@ -632,7 +632,7 @@ class PrintQueue():
         # TODO currently the maximum achievable speed only considers x & y movements
         maximum_achievable_speed = self._maximum_achievable_speed(move)
         move['max_achievable_speed_vector'] = maximum_achievable_speed
-        #and since we do not know it better the first guess is that the final speed is the max speed
+        # and since we do not know it better the first guess is that the final speed is the max speed
         move['speed'] = maximum_achievable_speed
         #now we can push the previous move to the queue and recalculate the whole queue
         if self.previous_movement:
@@ -834,7 +834,10 @@ class PrintQueue():
                 self.previous_movement['y_stop'] = True
         if self.previous_movement:
             if delta_e != 0 and sign(delta_e) == sign(self.previous_movement['delta_e']):
-                self.previous_movement['e_stop'] = False
+                e_stop = ('x_stop' in self.previous_movement and self.previous_movement['x_stop']) \
+                            and \
+                         ('y_stop' in self.previous_movement and self.previous_movement['y_stop'])
+                self.previous_movement['e_stop'] = e_stop
             else:
                 self.previous_movement['e_stop'] = True
 
@@ -853,24 +856,26 @@ class PrintQueue():
         x_max_acceleration = self.axis['x']['max_acceleration']
         y_max_acceleration = self.axis['y']['max_acceleration']
 
-        target_speed = move['speed']
+        target_move = move
         # todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
         # we go back in the list and ensure that we can achieve the target speed with acceleration
         # and deceleration over the distance
         for movement in reversed(self.planning_list):
+            target_speed = target_move['speed']
             speed_vectors = [
                 movement['speed']
             ]
             move_vector = movement['relative_move_vector']
             if move_vector['x'] != 0:
-                delta_x = movement['delta_x']
-                #do we have to turn around in x or can we go on
-                if sign(delta_x) == sign(target_speed['x']):
-                    start_velocity = target_speed['x']
-                else:
+                # do we have to turn around in x or can we go on
+                if 'x_stop' in movement and movement['x_stop']:
                     start_velocity = 0.0
+                    length = movement['delta_x']
+                else:
+                    start_velocity = target_speed['x']
+                    length = target_move['delta_x']
                 max_speed_x = get_target_velocity(start_velocity=start_velocity,
-                                                  length=delta_x,
+                                                  length=length,
                                                   max_acceleration=x_max_acceleration,
                                                   jerk=x_bow_)
                 speed_vectors.append({
@@ -879,14 +884,15 @@ class PrintQueue():
                     'y': max_speed_x * move_vector['y'] / move_vector['x']
                 })
             if move_vector['y'] != 0:
-                delta_y = movement['delta_y']
-                #do we have to turn around in y or can we go on
-                if sign(delta_y) == sign(target_speed['y']):
-                    start_velocity = target_speed['y']
-                else:
+                # do we have to turn around in y or can we go on
+                if 'y_stop' in movement and movement['y_stop']:
                     start_velocity = 0.0
+                    length = movement['delta_y']
+                else:
+                    start_velocity = target_speed['y']
+                    length = target_move['delta_y']
                 max_speed_y = get_target_velocity(start_velocity=start_velocity,
-                                                  length=delta_y,
+                                                  length=length,
                                                   max_acceleration=y_max_acceleration,
                                                   jerk=y_bow_)
                 speed_vectors.append({
@@ -895,8 +901,8 @@ class PrintQueue():
                     'y': max_speed_y
                 })
             movement['speed'] = find_shortest_vector(speed_vectors)
-            #todo in theory we can stop if we did not change the speed vector ...
-            target_speed = movement['speed']
+            # todo in theory we can stop if we did not change the speed vector ...
+            target_move = movement
 
         if self.led_manager:
             self.led_manager.light(2, False)
@@ -922,10 +928,11 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
         velocity = v0 + ideal_s_curve_acceleration ** 2 / j
     else:
         # we have to include a constant acceleration phase
-        a=max_acceleration
+        a = max_acceleration
         ap_2 = a ** 2
-        velocity = -a + 3.0/2.0* ap_2 /j + v0 - 1.0/6.0*(9.0* ap_2 + 6.0*j*v0
-                                                         - sqrt(21.0*a**4 - 12.0* ap_2 * j_p2 + 72.0*a* j_p2 *s - 36.0* ap_2 *j*v0 + 36.0* j_p2 *v0**2))/j
+        velocity = -a + 3.0 / 2.0 * ap_2 / j + v0 - 1.0 / 6.0 * (9.0 * ap_2 + 6.0 * j * v0
+                                                                 - sqrt(
+            21.0 * a ** 4 - 12.0 * ap_2 * j_p2 + 72.0 * a * j_p2 * s - 36.0 * ap_2 * j * v0 + 36.0 * j_p2 * v0 ** 2)) / j
     return copysign(velocity, start_velocity)
 
 
