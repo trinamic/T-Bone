@@ -133,7 +133,7 @@ def read_gcode_to_printer(line, printer):
                 printer.heated_bed.set_temperature(temperature)
                 #todo can this go wrong??
             else:
-                _logger.info("Setting be temperature to %s got ignored", temperature)
+                _logger.warn("Setting be temperature to %s got ignored", temperature)
     elif "M143" == gcode.code:
         #Maximum hot-end temperature
         #Example: M143 S275"

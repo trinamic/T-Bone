@@ -203,7 +203,7 @@ class Machine():
         command = MachineCommand()
         command.command_number = 10
         command.arguments = []
-        _logger.info("Adding Move:")
+        _logger.debug("Adding Move:")
         for motor in motors:
             command.arguments.append(int(motor['motor']))
             command.arguments.append(int(motor['target']))
@@ -216,7 +216,7 @@ class Machine():
             command.arguments.append(acceleration_)
             bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)
             command.arguments.append(bow_)
-            _logger.info("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
+            _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
                          motor['speed'])
 
         reply = self.machine_connection.send_command(command)
