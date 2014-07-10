@@ -780,7 +780,7 @@ class PrintQueue():
             speed_vectors.append({
                 # what would the speed vector for max x speed look like
                 'x': copysign(self.axis['x']['max_speed'], normalized_move_vector['x']),
-                'y': self.axis['x']['max_speed'] * copysign(scaled_y, normalized_move_vector['y'])
+                'y': copysign(self.axis['x']['max_speed'], normalized_move_vector['y']) * scaled_y
             })
             if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
                 # ww can accelerate further
@@ -808,7 +808,7 @@ class PrintQueue():
             scaled_x = normalized_move_vector['x'] / normalized_move_vector['y']
             speed_vectors.append({
                 # what would the maximum speed vector for y movement look like
-                'x': self.axis['y']['max_speed'] * scaled_x,
+                'x': copysign(self.axis['y']['max_speed'], normalized_move_vector['x']) * scaled_x,
                 'y': copysign(self.axis['y']['max_speed'], normalized_move_vector['y'])
             })
             if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
