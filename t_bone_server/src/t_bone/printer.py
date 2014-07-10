@@ -586,17 +586,17 @@ class Printer(Thread):
                     x_move_config
                 ]
         if e_move_config:
-            if x_move_config and not (y_move_config and move_vector['x'] < move_vector['y']):
+            if x_move_config and not (y_move_config and abs(move_vector['x']) < abs(move_vector['y'])):
                 factor = abs(move_vector['e'] / move_vector['x'] * self._e_x_step_conversion)
                 e_move_config['speed'] = factor * x_move_config['speed']
                 e_move_config['acceleration'] = factor * x_move_config[
-                    'acceleration']  # todo or the max of the config/scaled??
+                    'acceleration']
                 e_move_config['startBow'] = factor * x_move_config['startBow']
             elif y_move_config:
                 factor = abs(move_vector['e'] / move_vector['y'] * self._e_y_step_conversion)
                 e_move_config['speed'] = factor * y_move_config['speed']
                 e_move_config['acceleration'] = factor * y_move_config[
-                    'acceleration']  # todo or the max of the config/scaled??
+                    'acceleration']
                 e_move_config['startBow'] = factor * y_move_config['startBow']
             move_commands.append(e_move_config)
 
@@ -752,6 +752,7 @@ class PrintQueue():
             for axis, value in target_position.iteritems():
                 if not axis == 'type':
                     move['s%s' % axis] = value
+                    move[axis] = value
 
         return move
 
