@@ -218,8 +218,5 @@ def decode_text_and_number(line):
         if match:
             text = match.group(1)
             number = match.group(2)
-            if "." in number:
-                result = [text, float(number)]
-            else:
-                result = [text, int(number)]
+            result = [text, float(number)]
     return result
