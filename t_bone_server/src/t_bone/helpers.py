@@ -8,7 +8,7 @@ __author__ = 'marcus'
 def convert_mm_to_steps(millimeters, conversion_factor):
     if millimeters is None:
         return None
-    return int(float(millimeters) * float(conversion_factor))
+    return float(millimeters) * float(conversion_factor)
 
 
 def convert_velocity_clock_ref_to_realtime_ref(velocity):
