@@ -89,7 +89,7 @@
         "homing-timeout": 15,
         "home-retract": 10,
         "heated-bed": {
-            "pwm": 1,
+            "pwm": 2,
             "type": "epcos-100k",
             "max-duty-cycle": 100,
             "pid-config": {

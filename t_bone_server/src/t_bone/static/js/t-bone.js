@@ -36,7 +36,12 @@ $().ready(function () {
             $("#printing-status-text").text(eventData.status_data.print_status);
             $("#extruder-temperature-text").text(eventData.status_data.extruder_temperature);
             $("#extruder-temperature-page-text").text(eventData.status_data.extruder_temperature);
-            $("#extruder-temperature-set-text").text(eventData.status_data.extruder_set_temperature);
+            $("#extruder-set-temperature-text").text(eventData.status_data.extruder_set_temperature);
+            if (typeof eventData.status_data.bed_temperature != "undefined") {
+                $("#bed-temperature-text").text(eventData.status_data.bed_temperature);
+                $("#bed-temperature-page-text").text(eventData.status_data.bed_temperature);
+                $("#bed-set-temperature-text").text(eventData.status_data.bed_set_temperature);
+            }
             if (eventData.status_data.printing) {
                 $("#printing-progress").show();
                 $("#printing-progress-bar").width(eventData.status_data.lines_printed_percent + "%");

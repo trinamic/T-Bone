@@ -4,7 +4,6 @@ from genericpath import isfile
 import json
 import logging
 import os
-from string import join
 import threading
 
 from flask import Flask, render_template, request, redirect
@@ -17,7 +16,7 @@ from t_bone import json_config_file
 T_BONE_LOG_FILE = '/var/log/t_bone.log'
 
 _logger = logging.getLogger(__name__)
-#this is THE printer - just a dictionary with anything
+# this is THE printer - just a dictionary with anything
 _printer = None
 _print_thread = None
 _printer_busy = False
@@ -111,6 +110,13 @@ def control():
                 _printer.extruder_heater.set_temperature(float(new_temp_))
             except:
                 _logger.error("unable to set temperature to %s", new_temp_)
+        if 'set-bed-temp' in request.form:
+            if _printer.heated_bed:
+                new_temp_ = request.form['set-bed-temp']
+                try:
+                    _printer.heated_bed.set_temperature(float(new_temp_))
+                except:
+                    _logger.error("unable to set temperature to %s", new_temp_)
     template_dictionary = templating_defaults()
     template_dictionary['axis_directions'] = axis_directions
     return render_template("move.html", **template_dictionary)
@@ -184,7 +190,12 @@ def templating_defaults():
                 float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
         templating_dictionary['extruder_temperature'] = "%0.1f" % _printer.extruder_heater.temperature
         templating_dictionary['extruder_set_temperature'] = "%0.1f" % _printer.extruder_heater.get_set_temperature()
-
+        if _printer.heated_bed:
+            templating_dictionary['heated_bed'] = True
+            templating_dictionary['bed_temperature'] = "%0.1f" % _printer.heated_bed.temperature
+            templating_dictionary['bed_set_temperature'] = "%0.1f" % _printer.heated_bed.get_set_temperature()
+        else:
+            templating_dictionary['heated_bed'] = False
     return templating_dictionary
 
 
@@ -200,6 +211,9 @@ def status():
                    'extruder_temperature': "%0.1f" % _printer.extruder_heater.temperature,
                    'extruder_set_temperature': "%0.1f" % _printer.extruder_heater.get_set_temperature(),
     }
+    if _printer.heated_bed:
+        base_status['bed_temperature'] = "%0.1f" % _printer.heated_bed.temperature
+        base_status['bed_set_temperature'] = "%0.1f" % _printer.heated_bed.get_set_temperature()
     if _printer.printing:
         base_status['print_status'] = 'Printing'
     else:

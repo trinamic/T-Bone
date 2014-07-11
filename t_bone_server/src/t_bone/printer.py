@@ -412,6 +412,8 @@ class Printer(Thread):
 
     def _configure_heater(self, heater_config):
         pwm_number = heater_config['pwm'] - 1
+        if pwm_number<0 or pwm_number>=len(beagle_bone_pins.pwm_config):
+            raise PrinterError("PWM pins can only be between 1 and %1",len(beagle_bone_pins.pwm_config))
         # do we have a maximum duty cycle??
         max_duty_cycle = None
         if 'max-duty-cycle' in heater_config:

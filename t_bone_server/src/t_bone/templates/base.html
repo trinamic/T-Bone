@@ -17,8 +17,8 @@
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
 </head>
 
@@ -65,8 +65,12 @@
             <p class="text-muted">
                 {{ full_name }},
                 Status: <span id="printing-status-text">{{ print_status }}</span>,
-                Extruder Temperature <span id="extruder-temperature-text">0</span>°C
-                    — Target <span id="extruder-set-temperature-text">0</span>°C
+                Extruder Temperature: <span id="extruder-temperature-text">0</span>°C
+                — Target <span id="extruder-set-temperature-text">0</span>°C
+                {% if heated_bed %}
+                , Heated Bed Temperature: <span id="bed-temperature-text">0</span>°C
+                — Target <span id="bed-set-temperature-text">0</span>°C
+                {%endif%}
             </p>
 
             <div class="progress" id="printing-progress">

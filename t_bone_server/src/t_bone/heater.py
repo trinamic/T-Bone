@@ -95,6 +95,11 @@ class HeaterThread(Thread):
         self.removeQueue = Queue()
         self.active = True
 
+        #this circumvents https://github.com/adafruit/adafruit-beaglebone-io-python/issues/31
+        #PWM.start("P9_16")
+        #PWM.start("P9_14")
+        #PWM.start("P8_19")
+
         self.start()
 
     def add_heater(self, heater):
@@ -143,10 +148,11 @@ class HeaterThread(Thread):
                 try:
                     heater.check_heater()
                 except Exception as e:
-                    _logger.error("Error updating heater, rmoving" % heater, e)
-                    PWM.set_duty_cycle(heater.output, 0)
-                    PWM.stop(heater.output)
-                    self.heaterList.remove(heater)
+                    _logger.error("Error updating heater %s: %s" % (heater,e))
+                    #PWM.set_duty_cycle(heater.output, 0)
+                    #PWM.stop(heater.output)
+                    #self.heaterList.remove(heater)
+                    pass
         time.sleep(_DEFAULT_READOUT_DELAY)
         # finally stop all heaters
         for heater in self.heaterList:
@@ -158,6 +164,7 @@ class HeaterThread(Thread):
         for heater in self.heaterList:
             self.removeQueue.put(heater)
         self.active = False
+        PWM.cleanup()
 
 # due to threading problems in ADC
 heaterThread = HeaterThread()
@@ -169,9 +176,19 @@ class Thermometer(object):
         self._input = analog_input
 
     def read(self):
-        # adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
-        ADC.read(self._input)
-        value = ADC.read(self._input)  # read 0 to 1
+        value = None
+        tries = 0
+        while not value:
+            try:
+                # adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+                ADC.read(self._input)
+                value = ADC.read(self._input)  # read 0 to 1
+            except IOError:
+                time.sleep(0.01)
+                tries += 1
+                if tries > 10:
+                    raise Exception("No ADC reading %s successfull" % self._input)
+
         return thermistors.get_thermistor_reading(self._thermistor_type, value)
 
 
@@ -183,7 +200,7 @@ class Thermometer(object):
 #
 # cnr437@gmail.com
 #
-#######	Example	#########
+# ######	Example	#########
 #
 #p=PID(3.0,0.4,1.2)
 #p.setPoint(5.0)

@@ -3,6 +3,9 @@
 opkg update
 opkg install python-pip python-setuptools python-smbus
 
+#requirde due to a bug https://groups.google.com/forum/#!topic/beagleboard/aSlPCNYcVjw
+easy_install pip==1.2.1
+
 #download the tbone source
 curl -o t-bone.zip https://github.com/interactive-matter/trinamic3d/archive/master.zip
 unzip t-bone.zip
