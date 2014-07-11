@@ -876,12 +876,10 @@ class PrintQueue():
                 # do we have to turn around in x or can we go on
                 if 'x_stop' in movement and movement['x_stop']:
                     start_velocity = 0.0
-                    length = movement['delta_x']
                 else:
                     start_velocity = target_speed['x']
-                    length = target_move['delta_x']
                 max_speed_x = get_target_velocity(start_velocity=start_velocity,
-                                                  length=length,
+                                                  length=target_move['delta_x'],
                                                   max_acceleration=x_max_acceleration,
                                                   jerk=x_bow_)
                 speed_vectors.append({
@@ -893,12 +891,10 @@ class PrintQueue():
                 # do we have to turn around in y or can we go on
                 if 'y_stop' in movement and movement['y_stop']:
                     start_velocity = 0.0
-                    length = movement['delta_y']
                 else:
                     start_velocity = target_speed['y']
-                    length = target_move['delta_y']
                 max_speed_y = get_target_velocity(start_velocity=start_velocity,
-                                                  length=length,
+                                                  length=target_move['delta_y'],
                                                   max_acceleration=y_max_acceleration,
                                                   jerk=y_bow_)
                 speed_vectors.append({
