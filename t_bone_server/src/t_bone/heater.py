@@ -1,4 +1,6 @@
+# coding=utf-8
 from Adafruit_BBIO import ADC, PWM, GPIO
+from Queue import Queue
 from flask import logging
 from threading import Thread
 import threading
@@ -14,18 +16,17 @@ _DEFAULT_MAX_TEMPERATURE = 250
 ADC.setup()
 
 
-class Heater(Thread):
+class Heater():
     def __init__(self, thermometer, pid_controller, output, maximum_duty_cycle=None, current_measurement=None,
                  machine=None,
                  pwm_frequency=None, max_temperature=None):
-        super(Heater, self).__init__()
         if max_temperature:
             self.max_temperature = max_temperature
         else:
             self.max_temperature = _DEFAULT_MAX_TEMPERATURE
         self._thermometer = thermometer
         self._pid_controller = pid_controller
-        self._output = output
+        self.output = output
         if maximum_duty_cycle:
             self._maximum_duty_cycle = float(maximum_duty_cycle)
         else:
@@ -33,7 +34,6 @@ class Heater(Thread):
         self._current_measurement = current_measurement
         self._machine = machine
 
-        self.active = False
         self._set_temperature = 0.0
         self.temperature = 0.0
         self.current_consumption = 0.0
@@ -46,13 +46,8 @@ class Heater(Thread):
         self.readout_delay = _DEFAULT_READOUT_DELAY
         self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
         self._wait_for_current_readout = 0
-
-        with _PWM_LOCK:
-            PWM.start(self._output, 0.0, self.pwm_frequency, 0)
-        self.start()
-
-    def stop(self):
-        self.active = False
+        # initialize ourselve by adding us to the heatqueue
+        heaterThread.add_heater(self)
 
     def set_temperature(self, temperature):
         if not self.max_temperature or temperature < self.max_temperature:
@@ -61,33 +56,26 @@ class Heater(Thread):
         else:
             _logger.warn("Temperature %s too high, got ignored", temperature)
 
+
     def get_set_temperature(self):
         return self._set_temperature
 
 
-    def run(self):
-        self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
-        self.active = True
-        try:
-            while self.active:
-                self.temperature = self._thermometer.read()
-                self.duty_cycle = self._pid_controller.update(self.temperature)
-                self._apply_duty_cycle()
-                time.sleep(self.readout_delay)
-        except Exception as e:
-            _logger.error("Heater thread crashed %s", e)
-        finally:
-            PWM.stop(self._output)
+    def check_heater(self):
+        self.temperature = self._thermometer.read()
+        self.duty_cycle = self._pid_controller.update(self.temperature)
+        self._apply_duty_cycle()
 
     def _apply_duty_cycle(self):
-        #todo this is a hack because the current reading si only avail on arduino
+        # todo this is a hack because the current reading is only avail on arduino
+        # todo 2 - ist it an good idea to directly set the pwm dutycycle here??
         try:
             if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
                 self._wait_for_current_readout = 0
                 with _PWM_LOCK:
-                    PWM.set_duty_cycle(self._output, 100.0)
-                #self.current_consumption = self._machine.read_current(self._current_measurement) \
-                #                           / 1024.0 * 1.8 * 121.0 / 10.0
+                    PWM.set_duty_cycle(self.output, 100.0)
+                    # self.current_consumption = self._machine.read_current(self._current_measurement) \
+                    # / 1024.0 * 1.8 * 121.0 / 10.0
             else:
                 self._wait_for_current_readout += self.readout_delay
         finally:
@@ -96,13 +84,83 @@ class Heater(Thread):
             if self.temperature >= self.max_temperature:
                 self.duty_cycle = 0.0
             with _PWM_LOCK:
-                PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
+                PWM.set_duty_cycle(self.output, min(self.duty_cycle, self._maximum_duty_cycle))
+
+
+class HeaterThread(Thread):
+    def __init__(self):
+        super(HeaterThread, self).__init__(name='Heater Thread')
+        self.heaterList = []
+        self.addQueue = Queue()
+        self.removeQueue = Queue()
+        self.active = True
+
+        self.start()
+
+    def add_heater(self, heater):
+        # just queue for adding …
+        if not heater in self.heaterList:
+            self.addQueue.put(heater)
+        else:
+            raise Exception("The heater %s has been added before!" % heater)
+
+    def remove_heater(self, heater):
+        if heater in self.heaterList:
+            self.heaterList.pop(heater)
+        self.removeQueue.put(heater)
+
+    def stop(self):
+        self.active = False
+
+    def run(self):
+        self.active = True
+        while self.active:
+            # check if new heaters have been added?
+            heaters_changed = False
+            while not self.addQueue.empty():
+                heater_to_add = self.addQueue.get()
+                if heater_to_add:
+                    try:
+                        with _PWM_LOCK:
+                            PWM.start(heater_to_add.output, 0.0, heater_to_add.pwm_frequency, 0)
+                    except Exception as e:
+                        _logger.error("Unable to add heater %s" % heater_to_add, e)
+                        heater_to_add = None
+                    if heater_to_add:
+                        self.heaterList.append(heater_to_add)
+                        heaters_changed = True
+            # check if new heaters have been removed?
+            heaters_changed = False
+            while not self.removeQueue.empty():
+                heater_to_remove = self.removeQueue.get()
+                if heater_to_remove:
+                    self.heaterList.remove(heater_to_remove)
+                    with _PWM_LOCK:
+                        PWM.stop(heater_to_remove.output)
+                    heaters_changed = True
+            # check heaters
+            for heater in set(self.heaterList):
+                try:
+                    heater.check_heater()
+                except Exception as e:
+                    _logger.error("Error updating heater, rmoving" % heater, e)
+                    PWM.set_duty_cycle(heater.output, 0)
+                    PWM.stop(heater.output)
+                    self.heaterList.remove(heater)
+        time.sleep(_DEFAULT_READOUT_DELAY)
+        # finally stop all heaters
+        for heater in self.heaterList:
+            with _PWM_LOCK:
+                PWM.set_duty_cycle(heater.output, 0)
+                PWM.stop(heater.output)
 
     def __del__(self):
-        try:
-            PWM.set_duty_cycle(self._output, 0)
-        finally:
-            PWM.stop(self._output)
+        for heater in self.heaterList:
+            self.removeQueue.put(heater)
+        self.active = False
+
+# due to threading problems in ADC
+heaterThread = HeaterThread()
 
 
 class Thermometer(object):
@@ -111,19 +169,19 @@ class Thermometer(object):
         self._input = analog_input
 
     def read(self):
-        #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+        # adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
         ADC.read(self._input)
-        value = ADC.read(self._input)  #read 0 to 1
+        value = ADC.read(self._input)  # read 0 to 1
         return thermistors.get_thermistor_reading(self._thermistor_type, value)
 
 
-#from http://code.activestate.com/recipes/577231-discrete-pid-controller/
-#The recipe gives simple implementation of a Discrete Proportional-Integral-Derivative (PID) controller.
+# from http://code.activestate.com/recipes/577231-discrete-pid-controller/
+# The recipe gives simple implementation of a Discrete Proportional-Integral-Derivative (PID) controller.
 # PID controller gives output value for error between desired reference input and measurement feedback to minimize
 # error value.
-#More information: http://en.wikipedia.org/wiki/PID_controller
+# More information: http://en.wikipedia.org/wiki/PID_controller
 #
-#cnr437@gmail.com
+# cnr437@gmail.com
 #
 #######	Example	#########
 #

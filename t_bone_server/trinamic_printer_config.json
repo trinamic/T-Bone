@@ -90,7 +90,7 @@
         "home-retract": 10,
         "heated-bed": {
             "pwm": 1,
-            "type": "epcos-100k-reprapteile",
+            "type": "epcos-100k",
             "max-duty-cycle": 100,
             "pid-config": {
                 "Kp": 20.0,
