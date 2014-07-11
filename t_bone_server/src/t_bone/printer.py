@@ -565,6 +565,8 @@ class Printer(Thread):
                     "Moving X axis to %s gearing Y by %s to %s"
                     , step_pos['x'], y_factor, step_pos['y'])
 
+                y_move_config['speed'] = x_move_config[
+                                                    'speed'] * y_factor
                 y_move_config['acceleration'] = x_move_config[
                                                     'acceleration'] * y_factor  # todo or the max of the config/scaled??
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
@@ -579,6 +581,8 @@ class Printer(Thread):
                     "Moving Y axis to %s gearing X by %s  to %s"
                     , step_pos['x'], x_factor, step_pos['y'])
 
+                x_move_config['speed'] = y_move_config[
+                                                    'speed'] * x_factor
                 x_move_config['acceleration'] = y_move_config[
                                                     'acceleration'] * x_factor  # todo or the max of the config/scaled??
                 x_move_config['startBow'] = y_move_config['startBow'] * x_factor
