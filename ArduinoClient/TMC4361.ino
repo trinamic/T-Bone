@@ -388,7 +388,7 @@ inline void signal_start() {
     //clear the event register
     readRegister(i, TMC4361_EVENTS_REGISTER);
     pos_comp[i] = next_pos_comp[i];
-   //write the new pos_comp
+    //write the new pos_comp
     writeRegister(i, TMC4361_POSITION_COMPARE_REGISTER,next_pos_comp[i]);
     //and mark it written 
     next_pos_comp[i] = 0;
@@ -436,9 +436,12 @@ inline void signal_start() {
 void checkTMC4361Motion() {
   if (target_motor_status & (_BV(nr_of_coordinated_motors)-1)) {
     //now check for every motor if iis alreaday ove the target..
-    for (char i=0; i< nr_of_coordinated_motors; i++) {
+    for (unsigned char i=0; i< nr_of_coordinated_motors; i++) {
       //and deliver some additional logging
       if (target_motor_status & _BV(i) & ~motor_status) {
+#ifdef RX_TX_BLINKY
+        RXLED1;
+#endif
         unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
         if ((direction[i]==1 && motor_pos>=pos_comp[i])
           || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
@@ -447,6 +450,9 @@ void checkTMC4361Motion() {
 #endif
           motor_target_reached(i);
         }
+#ifdef RX_TX_BLINKY
+        RXLED0;
+#endif
       }
     }
   }
@@ -629,6 +635,8 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
+
 
 
 
