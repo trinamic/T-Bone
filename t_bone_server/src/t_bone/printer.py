@@ -420,13 +420,13 @@ class Printer(Thread):
             current_pin = beagle_bone_pins.pwm_config[pwm_number]['current_input']
         else:
             current_pin = None
-        bed_thermometer = Thermometer(themistor_type=heater_config['type'],
+        thermometer = Thermometer(themistor_type=heater_config['type'],
                                       analog_input=beagle_bone_pins.pwm_config[pwm_number]['temp'])
-        bed_pid_controller = PID(P=heater_config['pid-config']['Kp'],
+        pid_controller = PID(P=heater_config['pid-config']['Kp'],
                                  I=heater_config['pid-config']['Ki'],
                                  D=heater_config['pid-config']['Kd'],
                                  Integrator_max=heater_config['max-duty-cycle'])
-        heater = Heater(thermometer=bed_thermometer, pid_controller=bed_pid_controller,
+        heater = Heater(thermometer=thermometer, pid_controller=pid_controller,
                         output=beagle_bone_pins.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
                         current_measurement=current_pin, machine=self.machine)
         return heater
