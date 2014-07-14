@@ -762,23 +762,23 @@ class PrintQueue():
 
         return move
 
-    def _maximum_achievable_speed(self, move):
+    def _maximum_achievable_speed(self, current_movement):
         if self.previous_movement:
             last_x_speed = self.previous_movement['speed']['x']
             last_y_speed = self.previous_movement['speed']['y']
         else:
             last_x_speed = 0
             last_y_speed = 0
-        delta_x = move['delta_x']
-        delta_y = move['delta_y']
-        delta_e = move['delta_e']
-        normalized_move_vector = move['relative_move_vector']
-        # derrive the various speed vectors from the movement … for desired head and maximum axis speed
+        delta_x = current_movement['delta_x']
+        delta_y = current_movement['delta_y']
+        delta_e = current_movement['delta_e']
+        normalized_move_vector = current_movement['relative_move_vector']
+        # derive the various speed vectors from the movement … for desired head and maximum axis speed
         speed_vectors = [
             {
                 # add the desired speed vector as initial value
-                'x': move['target_speed'] * normalized_move_vector['x'],
-                'y': move['target_speed'] * normalized_move_vector['y']
+                'x': current_movement['target_speed'] * normalized_move_vector['x'],
+                'y': current_movement['target_speed'] * normalized_move_vector['y']
             }
         ]
         if delta_x != 0:
@@ -862,49 +862,49 @@ class PrintQueue():
         x_max_acceleration = self.axis['x']['max_acceleration']
         y_max_acceleration = self.axis['y']['max_acceleration']
 
-        target_move = move
-        # todo - shouldn't we update the feedrate derrived values?? (relative movement -> v)
+        next_move = move
         # we go back in the list and ensure that we can achieve the target speed with acceleration
         # and deceleration over the distance
-        for movement in reversed(self.planning_list):
-            target_speed = target_move['speed']
+        for current_movement in reversed(self.planning_list):
+            next_target_speed = next_move['speed']
+            #the movement we have calculated as achievable has to be considered anyway
             speed_vectors = [
-                movement['speed']
+                current_movement['speed']
             ]
-            move_vector = movement['relative_move_vector']
-            if move_vector['x'] != 0:
+            current_move_vector = current_movement['relative_move_vector']
+            if current_move_vector['x'] != 0:
                 # do we have to turn around in x or can we go on
-                if 'x_stop' in movement and movement['x_stop']:
+                if 'x_stop' in current_movement and current_movement['x_stop']:
                     start_velocity = 0.0
                 else:
-                    start_velocity = target_speed['x']
+                    start_velocity = next_target_speed['x']
                 max_speed_x = get_target_velocity(start_velocity=start_velocity,
-                                                  length=target_move['delta_x'],
+                                                  length=next_move['delta_x'],
                                                   max_acceleration=x_max_acceleration,
                                                   jerk=x_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
                     'x': max_speed_x,
-                    'y': max_speed_x * move_vector['y'] / move_vector['x']
+                    'y': max_speed_x * current_move_vector['y'] / current_move_vector['x']
                 })
-            if move_vector['y'] != 0:
+            if current_move_vector['y'] != 0:
                 # do we have to turn around in y or can we go on
-                if 'y_stop' in movement and movement['y_stop']:
+                if 'y_stop' in current_movement and current_movement['y_stop']:
                     start_velocity = 0.0
                 else:
-                    start_velocity = target_speed['y']
+                    start_velocity = next_target_speed['y']
                 max_speed_y = get_target_velocity(start_velocity=start_velocity,
-                                                  length=target_move['delta_y'],
+                                                  length=next_move['delta_y'],
                                                   max_acceleration=y_max_acceleration,
                                                   jerk=y_bow_)
                 speed_vectors.append({
                     #what would the speed vector for max x speed look like
-                    'x': max_speed_y * move_vector['x'] / move_vector['y'],
+                    'x': max_speed_y * current_move_vector['x'] / current_move_vector['y'],
                     'y': max_speed_y
                 })
-            movement['speed'] = find_shortest_vector(speed_vectors)
+            current_movement['speed'] = find_shortest_vector(speed_vectors)
             # todo in theory we can stop if we did not change the speed vector ...
-            target_move = movement
+            next_move = current_movement
 
         if self.led_manager:
             self.led_manager.light(2, False)
