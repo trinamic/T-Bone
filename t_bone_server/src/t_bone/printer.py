@@ -648,7 +648,7 @@ class PrintQueue():
             self._push_from_planning_to_execution(timeout)
         self.previous_movement = move
         # and recalculate the maximum allowed speed
-        self._recalculate_move_speeds(self.previous_movement)
+        self._recalculate_move_speeds()
 
     def next_movement(self, timeout=None):
         return self.queue.get(timeout=timeout)
@@ -853,7 +853,7 @@ class PrintQueue():
         return max_local_speed_vector
 
 
-    def _recalculate_move_speeds(self, move):
+    def _recalculate_move_speeds(self):
         if self.led_manager:
             self.led_manager.light(2, True)
 
@@ -862,7 +862,7 @@ class PrintQueue():
         x_max_acceleration = self.axis['x']['max_acceleration']
         y_max_acceleration = self.axis['y']['max_acceleration']
 
-        next_move = move
+        next_move = self.previous_movement
         # we go back in the list and ensure that we can achieve the target speed with acceleration
         # and deceleration over the distance
         for current_move in reversed(self.planning_list):
