@@ -763,7 +763,7 @@ class PrintQueue():
         return move
 
     def _maximum_achievable_speed(self, current_movement):
-        if self.previous_movement:
+        if self.previous_movement and self.previous_movement['type'] == 'move':
             last_x_speed = self.previous_movement['speed']['x']
             last_y_speed = self.previous_movement['speed']['y']
         else:
@@ -866,6 +866,10 @@ class PrintQueue():
         # we go back in the list and ensure that we can achieve the target speed with acceleration
         # and deceleration over the distance
         for current_move in reversed(self.planning_list):
+            #if the next move is no move we ensure that we got a stop - hence most values are ignored
+            if not next_move['type'] == 'move':
+                current_move['x_stop'] = True
+                current_move['y_stop'] = True
             next_target_speed = next_move['speed']
             # the movement we have calculated as achievable has to be considered anyway
             speed_vectors = [
