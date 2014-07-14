@@ -179,7 +179,7 @@ class Printer(Thread):
                     if self.axis[home_axis]['bow_step']:
                         homing_config['jerk'] = self.axis[home_axis]['bow_step']
                 else:
-                    #todo we should check if there is a motor for the left endstop??
+                    # todo we should check if there is a motor for the left endstop??
                     homing_config = {
                         'motor': self.axis[home_axis]['end-stops']['left']['motor'],
                         'followers': self.axis[home_axis]['motors'],
@@ -193,9 +193,9 @@ class Printer(Thread):
                     if self.axis[home_axis]['bow_step']:
                         homing_config['bow'] = self.axis[home_axis]['bow_step']
 
-                #and do the homing
+                # and do the homing
                 self.machine.home(homing_config, timeout=self._homing_timeout)
-                #better but still not good - we should have a better concept of 'axis'
+                # better but still not good - we should have a better concept of 'axis'
                 self.axis[home_axis]['homed'] = True
                 self.axis_position[home_axis] = 0
 
@@ -412,8 +412,8 @@ class Printer(Thread):
 
     def _configure_heater(self, heater_config):
         pwm_number = heater_config['pwm'] - 1
-        if pwm_number<0 or pwm_number>=len(beagle_bone_pins.pwm_config):
-            raise PrinterError("PWM pins can only be between 1 and %1",len(beagle_bone_pins.pwm_config))
+        if pwm_number < 0 or pwm_number >= len(beagle_bone_pins.pwm_config):
+            raise PrinterError("PWM pins can only be between 1 and %1", len(beagle_bone_pins.pwm_config))
         # do we have a maximum duty cycle??
         max_duty_cycle = None
         if 'max-duty-cycle' in heater_config:
@@ -423,11 +423,11 @@ class Printer(Thread):
         else:
             current_pin = None
         thermometer = Thermometer(themistor_type=heater_config['type'],
-                                      analog_input=beagle_bone_pins.pwm_config[pwm_number]['temp'])
+                                  analog_input=beagle_bone_pins.pwm_config[pwm_number]['temp'])
         pid_controller = PID(P=heater_config['pid-config']['Kp'],
-                                 I=heater_config['pid-config']['Ki'],
-                                 D=heater_config['pid-config']['Kd'],
-                                 Integrator_max=heater_config['max-duty-cycle'])
+                             I=heater_config['pid-config']['Ki'],
+                             D=heater_config['pid-config']['Kd'],
+                             Integrator_max=heater_config['max-duty-cycle'])
         heater = Heater(thermometer=thermometer, pid_controller=pid_controller,
                         output=beagle_bone_pins.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
                         current_measurement=current_pin, machine=self.machine)
@@ -566,7 +566,7 @@ class Printer(Thread):
                     , step_pos['x'], y_factor, step_pos['y'])
 
                 y_move_config['speed'] = x_move_config[
-                                                    'speed'] * y_factor
+                                             'speed'] * y_factor
                 y_move_config['acceleration'] = x_move_config[
                                                     'acceleration'] * y_factor  # todo or the max of the config/scaled??
                 y_move_config['startBow'] = x_move_config['startBow'] * y_factor
@@ -582,7 +582,7 @@ class Printer(Thread):
                     , step_pos['x'], x_factor, step_pos['y'])
 
                 x_move_config['speed'] = y_move_config[
-                                                    'speed'] * x_factor
+                                             'speed'] * x_factor
                 x_move_config['acceleration'] = y_move_config[
                                                     'acceleration'] * x_factor  # todo or the max of the config/scaled??
                 x_move_config['startBow'] = y_move_config['startBow'] * x_factor
@@ -640,14 +640,14 @@ class PrintQueue():
         move['max_achievable_speed_vector'] = maximum_achievable_speed
         # and since we do not know it better the first guess is that the final speed is the max speed
         move['speed'] = maximum_achievable_speed
-        #now we can push the previous move to the queue and recalculate the whole queue
+        # now we can push the previous move to the queue and recalculate the whole queue
         if self.previous_movement:
             self.planning_list.append(self.previous_movement)
-            #if the list is long enough we can give it to the queue so that readers can get it
+            # if the list is long enough we can give it to the queue so that readers can get it
         if len(self.planning_list) > self.queue_size:
             self._push_from_planning_to_execution(timeout)
         self.previous_movement = move
-        #and recalculate the maximum allowed speed
+        # and recalculate the maximum allowed speed
         self._recalculate_move_speeds(self.previous_movement)
 
     def next_movement(self, timeout=None):
@@ -841,7 +841,7 @@ class PrintQueue():
         if self.previous_movement:
             if delta_e != 0 and sign(delta_e) == sign(self.previous_movement['delta_e']):
                 e_stop = ('x_stop' in self.previous_movement and self.previous_movement['x_stop']) \
-                            and \
+                         and \
                          ('y_stop' in self.previous_movement and self.previous_movement['y_stop'])
                 self.previous_movement['e_stop'] = e_stop
             else:
@@ -867,22 +867,22 @@ class PrintQueue():
         # and deceleration over the distance
         for current_move in reversed(self.planning_list):
             next_target_speed = next_move['speed']
-            #the movement we have calculated as achievable has to be considered anyway
+            # the movement we have calculated as achievable has to be considered anyway
             speed_vectors = [
                 current_move['speed']
             ]
             current_move_vector = current_move['relative_move_vector']
             if current_move_vector['x'] != 0:
                 if 'x_stop' in current_move and current_move['x_stop']:
-                    #we must be able to stop in this move
+                    # we must be able to stop in this move
                     start_velocity = 0.0
                     length = current_move['delta_x']
                 elif 'x_stop' in next_move and next_move['x_stop']:
-                    #we must be abel to stop in the next move
+                    # we must be abel to stop in the next move
                     start_velocity = 0.0
                     length = next_move['delta_x']
                 else:
-                    #we have to achieve the target speed of the next move in the next move
+                    # we have to achieve the target speed of the next move in the next move
                     start_velocity = next_target_speed['x']
                     length = next_move['delta_x']
                 max_speed_x = get_target_velocity(start_velocity=start_velocity,
@@ -890,21 +890,21 @@ class PrintQueue():
                                                   max_acceleration=x_max_acceleration,
                                                   jerk=x_bow_)
                 speed_vectors.append({
-                    #what would the speed vector for max x speed look like
+                    # what would the speed vector for max x speed look like
                     'x': max_speed_x,
                     'y': max_speed_x * current_move_vector['y'] / current_move_vector['x']
                 })
             if current_move_vector['y'] != 0:
                 if 'y_stop' in current_move and current_move['y_stop']:
-                    #we must be able to stop in this move
+                    # we must be able to stop in this move
                     start_velocity = 0.0
                     length = current_move['delta_y']
                 elif 'y_stop' in next_move and next_move['y_stop']:
-                    #we must be abel to stop in the next move
+                    # we must be abel to stop in the next move
                     start_velocity = 0.0
                     length = next_move['delta_y']
                 else:
-                    #we have to achieve the target speed of the next move in the next move
+                    # we have to achieve the target speed of the next move in the next move
                     start_velocity = next_target_speed['y']
                     length = next_move['delta_y']
                 max_speed_y = get_target_velocity(start_velocity=start_velocity,
@@ -912,7 +912,7 @@ class PrintQueue():
                                                   max_acceleration=y_max_acceleration,
                                                   jerk=y_bow_)
                 speed_vectors.append({
-                    #what would the speed vector for max x speed look like
+                    # what would the speed vector for max x speed look like
                     'x': max_speed_y * current_move_vector['x'] / current_move_vector['y'],
                     'y': max_speed_y
                 })
@@ -934,9 +934,9 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
     j = jerk
     # according to 'constant jerk equations for a trajectory generator'
     sqrt_1_third = sqrt(1.0 / 3.0)
-    j_p2 = j ** 2
+    j_p2 = j * j
     term1 = pow((1.0 / 2.0 * j_p2 * s + 1.0 / 6.0 * sqrt_1_third *
-                 sqrt((27.0 * j * s ** 2 + 32.0 * v0 ** 3) * j) * j),
+                 sqrt((27.0 * j * s * s + 32.0 * v0 ** 3) * j) * j),
                 (1.0 / 3.0))
     ideal_s_curve_acceleration = -2.0 / 3.0 * j * v0 / term1 + term1
     if ideal_s_curve_acceleration <= max_acceleration:
@@ -945,10 +945,9 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
     else:
         # we have to include a constant acceleration phase
         a = max_acceleration
-        ap_2 = a ** 2
-        velocity = -a + 3.0 / 2.0 * ap_2 / j + v0 - 1.0 / 6.0 * (9.0 * ap_2 + 6.0 * j * v0
-                                                                 - sqrt(
-            21.0 * a ** 4 - 12.0 * ap_2 * j_p2 + 72.0 * a * j_p2 * s - 36.0 * ap_2 * j * v0 + 36.0 * j_p2 * v0 ** 2)) / j
+        a_p2 = a * a
+        velocity = a_p2 / j + v0 - 1.0 / 2.0 * (3.0 * a_p2 + 2.0 * j * v0 - sqrt(
+            a_p2 * a_p2 + 8.0 * a * j_p2 * s - 4.0 * a_p2 * j * v0 + 4.0 * j_p2 * v0 * v0)) / j
     return copysign(velocity, start_velocity)
 
 
