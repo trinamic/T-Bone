@@ -865,21 +865,28 @@ class PrintQueue():
         next_move = move
         # we go back in the list and ensure that we can achieve the target speed with acceleration
         # and deceleration over the distance
-        for current_movement in reversed(self.planning_list):
+        for current_move in reversed(self.planning_list):
             next_target_speed = next_move['speed']
             #the movement we have calculated as achievable has to be considered anyway
             speed_vectors = [
-                current_movement['speed']
+                current_move['speed']
             ]
-            current_move_vector = current_movement['relative_move_vector']
+            current_move_vector = current_move['relative_move_vector']
             if current_move_vector['x'] != 0:
-                # do we have to turn around in x or can we go on
-                if 'x_stop' in current_movement and current_movement['x_stop']:
+                if 'x_stop' in current_move and current_move['x_stop']:
+                    #we must be able to stop in this move
                     start_velocity = 0.0
+                    length = current_move['delta_x']
+                elif 'x_stop' in next_move and next_move['x_stop']:
+                    #we must be abel to stop in the next move
+                    start_velocity = 0.0
+                    length = next_move['delta_x']
                 else:
+                    #we have to achieve the target speed of the next move in the next move
                     start_velocity = next_target_speed['x']
+                    length = next_move['delta_x']
                 max_speed_x = get_target_velocity(start_velocity=start_velocity,
-                                                  length=next_move['delta_x'],
+                                                  length=length,
                                                   max_acceleration=x_max_acceleration,
                                                   jerk=x_bow_)
                 speed_vectors.append({
@@ -888,13 +895,20 @@ class PrintQueue():
                     'y': max_speed_x * current_move_vector['y'] / current_move_vector['x']
                 })
             if current_move_vector['y'] != 0:
-                # do we have to turn around in y or can we go on
-                if 'y_stop' in current_movement and current_movement['y_stop']:
+                if 'y_stop' in current_move and current_move['y_stop']:
+                    #we must be able to stop in this move
                     start_velocity = 0.0
+                    length = current_move['delta_y']
+                elif 'y_stop' in next_move and next_move['y_stop']:
+                    #we must be abel to stop in the next move
+                    start_velocity = 0.0
+                    length = next_move['delta_y']
                 else:
+                    #we have to achieve the target speed of the next move in the next move
                     start_velocity = next_target_speed['y']
+                    length = next_move['delta_y']
                 max_speed_y = get_target_velocity(start_velocity=start_velocity,
-                                                  length=next_move['delta_y'],
+                                                  length=length,
                                                   max_acceleration=y_max_acceleration,
                                                   jerk=y_bow_)
                 speed_vectors.append({
@@ -902,9 +916,9 @@ class PrintQueue():
                     'x': max_speed_y * current_move_vector['x'] / current_move_vector['y'],
                     'y': max_speed_y
                 })
-            current_movement['speed'] = find_shortest_vector(speed_vectors)
+            current_move['speed'] = find_shortest_vector(speed_vectors)
             # todo in theory we can stop if we did not change the speed vector ...
-            next_move = current_movement
+            next_move = current_move
 
         if self.led_manager:
             self.led_manager.light(2, False)
