@@ -100,7 +100,7 @@ class VectorTests(unittest.TestCase):
             def run(self):
                 while self.running:
                     self.queue.next_movement()
-                    #and throw away
+                    # and throw away
 
         emptyerThread = QueueEmptyThread(queue=queue, )
         emptyerThread.start()
@@ -155,8 +155,8 @@ class VectorTests(unittest.TestCase):
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
         queue.default_target_speed = 5
 
-        #TODO add a movement to check if it accelerates correctly
-        #we do not need any real buffer
+        # TODO add a movement to check if it accelerates correctly
+        # we do not need any real buffer
         for i in range(6):
             queue.add_movement({
                 'type': 'move',
@@ -170,7 +170,7 @@ class VectorTests(unittest.TestCase):
         assert_that(last_movement['speed']['x'], less_than_or_equal_to(max_speed_x))
         assert_that(last_movement['speed']['y'], not_none())
         assert_that(last_movement['speed']['y'], less_than_or_equal_to(max_speed_y))
-        assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01))  #becaus we go 1/1 each time
+        assert_that(last_movement['speed']['x'], close_to(max_speed_y, 0.01))  # becaus we go 1/1 each time
         assert_that(last_movement['speed']['y'], close_to(max_speed_y, 0.01))
         queue.add_movement({
             'type': 'move',
@@ -185,7 +185,7 @@ class VectorTests(unittest.TestCase):
         assert_that(previous_movement['speed']['x'], less_than(max_speed_x))
         assert_that(previous_movement['speed']['y'], less_than(max_speed_y))
         assert_that(previous_movement['y_stop'], equal_to(True))
-        #we still go on in x - so in thery we can speed up to desired target speed
+        # we still go on in x - so in thery we can speed up to desired target speed
         assert_that(last_movement['speed']['x'], greater_than(previous_movement['speed']['x']))
         previous_movement = queue.planning_list[-3]
         assert_that(previous_movement['speed']['x'], close_to(max_speed_y, 0.5))  #becaus we go 1/1 each time
@@ -355,84 +355,84 @@ class VectorTests(unittest.TestCase):
         }
         queue = PrintQueue(axis_config=axis_config, min_length=20, max_length=21)
         queue.default_target_speed = max_speed
-        #add some circle
+        # add some circle
         queue.add_movement({
             'type': 'move',
             'x': 1,
             'y': 0
-            #movement 0
+            # movement 0
         })
         queue.add_movement({
             'type': 'move',
             'x': 2,
             'y': 0
-            #movement 1
+            # movement 1
         })
         queue.add_movement({
             'type': 'move',
             'x': 3,
             'y': 0
-            #movement 2
+            # movement 2
         })
         queue.add_movement({
             'type': 'move',
             'x': 4,
             'y': 1
-            #movement 3
+            # movement 3
         })
         queue.add_movement({
             'type': 'move',
             'x': 4,
             'y': 2
-            #movement 4
+            # movement 4
         })
         queue.add_movement({
             'type': 'move',
             'x': 4,
             'y': 3
-            #movement 5
+            # movement 5
         })
         queue.add_movement({
             'type': 'move',
             'x': 3,
             'y': 4
-            #movement 6
+            # movement 6
         })
         queue.add_movement({
             'type': 'move',
             'x': 2,
             'y': 4
-            #movement 7
+            # movement 7
         })
         queue.add_movement({
             'type': 'move',
             'x': 0,
             'y': 4
-            #movement 8
+            # movement 8
         })
         queue.add_movement({
             'type': 'move',
             'x': 0,
             'y': 2
-            #movement 9
+            # movement 9
         })
         queue.add_movement({
             'type': 'move',
             'x': 0,
             'y': 1
-            #movement 10
+            # movement 10
         })
         queue.add_movement({
             'type': 'move',
             'x': 1,
             'y': 0
-            #movement 11
+            # movement 11
         })
         queue.add_movement({
             'type': 'move',
             'x': 2,
             'y': 0
-            #movement 12
+            # movement 12
         })
         assert_that(queue.previous_movement, not_none())
         assert_that(queue.planning_list, has_length(12))
@@ -452,7 +452,7 @@ class VectorTests(unittest.TestCase):
         try:
             assert_that(planned_list[2]['x_stop'], not (equal_to(True)))
         except KeyError:
-            pass  #ok, this is enough - it should just not be true
+            pass  # ok, this is enough - it should just not be true
         assert_that(planned_list[3]['x_stop'], equal_to(True))
 
         assert_that(planned_list[4]['speed']['y'], equal_to(max_speed))
@@ -471,7 +471,7 @@ class VectorTests(unittest.TestCase):
         try:
             assert_that(planned_list[5]['y_stop'], not (equal_to(True)))
         except KeyError:
-            pass  #ok, this is enough - it should just not be true
+            pass  # ok, this is enough - it should just not be true
         assert_that(planned_list[6]['y_stop'], equal_to(True))
 
         assert_that(planned_list[7]['speed']['x'], equal_to(-max_speed))
@@ -489,7 +489,7 @@ class VectorTests(unittest.TestCase):
         try:
             assert_that(planned_list[7]['x_stop'], not (equal_to(True)))
         except KeyError:
-            pass  #ok, this is enough - it should just not be true
+            pass  # ok, this is enough - it should just not be true
         assert_that(planned_list[8]['x_stop'], equal_to(True))
 
         for i in range(9, 10):
@@ -500,10 +500,10 @@ class VectorTests(unittest.TestCase):
         try:
             assert_that(planned_list[10]['y_stop'], not (equal_to(True)))
         except KeyError:
-            pass  #ok, this is enough - it should just not be true
+            pass  # ok, this is enough - it should just not be true
         assert_that(planned_list[11]['y_stop'], equal_to(True))
 
-        #ok so far so good - but let's see if this is correctly converted to a motion
+        # ok so far so good - but let's see if this is correctly converted to a motion
         printer = Printer(serial_port="none", reset_pin="X")
         printer.default_speed = 1
         printer.axis = axis_config
@@ -517,7 +517,7 @@ class VectorTests(unittest.TestCase):
 
         printer.machine = DummyMaychine()
 
-        #easy to detect
+        # easy to detect
         nr_of_commands = 0
         move_configs = []
         for movement in planned_list:
@@ -629,49 +629,54 @@ class VectorTests(unittest.TestCase):
 
     def test_acceleration(self):
         # we use prime numbers in the hope to get more distinguishable numbers
-        jerk = 3.0
-        max_acceleration = 5.0
-        for v0 in (0.0, 7.0):
-            time_to_max_acceleration = constant_jerk_time_to_acceleration(j=jerk, a0=0, a=max_acceleration)
-            # first of all we test an acceleration below the max acceleration
-            test_time = time_to_max_acceleration*2.0 - 1.0
-            # for the acceleration_phase
-            acceleration_time = test_time / 2.0
-            target_acceleration = constant_jerk_acceleration(jerk, acceleration_time)
-            target_velocity_1 = constant_jerk_speed(jerk, acceleration_time, v0=v0)
-            target_distance_1 = constant_jerk_displacement(jerk, acceleration_time, v0=v0)
-            # for the deceleration phase
-            target_velocity_2 = constant_jerk_speed(-jerk, acceleration_time,
-                                                    a0=target_acceleration, v0=target_velocity_1)
-            target_distance_2 = constant_jerk_displacement(-jerk, acceleration_time,
-                                                           a0=target_acceleration, v0=target_velocity_1,
-                                                           x0=target_distance_1)
-            # and now test the s curve acceleration
-            calculated_target_velocity = get_target_velocity(start_velocity=0,
-                                                                          length=target_distance_2,
-                                                                          max_acceleration=max_acceleration,
-                                                                          jerk=jerk)
-            assert_that(calculated_target_velocity, less_than(target_velocity_2))
-            # and now for some constant acceleration phase
-            constant_acceleration_time = 1.0
-            acceleration_time = time_to_max_acceleration
-            test_time = time_to_max_acceleration + constant_acceleration_time
-            target_acceleration = constant_jerk_acceleration(jerk, acceleration_time)
-            target_velocity_1 = constant_jerk_speed(jerk, acceleration_time, v0=v0)
-            target_distance_1 = constant_jerk_displacement(jerk, acceleration_time, v0=v0)
-            target_velocity_2 = constant_acceleration_speed(target_acceleration, constant_acceleration_time,
-                                                            v0=target_velocity_1)
-            target_distance_2 = constant_acceleration_displacement(target_acceleration, constant_acceleration_time,
-                                                                   v0=target_velocity_1)
-            target_velocity_3 = constant_jerk_speed(-jerk, acceleration_time,
-                                                    a0=target_acceleration, v0=target_velocity_2)
-            target_distance_3 = constant_jerk_displacement(-jerk, acceleration_time,
-                                                           a0=target_acceleration, v0=target_velocity_2)
-            calculated_target_velocity = get_target_velocity(start_velocity=0,
-                                                                          length=target_distance_1 + target_distance_2 + target_distance_3,
-                                                                          max_acceleration=max_acceleration,
-                                                                          jerk=jerk)
-            assert_that(calculated_target_velocity, less_than(target_velocity_3))
+        for v0i in range(0, 700000, 23):
+            for jerki in range(3, 30000, 17):
+                for max_accelerationi in range(5, 50000, 23):
+                    v0 = float(v0i)
+                    jerk = float(jerki)
+                    max_acceleration = float(max_accelerationi)
+                    print "testing v0=%s, j=%s, a=%s" % (v0, jerk, max_acceleration)
+                    time_to_max_acceleration = constant_jerk_time_to_acceleration(j=jerk, a0=0, a=max_acceleration)
+                    # first of all we test an acceleration below the max acceleration
+                    test_time = time_to_max_acceleration * 2.0 - 1.0
+                    # for the acceleration_phase
+                    acceleration_time = test_time / 2.0
+                    target_acceleration = constant_jerk_acceleration(jerk, acceleration_time)
+                    target_velocity_1 = constant_jerk_speed(jerk, acceleration_time, v0=v0)
+                    target_distance_1 = constant_jerk_displacement(jerk, acceleration_time, v0=v0)
+                    # for the deceleration phase
+                    target_velocity_2 = constant_jerk_speed(-jerk, acceleration_time,
+                                                            a0=target_acceleration, v0=target_velocity_1)
+                    target_distance_2 = constant_jerk_displacement(-jerk, acceleration_time,
+                                                                   a0=target_acceleration, v0=target_velocity_1,
+                                                                   x0=target_distance_1)
+                    # and now test the s curve acceleration
+                    calculated_target_velocity = get_target_velocity(start_velocity=0,
+                                                                     length=target_distance_2,
+                                                                     max_acceleration=max_acceleration,
+                                                                     jerk=jerk)
+                    assert_that(calculated_target_velocity, less_than(target_velocity_2))
+                    # and now for some constant acceleration phase
+                    constant_acceleration_time = 1.0
+                    acceleration_time = time_to_max_acceleration
+                    test_time = time_to_max_acceleration + constant_acceleration_time
+                    target_acceleration = constant_jerk_acceleration(jerk, acceleration_time)
+                    target_velocity_1 = constant_jerk_speed(jerk, acceleration_time, v0=v0)
+                    target_distance_1 = constant_jerk_displacement(jerk, acceleration_time, v0=v0)
+                    target_velocity_2 = constant_acceleration_speed(target_acceleration, constant_acceleration_time,
+                                                                    v0=target_velocity_1)
+                    target_distance_2 = constant_acceleration_displacement(target_acceleration,
+                                                                           constant_acceleration_time,
+                                                                           v0=target_velocity_1)
+                    target_velocity_3 = constant_jerk_speed(-jerk, acceleration_time,
+                                                            a0=target_acceleration, v0=target_velocity_2)
+                    target_distance_3 = constant_jerk_displacement(-jerk, acceleration_time,
+                                                                   a0=target_acceleration, v0=target_velocity_2)
+                    calculated_target_velocity = get_target_velocity(start_velocity=0,
+                                                                     length=target_distance_1 + target_distance_2 + target_distance_3,
+                                                                     max_acceleration=max_acceleration,
+                                                                     jerk=jerk)
+                    assert_that(calculated_target_velocity, less_than(target_velocity_3))
 
         pass
 
