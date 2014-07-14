@@ -866,7 +866,7 @@ class PrintQueue():
         # we go back in the list and ensure that we can achieve the target speed with acceleration
         # and deceleration over the distance
         for current_move in reversed(self.planning_list):
-            #if the next move is no move we ensure that we got a stop - hence most values are ignored
+            # if the next move is no move we ensure that we got a stop - hence most values are ignored
             if not next_move['type'] == 'move':
                 current_move['x_stop'] = True
                 current_move['y_stop'] = True
@@ -928,6 +928,7 @@ class PrintQueue():
             self.led_manager.light(2, False)
 
 
+
 def get_target_velocity(start_velocity, length, max_acceleration, jerk):
     # the simple case is simple
     if not length or length == 0:
@@ -937,12 +938,8 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
     v0 = abs(float(start_velocity))
     j = jerk
     # according to 'constant jerk equations for a trajectory generator'
-    sqrt_1_third = sqrt(1.0 / 3.0)
     j_p2 = j * j
-    term1 = pow((1.0 / 2.0 * j_p2 * s + 1.0 / 6.0 * sqrt_1_third *
-                 sqrt((27.0 * j * s * s + 32.0 * v0 ** 3) * j) * j),
-                (1.0 / 3.0))
-    ideal_s_curve_acceleration = -2.0 / 3.0 * j * v0 / term1 + term1
+    ideal_s_curve_acceleration = calculate_ideal_s_curve_acceleration(j, v0, s)
     if ideal_s_curve_acceleration <= max_acceleration:
         # everything is fne we can go with a perfect s ramp
         velocity = v0 + ideal_s_curve_acceleration ** 2 / j
@@ -953,6 +950,17 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
         velocity = a_p2 / j + v0 - 1.0 / 2.0 * (3.0 * a_p2 + 2.0 * j * v0 - sqrt(
             a_p2 * a_p2 + 8.0 * a * j_p2 * s - 4.0 * a_p2 * j * v0 + 4.0 * j_p2 * v0 * v0)) / j
     return copysign(velocity, start_velocity)
+
+
+def calculate_ideal_s_curve_acceleration(j, v0, s):
+    j_p2 = j * j
+    sqrt_1_third = sqrt(1.0 / 3.0)
+    term1 = pow((1.0 / 2.0 * j_p2 * s + 1.0 / 6.0 * sqrt_1_third *
+                 sqrt((27.0 * j * s * s + 32.0 * v0 ** 3) * j) * j),
+                (1.0 / 3.0))
+    ideal_s_curve_acceleration = -2.0 / 3.0 * j * v0 / term1 + term1
+    return ideal_s_curve_acceleration
+
 
 
 # from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
