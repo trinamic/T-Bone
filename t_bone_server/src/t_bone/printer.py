@@ -949,7 +949,7 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
         a_p2 = a * a
         velocity = a_p2 / j + v0 - 1.0 / 2.0 * (3.0 * a_p2 + 2.0 * j * v0 - sqrt(
             a_p2 * a_p2 + 8.0 * a * j_p2 * s - 4.0 * a_p2 * j * v0 + 4.0 * j_p2 * v0 * v0)) / j
-    return copysign(velocity, start_velocity)
+    return copysign(velocity/2.0, start_velocity) #todo this correction is neccessary - check fomula again
 
 
 def calculate_ideal_s_curve_acceleration(j, v0, s):
