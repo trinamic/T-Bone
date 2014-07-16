@@ -180,9 +180,18 @@ class Thermometer(object):
         self._input = analog_input
 
     def read(self):
-        # adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
-        ADC.read(self._input)
-        value = ADC.read(self._input)  # read 0 to 1
+        unsuccesfull = 0
+        value = None
+        while not value:
+            # adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+            try:
+                ADC.read(self._input)
+                value = ADC.read(self._input)  # read 0 to 1
+            except IOError as e:
+                _logger.warn("Error reading value", e)
+                unsuccesfull += 1
+                if unsuccesfull > 100:
+                    raise e
         return thermistors.get_thermistor_reading(self._thermistor_type, value)
 
 
@@ -196,7 +205,7 @@ class Thermometer(object):
 #
 # ######	Example	#########
 #
-#p=PID(3.0,0.4,1.2)
+# p=PID(3.0,0.4,1.2)
 #p.setPoint(5.0)
 #while True:
 #     pid = p.update(measurement_value)

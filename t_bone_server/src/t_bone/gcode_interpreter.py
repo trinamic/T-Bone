@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 
 class GCodePrintThread(Thread):
     def __init__(self, file, printer, callback):
-        #this constructor could be a bit more elegant
+        # this constructor could be a bit more elegant
         super(GCodePrintThread, self).__init__()
         self.file = file
         self.printer = printer
@@ -36,7 +36,7 @@ class GCodePrintThread(Thread):
                 self.lines_printed += 1
             self.printer.finish_print()
             _logger.info("fininshed gcode reading to %s ", self.printer)
-            #todo and here we need some more or less clever plan - since we cannot restart the print thread
+            # todo and here we need some more or less clever plan - since we cannot restart the print thread
         finally:
             self.printing = False
             if self.callback:
@@ -45,7 +45,7 @@ class GCodePrintThread(Thread):
 
 def read_gcode_to_printer(line, printer):
     gcode = decode_gcode_line(line)
-    #handling the negative case first is silly but gives us more flexibility in the elif struct
+    # handling the negative case first is silly but gives us more flexibility in the elif struct
     if not gcode:
         #nothing to do fine!
         pass
@@ -142,9 +142,11 @@ def read_gcode_to_printer(line, printer):
     elif "M190" == gcode.code:
         #Wait for bed temperature to reach target temp
         #Example: M190 S60"
-        if 'S' in gcode.options:
-            temperature = gcode.options['S']
+        options = _decode_positions(gcode, line)
+        if 's' in options:
+            temperature = options['s']
             if printer.heated_bed:
+                printer.heated_bed.set_temperature(temperature)
                 if printer.heated_bed.get_set_temperature() < temperature:
                     _logger.warn("The set temperature of %s can never reach the target temperature of %s",
                                  printer.heated_bed.set_temperature, temperature)
@@ -166,7 +168,7 @@ def _decode_positions(gcode, line):
             else:
                 _logger.warn("Unable to interpret position %s in %s", argument, line)
     if 'f' in positions:
-        #the feedrate is measured in mm/minute - but we use mm/second -> so recalculate everything
+        # the feedrate is measured in mm/minute - but we use mm/second -> so recalculate everything
         positions['target_speed'] = positions['f'] / 60.0
     return positions
 
@@ -187,7 +189,7 @@ class GCode:
 # decode a line of text to gcode.
 def decode_gcode_line(line):
     _logger.debug("decoding line %s", line)
-    #we nee a result
+    # we nee a result
     result = None
     #and prepare the line
     line = line.strip()
