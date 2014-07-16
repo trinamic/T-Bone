@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 from t_bone import ramps_thermistors
+from t_bone import replicape_thermistors
 
 _logger = logging.getLogger(__name__)
 
@@ -35,6 +36,8 @@ def get_thermistor_reading(thermistor, value):
         return ramps_thermistors.convert_ramps_reading(thermistor, ramps_thermistors.thermistor_ge_sensing, value)
     elif thermistor == "rs-198961":
         return ramps_thermistors.convert_ramps_reading(thermistor, ramps_thermistors.thermistor_rs_198961, value)
+    elif thermistor == "B57560G104F":
+        return replicape_thermistors.convert_reading(replicape_thermistors.temp_table["B57560G104F"], value)
     if not thermistor:
         raise Exception("Unknown Thermistor" + thermistor)
 

@@ -89,11 +89,11 @@
         "homing-timeout": 15,
         "home-retract": 10,
         "heated-bed": {
-            "remark":"due to https://github.com/adafruit/adafruit-beaglebone-io-python/issues/48 pwm1b is hard to use, hence a 2 point control",
+            "remark": "due to https://github.com/adafruit/adafruit-beaglebone-io-python/issues/48 pwm1b is hard to use, hence a 2 point control",
             "output": 2,
-            "type":"2 Point",
-            "sensor-type": "epcos-100k",
-            "hysteresis":3
+            "type": "2 Point",
+            "sensor-type": "j-head",
+            "hysteresis": 1.0
         },
         "default-speed": 10,
         "fan-duty-cycle": 100.0,
@@ -103,7 +103,7 @@
         "motor": 3,
         "current": 0.5,
         "steps-per-mm": 11792.23,
-        "step-scaling-correction":0.3,
+        "step-scaling-correction": 0.3,
         "max-speed": 300,
         "max-acceleration": 10,
         "bow-acceleration": 10,
@@ -112,7 +112,7 @@
         "inverted_comment": "not fully functional yet",
         "heater": {
             "output": 1,
-            "type":"PID",
+            "type": "PID",
             "sensor-type": "j-head",
             "max-duty-cycle": 60,
             "pid-config": {
