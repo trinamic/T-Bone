@@ -40,7 +40,6 @@ class Heater(Thread):
     def set_temperature(self, temperature):
         if not self.max_temperature or temperature < self.max_temperature:
             self._set_temperature = temperature
-            self._pid_controller.setPoint(temperature)
         else:
             _logger.warn("Temperature %s too high, got ignored", temperature)
 
