@@ -8,39 +8,8 @@ from numpy import NaN
 _logger = logging.getLogger(__name__)
 
 
-def get_thermistor_reading(thermistor, value):
-    #find the thermistor
-    thermistor_table = None
-    if thermistor == "100k":
-        thermistor_table = bed_thermistor_100k
-    elif thermistor == "200k":
-        thermistor_table = bed_thermistor_200k
-    elif thermistor == "mendel-parts":
-        thermistor_table = mendel_parts_thermistor
-    elif thermistor == "10k":
-        thermistor_table = thermistor_10k
-    elif thermistor == "parcan-100k":
-        thermistor_table = thermistor_parcan_100k
-    elif thermistor == "epcos-100k":
-        thermistor_table = thermistor_epcos_100k
-    elif thermistor == "epcos-B57560G104F":
-        thermistor_table = thermistor_epcos_B57560G104F
-    elif thermistor == "j-head":
-        thermistor_table = j_head_thermistor
-    elif thermistor == "honeywell-100k":
-        thermistor_table = thermistor_honeywell_100k
-    elif thermistor == "honeywell-135_104_LAF_J01":
-        thermistor_table = thermistor_honeywell_135_104_LAF_J01
-    elif thermistor == "vishay-NTCS0603E3104FXT":
-        thermistor_table = thermistor_vishay_NTCS0603E3104FXT
-    elif thermistor == "ge-sensing":
-        thermistor_table = thermistor_ge_sensing
-    elif thermistor == "rs-198961":
-        thermistor_table = thermistor_rs_198961
-    if not thermistor:
-        raise Exception("Unknown Thermistor" + thermistor)
-
-    #the tables are from 1024er based arduino
+def convert_ramps_reading(thermistor, thermistor_table, value):
+    # the tables are from 1024er based arduino
     comparable_value = value * 1024.0
     #find upper value
     upper_index = int(comparable_value)
@@ -75,6 +44,39 @@ def get_thermistor_reading(thermistor, value):
     else:
         _logger.error("Unable to convert value %s for thermistor %s", value, thermistor)
         return NaN
+
+
+def get_thermistor_reading(thermistor, value):
+    #find the thermistor
+    thermistor_table = None
+    if thermistor == "100k":
+        return convert_ramps_reading(thermistor, bed_thermistor_100k, value)
+    elif thermistor == "200k":
+        return convert_ramps_reading(thermistor, bed_thermistor_200k, value)
+    elif thermistor == "mendel-parts":
+        return convert_ramps_reading(thermistor, mendel_parts_thermistor, value)
+    elif thermistor == "10k":
+        return convert_ramps_reading(thermistor, thermistor_10k, value)
+    elif thermistor == "parcan-100k":
+        return convert_ramps_reading(thermistor, thermistor_parcan_100k, value)
+    elif thermistor == "epcos-100k":
+        return convert_ramps_reading(thermistor, thermistor_epcos_100k, value)
+    elif thermistor == "epcos-B57560G104F":
+        return convert_ramps_reading(thermistor, thermistor_epcos_B57560G104F, value)
+    elif thermistor == "j-head":
+        return convert_ramps_reading(thermistor, j_head_thermistor, value)
+    elif thermistor == "honeywell-100k":
+        return convert_ramps_reading(thermistor, thermistor_honeywell_100k, value)
+    elif thermistor == "honeywell-135_104_LAF_J01":
+        return convert_ramps_reading(thermistor, thermistor_honeywell_135_104_LAF_J01, value)
+    elif thermistor == "vishay-NTCS0603E3104FXT":
+        return convert_ramps_reading(thermistor, thermistor_vishay_NTCS0603E3104FXT, value)
+    elif thermistor == "ge-sensing":
+        return convert_ramps_reading(thermistor, thermistor_ge_sensing, value)
+    elif thermistor == "rs-198961":
+        return convert_ramps_reading(thermistor, thermistor_rs_198961, value)
+    if not thermistor:
+        raise Exception("Unknown Thermistor" + thermistor)
 
 
 #100k bed thermistor
