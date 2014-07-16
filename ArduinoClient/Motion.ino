@@ -102,7 +102,6 @@ void checkMotion() {
           Serial.print(F(" at "));
           Serial.println(move.vMax);
 #endif
-          //TODO this move_over looks really suspicious!
           if (move.motor<nr_of_coordinated_motors) {
             moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.jerk, move.type==move_over);
             moving_motors |= _BV(move.motor);
