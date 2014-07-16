@@ -58,10 +58,13 @@ class Heater(Thread):
         except Exception as e:
             _logger.error("Heater thread crashed %s", e)
         finally:
-            PWM.stop(self._output)
+            self.cleanup()
 
     def update_heater(self):
         raise Exception("please implement")
+
+    def cleanup(self):
+        pass
 
 
 class PwmHeater(Heater):
@@ -116,6 +119,10 @@ class PwmHeater(Heater):
             with _PWM_LOCK:
                 PWM.set_duty_cycle(self._output, min(self.duty_cycle, self._maximum_duty_cycle))
 
+    def cleanup(self):
+        PWM.stop(self._output)
+
+
     def __del__(self):
         try:
             PWM.set_duty_cycle(self._output, 0)
@@ -161,6 +168,12 @@ class OnOffHeater(Heater):
             if self.temperature < self._set_temperature - self.hysteresis:
                 self._set_active(True)
 
+    def cleanup(self):
+        GPIO.output(self._output, self._on_off_config['off'])
+
+    def __del__(self):
+        GPIO.output(self._output, self._on_off_config['off'])
+
 
 class Thermometer(object):
     def __init__(self, themistor_type, analog_input):
@@ -182,7 +195,7 @@ class Thermometer(object):
 #
 # cnr437@gmail.com
 #
-#######	Example	#########
+# ######	Example	#########
 #
 #p=PID(3.0,0.4,1.2)
 #p.setPoint(5.0)
