@@ -103,7 +103,7 @@ int pwmStep = 5;
 #define START_PIN A3
 
 // TMC5041
-unsigned int AMP5041 = 200;
+unsigned int AMP5041 = 1100;
 unsigned int holdAMP5041 = 100;
 unsigned long chopper_config;
 unsigned long current_register;
@@ -113,7 +113,7 @@ unsigned long current_register;
 
 // TMC4361
 unsigned char steps_per_revolution = 200;
-unsigned int AMP4361 = 500;
+unsigned int AMP4361 = 2000;
 long vmax = 50000000ul;
 long bow = 1000000;
 long end_bow = bow;
@@ -305,17 +305,17 @@ void setup()
   // ---------------------TMC5041---ENDE---------------------------
   // --------------------------------------------------------------
 
-  writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
+  /*writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_2, 0);
   writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_2, 10000ul);
-  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_2, 0);
+  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_2, 500000);
 
   writeRegister(CS_5041_PIN, TMC5031_X_ACTUAL_REGISTER_1, 0);
   writeRegister(CS_5041_PIN, TMC5031_V_MAX_REGISTER_1, 10000ul);
-  //writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 500000);
+  writeRegister(CS_5041_PIN, TMC5031_X_TARGET_REGISTER_1, 500000);*/
 
   // Fahrbefehele
-  //writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
-  //writeRegister(CS_4361_1_PIN, X_TARGET_REGISTER, 9999999);
+  writeRegister(CS_4361_1_PIN, X_ACTUAL_REGISTER, 0);
+  writeRegister(CS_4361_1_PIN, X_TARGET_REGISTER, 9999999);
   //writeRegister(CS_4361_2_PIN, X_ACTUAL_REGISTER, 0);
   //writeRegister(CS_4361_2_PIN, X_TARGET_REGISTER, 9999999);
   //writeRegister(CS_4361_3_PIN, X_ACTUAL_REGISTER, 0);
@@ -348,13 +348,13 @@ void loop()
   readRegister(CS_4361_1_PIN, STATUS_REGISTER, 0);
   
   // Read analog value temperature
-  int temp1 = analogRead(TEMP1_PIN);
+  /*int temp1 = analogRead(TEMP1_PIN);
   Serial.println(temp1);
   
   if(pwmTime == 0 || pwmTime == 255)
   {
     pwmStep = -pwmStep;
-  }
+  }*/
 }
 
 
