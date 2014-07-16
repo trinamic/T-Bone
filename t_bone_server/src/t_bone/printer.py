@@ -411,25 +411,26 @@ class Printer(Thread):
                         self.machine.invert_motor(motor, True)
 
     def _configure_heater(self, heater_config):
-        pwm_number = heater_config['pwm'] - 1
-        if pwm_number < 0 or pwm_number >= len(beagle_bone_pins.pwm_config):
-            raise PrinterError("PWM pins can only be between 1 and %1", len(beagle_bone_pins.pwm_config))
+        output_number = heater_config['output'] - 1
+        tyye = heater_config['type']
+        if output_number < 0 or output_number >= len(beagle_bone_pins.pwm_config):
+            raise PrinterError("PWM pins can only be between 1 and %s" % len(beagle_bone_pins.pwm_config))
         # do we have a maximum duty cycle??
         max_duty_cycle = None
         if 'max-duty-cycle' in heater_config:
             max_duty_cycle = heater_config['max-duty-cycle']
-        if 'current_input' in beagle_bone_pins.pwm_config[pwm_number]:
-            current_pin = beagle_bone_pins.pwm_config[pwm_number]['current_input']
+        if 'current_input' in beagle_bone_pins.pwm_config[output_number]:
+            current_pin = beagle_bone_pins.pwm_config[output_number]['current_input']
         else:
             current_pin = None
-        thermometer = Thermometer(themistor_type=heater_config['type'],
-                                  analog_input=beagle_bone_pins.pwm_config[pwm_number]['temp'])
+        thermometer = Thermometer(themistor_type=heater_config['sensor-type'],
+                                  analog_input=beagle_bone_pins.pwm_config[output_number]['temp'])
         pid_controller = PID(P=heater_config['pid-config']['Kp'],
                              I=heater_config['pid-config']['Ki'],
                              D=heater_config['pid-config']['Kd'],
                              Integrator_max=heater_config['max-duty-cycle'])
         heater = Heater(thermometer=thermometer, pid_controller=pid_controller,
-                        output=beagle_bone_pins.pwm_config[pwm_number]['out'], maximum_duty_cycle=max_duty_cycle,
+                        output=beagle_bone_pins.pwm_config[output_number]['out'], maximum_duty_cycle=max_duty_cycle,
                         current_measurement=current_pin, machine=self.machine)
         return heater
 
@@ -928,7 +929,6 @@ class PrintQueue():
             self.led_manager.light(2, False)
 
 
-
 def get_target_velocity(start_velocity, length, max_acceleration, jerk):
     # the simple case is simple
     if not length or length == 0:
@@ -949,7 +949,7 @@ def get_target_velocity(start_velocity, length, max_acceleration, jerk):
         a_p2 = a * a
         velocity = a_p2 / j + v0 - 1.0 / 2.0 * (3.0 * a_p2 + 2.0 * j * v0 - sqrt(
             a_p2 * a_p2 + 8.0 * a * j_p2 * s - 4.0 * a_p2 * j * v0 + 4.0 * j_p2 * v0 * v0)) / j
-    return copysign(velocity/2.0, start_velocity) #todo this correction is neccessary - check fomula again
+    return copysign(velocity / 2.0, start_velocity)  # todo this correction is neccessary - check fomula again
 
 
 def calculate_ideal_s_curve_acceleration(j, v0, s):
@@ -960,7 +960,6 @@ def calculate_ideal_s_curve_acceleration(j, v0, s):
                 (1.0 / 3.0))
     ideal_s_curve_acceleration = -2.0 / 3.0 * j * v0 / term1 + term1
     return ideal_s_curve_acceleration
-
 
 
 # from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html

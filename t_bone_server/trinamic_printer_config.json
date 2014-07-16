@@ -88,9 +88,9 @@
         },
         "homing-timeout": 15,
         "home-retract": 10,
-        "heated-bed-disabled": {
+        "heated-bed": {
             "remark":"due to https://github.com/adafruit/adafruit-beaglebone-io-python/issues/48 pwm1b is hard to use",
-            "pwm": 2,
+            "output": 2,
             "type": "epcos-100k",
             "max-duty-cycle": 100,
             "pid-config": {
@@ -115,8 +115,8 @@
         "inverted": false,
         "inverted_comment": "not fully functional yet",
         "heater": {
-            "pwm": 1,
-            "type": "j-head",
+            "output": 1,
+            "sensor-type": "j-head",
             "max-duty-cycle": 60,
             "pid-config": {
                 "Kp": 17.0,
