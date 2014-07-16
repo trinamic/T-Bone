@@ -9,7 +9,7 @@ from threading import Thread
 from numpy import sign
 import time
 import beagle_bone_pins
-from heater import Heater, Thermometer, PID
+from heater import PwmHeater, Thermometer, PID, OnOffHeater
 
 from machine import Machine, MAXIMUM_FREQUENCY_ACCELERATION, MAXIMUM_FREQUENCY_BOW
 from helpers import convert_mm_to_steps, find_shortest_vector, calculate_relative_vector, \
@@ -412,26 +412,35 @@ class Printer(Thread):
 
     def _configure_heater(self, heater_config):
         output_number = heater_config['output'] - 1
-        tyye = heater_config['type']
         if output_number < 0 or output_number >= len(beagle_bone_pins.pwm_config):
             raise PrinterError("PWM pins can only be between 1 and %s" % len(beagle_bone_pins.pwm_config))
         # do we have a maximum duty cycle??
-        max_duty_cycle = None
-        if 'max-duty-cycle' in heater_config:
-            max_duty_cycle = heater_config['max-duty-cycle']
+        thermometer = Thermometer(themistor_type=heater_config['sensor-type'],
+                                  analog_input=beagle_bone_pins.pwm_config[output_number]['temp'])
+        output = beagle_bone_pins.pwm_config[output_number]['out']
         if 'current_input' in beagle_bone_pins.pwm_config[output_number]:
             current_pin = beagle_bone_pins.pwm_config[output_number]['current_input']
         else:
             current_pin = None
-        thermometer = Thermometer(themistor_type=heater_config['sensor-type'],
-                                  analog_input=beagle_bone_pins.pwm_config[output_number]['temp'])
-        pid_controller = PID(P=heater_config['pid-config']['Kp'],
-                             I=heater_config['pid-config']['Ki'],
-                             D=heater_config['pid-config']['Kd'],
-                             Integrator_max=heater_config['max-duty-cycle'])
-        heater = Heater(thermometer=thermometer, pid_controller=pid_controller,
-                        output=beagle_bone_pins.pwm_config[output_number]['out'], maximum_duty_cycle=max_duty_cycle,
-                        current_measurement=current_pin, machine=self.machine)
+        type = heater_config['type']
+        if type == 'PID':
+            max_duty_cycle = None
+            if 'max-duty-cycle' in heater_config:
+                max_duty_cycle = heater_config['max-duty-cycle']
+            pid_controller = PID(P=heater_config['pid-config']['Kp'],
+                                 I=heater_config['pid-config']['Ki'],
+                                 D=heater_config['pid-config']['Kd'],
+                                 Integrator_max=heater_config['max-duty-cycle'])
+            heater = PwmHeater(thermometer=thermometer, pid_controller=pid_controller,
+                               output=output, maximum_duty_cycle=max_duty_cycle,
+                               current_measurement=current_pin, machine=self.machine)
+        elif type == "2 Point":
+            hysteresis = heater_config['hysteresis']
+            heater = OnOffHeater(thermometer=thermometer, output=output, active_high=True,
+                                 hysteresis=hysteresis,
+                                 current_measurement=current_pin, machine=self.machine)
+        else:
+            raise PrinterError("Unkown heater type %s" % type)
         return heater
 
     def _postconfig(self):

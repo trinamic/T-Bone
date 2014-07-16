@@ -15,40 +15,23 @@ ADC.setup()
 
 
 class Heater(Thread):
-    def __init__(self, thermometer, pid_controller, output, maximum_duty_cycle=None, current_measurement=None,
-                 machine=None,
-                 pwm_frequency=None, max_temperature=None):
+    def __init__(self, thermometer, output, machine=None, max_temperature=None, current_measurement=None):
         super(Heater, self).__init__()
         if max_temperature:
             self.max_temperature = max_temperature
         else:
             self.max_temperature = _DEFAULT_MAX_TEMPERATURE
         self._thermometer = thermometer
-        self._pid_controller = pid_controller
         self._output = output
-        if maximum_duty_cycle:
-            self._maximum_duty_cycle = float(maximum_duty_cycle)
-        else:
-            self._maximum_duty_cycle = 1.0
-        self._current_measurement = current_measurement
         self._machine = machine
-
         self.active = False
         self._set_temperature = 0.0
         self.temperature = 0.0
-        self.current_consumption = 0.0
-        self.duty_cycle = 0.0
-        if not pwm_frequency:
-            self.pwm_frequency = 1000
-        else:
-            self.pwm_frequency = pwm_frequency
-
         self.readout_delay = _DEFAULT_READOUT_DELAY
+        self._current_measurement = current_measurement
+        self.current_consumption = 0.0
         self.current_readout_delay = _DEFAULT_CURRENT_READOUT_DELAY
         self._wait_for_current_readout = 0
-
-        with _PWM_LOCK:
-            PWM.start(self._output, 0.0, self.pwm_frequency, 0)
         self.start()
 
     def stop(self):
@@ -64,30 +47,65 @@ class Heater(Thread):
     def get_set_temperature(self):
         return self._set_temperature
 
-
     def run(self):
         self._wait_for_current_readout = self.current_readout_delay + self.readout_delay
         self.active = True
         try:
             while self.active:
                 self.temperature = self._thermometer.read()
-                self.duty_cycle = self._pid_controller.update(self.temperature)
-                self._apply_duty_cycle()
+                self.update_heater()
                 time.sleep(self.readout_delay)
         except Exception as e:
             _logger.error("Heater thread crashed %s", e)
         finally:
             PWM.stop(self._output)
 
+    def update_heater(self):
+        raise Exception("please implement")
+
+
+class PwmHeater(Heater):
+    def __init__(self, thermometer, pid_controller, output, maximum_duty_cycle=None, current_measurement=None,
+                 machine=None,
+                 pwm_frequency=None, max_temperature=None):
+        super(PwmHeater, self).__init__(thermometer=thermometer, output=output,
+                                        machine=machine, max_temperature=max_temperature,
+                                        current_measurement=current_measurement)
+        self._pid_controller = pid_controller
+        if maximum_duty_cycle:
+            self._maximum_duty_cycle = float(maximum_duty_cycle)
+        else:
+            self._maximum_duty_cycle = 1.0
+
+        self.duty_cycle = 0.0
+        if not pwm_frequency:
+            self.pwm_frequency = 1000
+        else:
+            self.pwm_frequency = pwm_frequency
+
+        self._wait_for_current_readout = 0
+
+        with _PWM_LOCK:
+            PWM.start(self._output, 0.0, self.pwm_frequency, 0)
+
+    def set_temperature(self, temperature):
+        super(PwmHeater, self).set_temperature(temperature)
+        # we set the temperature according to the property - it might not have been accepted
+        self._pid_controller.setPoint(self._set_temperature)
+
+    def update_heater(self):
+        self.duty_cycle = self._pid_controller.update(self.temperature)
+        self._apply_duty_cycle()
+
     def _apply_duty_cycle(self):
-        #todo this is a hack because the current reading si only avail on arduino
+        # todo this is a hack because the current reading si only avail on arduino
         try:
             if self._current_measurement is not None and self._wait_for_current_readout > self.current_readout_delay:
                 self._wait_for_current_readout = 0
                 with _PWM_LOCK:
                     PWM.set_duty_cycle(self._output, 100.0)
-                #self.current_consumption = self._machine.read_current(self._current_measurement) \
-                #                           / 1024.0 * 1.8 * 121.0 / 10.0
+                    # self.current_consumption = self._machine.read_current(self._current_measurement) \
+                    # / 1024.0 * 1.8 * 121.0 / 10.0
             else:
                 self._wait_for_current_readout += self.readout_delay
         finally:
@@ -105,25 +123,64 @@ class Heater(Thread):
             PWM.stop(self._output)
 
 
+class OnOffHeater(Heater):
+    def __init__(self, thermometer, output, active_high=True,
+                 max_temperature=None, hysteresis=0,
+                 machine=None, current_measurement=None):
+        super(OnOffHeater, self).__init__(thermometer=thermometer, output=output,
+                                          machine=machine, max_temperature=max_temperature,
+                                          current_measurement=current_measurement)
+        self.hysteresis = hysteresis
+        GPIO.setup(output, GPIO.OUT)
+        if active_high:
+            self._on_off_config = {
+                'on': GPIO.HIGH,
+                'off': GPIO.LOW
+            }
+        else:
+            self._on_off_config = {
+                'on': GPIO.LOW,
+                'off': GPIO.HIGH
+            }
+
+        self._is_active = False
+        self._set_active(False)
+
+    def _set_active(self, active):
+        self._is_active = active
+        if active:
+            GPIO.output(self._output, self._on_off_config['on'])
+        else:
+            GPIO.output(self._output, self._on_off_config['off'])
+
+    def update_heater(self):
+        if self._is_active:
+            if self.temperature > self._set_temperature:
+                self._set_active(False)
+        else:
+            if self.temperature < self._set_temperature - self.hysteresis:
+                self._set_active(True)
+
+
 class Thermometer(object):
     def __init__(self, themistor_type, analog_input):
         self._thermistor_type = themistor_type
         self._input = analog_input
 
     def read(self):
-        #adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
+        # adafruit says it is a bug http://learn.adafruit.com/setting-up-io-python-library-on-beaglebone-black/adc
         ADC.read(self._input)
-        value = ADC.read(self._input)  #read 0 to 1
+        value = ADC.read(self._input)  # read 0 to 1
         return thermistors.get_thermistor_reading(self._thermistor_type, value)
 
 
-#from http://code.activestate.com/recipes/577231-discrete-pid-controller/
-#The recipe gives simple implementation of a Discrete Proportional-Integral-Derivative (PID) controller.
+# from http://code.activestate.com/recipes/577231-discrete-pid-controller/
+# The recipe gives simple implementation of a Discrete Proportional-Integral-Derivative (PID) controller.
 # PID controller gives output value for error between desired reference input and measurement feedback to minimize
 # error value.
-#More information: http://en.wikipedia.org/wiki/PID_controller
+# More information: http://en.wikipedia.org/wiki/PID_controller
 #
-#cnr437@gmail.com
+# cnr437@gmail.com
 #
 #######	Example	#########
 #
