@@ -92,8 +92,8 @@
             "remark": "due to https://github.com/adafruit/adafruit-beaglebone-io-python/issues/48 pwm1b is hard to use, hence a 2 point control",
             "output": 2,
             "type": "2 Point",
-            "sensor-type": "j-head",
-            "hysteresis": 1.0
+            "sensor-type": "B57560G104F",
+            "hysteresis": 1
         },
         "default-speed": 10,
         "fan-duty-cycle": 100.0,
