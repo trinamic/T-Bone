@@ -414,16 +414,16 @@ class Printer(Thread):
         output_number = heater_config['output'] - 1
         if output_number < 0 or output_number >= len(beagle_bone_pins.pwm_config):
             raise PrinterError("PWM pins can only be between 1 and %s" % len(beagle_bone_pins.pwm_config))
-        # do we have a maximum duty cycle??
+        output = beagle_bone_pins.pwm_config[output_number]['out']
         thermometer = Thermometer(themistor_type=heater_config['sensor-type'],
                                   analog_input=beagle_bone_pins.pwm_config[output_number]['temp'])
-        output = beagle_bone_pins.pwm_config[output_number]['out']
         if 'current_input' in beagle_bone_pins.pwm_config[output_number]:
             current_pin = beagle_bone_pins.pwm_config[output_number]['current_input']
         else:
             current_pin = None
         type = heater_config['type']
         if type == 'PID':
+            # do we have a maximum duty cycle??
             max_duty_cycle = None
             if 'max-duty-cycle' in heater_config:
                 max_duty_cycle = heater_config['max-duty-cycle']
