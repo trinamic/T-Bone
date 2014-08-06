@@ -28,6 +28,7 @@
 //#define DEBUG_MOTOR_QUEUE
 //#define DEBUG_MOTION_STATUS
 //#define DEBUG_SET_POS
+//#define DEBUG_MOTOR_CONTFIG
 
 //#define DEBUG_SPI
 

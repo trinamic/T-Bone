@@ -255,7 +255,7 @@ def create_printer():
 
 if __name__ == '__main__':
     #configure the overall logging
-    logging.basicConfig(filename=T_BONE_LOG_FILE, level=logging.INFO,
+    logging.basicConfig(filename=T_BONE_LOG_FILE, level=logging.DEBUG,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logging.info('Starting print server')
     #somehow we can get several initializations - hence we store a global printer

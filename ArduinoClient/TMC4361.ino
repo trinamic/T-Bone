@@ -360,7 +360,6 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
 
   last_target[motor_nr]=target_pos;
-  /*
 //Might be usefull, but takes a lot of space
    #ifdef DEBUG_MOTION_REGISTERS
    Serial.println('S');
@@ -375,7 +374,6 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
    Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
    Serial.println();
    #endif
-   */
 }
 
 inline void signal_start() {
