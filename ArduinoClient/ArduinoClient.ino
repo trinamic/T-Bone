@@ -170,7 +170,7 @@ void setup() {
 
   //initialize the serial port for commands
   Serial1.begin(38400);
-  Serial.begin(115200); 
+  Serial.begin(115200);
 
   //set the serial as debug output 
   moveQueue.setStream(Serial);
