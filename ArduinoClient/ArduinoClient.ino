@@ -37,8 +37,8 @@
 //#define DEBUG_TMC5041_STATUS
 //#define DEBUG_TMC4361_STATUS
 
-//#define RX_TX_BLINKY
-#define RX_TX_BLINKY_1
+#define RX_TX_BLINKY
+//#define RX_TX_BLINKY_1
 
 //how many motors do we know?
 const char nr_of_coordinated_motors = 3;
