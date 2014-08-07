@@ -71,12 +71,12 @@ void checkMotion() {
 #ifdef RX_TX_BLINKY
       RXLED1;
 #endif
-
+/*
        Serial.println(min_buffer_depth);
        Serial.println(moveQueue.count());
        Serial.println(current_motion_state);
        Serial.println();
-
+*/
       //we leave a rest in the move queue since it could be a partial movement
       if (moveQueue.count()>0 && (moveQueue.count()>min_buffer_depth || current_motion_state==finishing_motion)) {
         if (min_buffer_depth!=0 && min_buffer_depth>DEFAULT_COMMAND_BUFFER_DEPTH) {

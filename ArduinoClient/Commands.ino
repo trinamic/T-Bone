@@ -203,6 +203,10 @@ void onInvertMotor() {
 }
 
 void onMove() {
+  #ifdef RX_TX_BLINKY_1
+      RXLED1;
+#endif
+
   char motor = decodeMotorNumber(true);
   if (motor<0) {
     return;
@@ -290,6 +294,10 @@ void onMove() {
     messenger.sendCmdArg(-1);
   }
   messenger.sendCmdEnd();
+  #ifdef RX_TX_BLINKY_1
+      RXLED0;
+#endif
+
 } 
 
 char readMovementParameters(movement* move) {
