@@ -188,6 +188,7 @@ def templating_defaults():
             templating_dictionary['max_queue_length'] = connection.internal_queue_max_length
             templating_dictionary['queue_percentage'] = int(
                 float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 10.0)
+            templating_dictionary['axis_status'] = _printer.read_axis_status()
         templating_dictionary['extruder_temperature'] = "%0.1f" % _printer.extruder_heater.temperature
         templating_dictionary['extruder_set_temperature'] = "%0.1f" % _printer.extruder_heater.get_set_temperature()
         if _printer.heated_bed:

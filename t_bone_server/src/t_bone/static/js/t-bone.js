@@ -42,6 +42,22 @@ $().ready(function () {
                 $("#bed-temperature-page-text").text(eventData.status_data.bed_temperature);
                 $("#bed-set-temperature-text").text(eventData.status_data.bed_set_temperature);
             }
+            var axis_name;
+            for (axis_name in eventData.status_data.axis_status) {
+                var axis_status = eventData.status_data.axis_status[axis_name];
+                $("." + axis_name + "_pos").text(axis_status['position'].toFixed(2));
+                $("." + axis_name + "_encoder_pos").text(axis_status['encoder_pos'].toFixed(2));
+                if (axis_status['left_endstop']) {
+                    $("." + axis_name + "_left_endstop").show();
+                } else {
+                    $("." + axis_name + "_left_endstop").hide();
+                }
+                if (axis_status['right_endstop']) {
+                    $("." + axis_name + "_right_endstop").show();
+                } else {
+                    $("." + axis_name + "_right_endstop").hide();
+                }
+            }
             if (eventData.status_data.printing) {
                 $("#printing-progress").show();
                 $("#printing-progress-bar").width(eventData.status_data.lines_printed_percent + "%");
@@ -53,4 +69,4 @@ $().ready(function () {
             }
         }
     )
-})
+});
