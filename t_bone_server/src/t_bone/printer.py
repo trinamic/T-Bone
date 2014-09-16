@@ -135,8 +135,27 @@ class Printer(Thread):
             axis_config = self.axis[axis_name]
             motor = axis_config['motor']
             position = self.machine.read_positon(motor)
-            positions[axis_name] = position * axis_config['steps_per_mm']
+            positions[axis_name] = position / axis_config['steps_per_mm']
         return positions
+
+    def read_axis_status(self):
+        status = {}
+        for axis_name in self.axis:
+            axis_config = self.axis[axis_name]
+            motor = axis_config['motor']
+            internal_status = self.machine.read_axis_status(motor)
+            position = internal_status['position']
+            position = position / axis_config['steps_per_mm']
+            encoder_pos = internal_status['encoder_pos']
+            encoder_pos = encoder_pos / axis_config['steps_per_mm']
+            status[axis_name] = {
+                "position": position,
+                "encoder_pos": encoder_pos,
+                "left_endstop": internal_status['left_endstop'],
+                "right_endstop": internal_status['right_endstop']
+            }
+        return status
+
 
     def home(self, axis):
         for home_axis in axis:

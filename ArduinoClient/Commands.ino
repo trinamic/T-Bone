@@ -17,6 +17,7 @@ enum {
   //Kommandos zur Information
   kPos = 30,
   kCommands = 31,
+  kStatus = 32,
   //weiteres
   kCurrentReading = 41,
   //Sonstiges
@@ -41,6 +42,7 @@ void attachCommandCallbacks() {
   messenger.attach(kMovement, onMovement);
   messenger.attach(kSetPos, onSetPosition);
   messenger.attach(kPos, onPosition);
+  messenger.attach(kStatus, onStatus);
   messenger.attach(kHome, onHome);
   messenger.attach(kCommands, onCommands);
   messenger.attach(kCurrentReading, onCurrentReading);
@@ -203,8 +205,8 @@ void onInvertMotor() {
 }
 
 void onMove() {
-  #ifdef RX_TX_BLINKY_1
-      RXLED1;
+#ifdef RX_TX_BLINKY_1
+  RXLED1;
 #endif
 
   char motor = decodeMotorNumber(true);
@@ -294,8 +296,8 @@ void onMove() {
     messenger.sendCmdArg(-1);
   }
   messenger.sendCmdEnd();
-  #ifdef RX_TX_BLINKY_1
-      RXLED0;
+#ifdef RX_TX_BLINKY_1
+  RXLED0;
 #endif
 
 } 
@@ -453,6 +455,47 @@ void onPosition() {
   messenger.sendCmdArg(position);
   messenger.sendCmdEnd();
 }
+
+void onStatus() {
+  char motor = decodeMotorNumber(true);
+  if (motor<0) {
+    return;
+  }
+  if (IS_COORDINATED_MOTOR(motor)) {
+    unsigned long status = readRegister(motor, TMC4361_STATUS_REGISTER);
+    long position = (long)readRegister(motor,TMC4361_X_ACTUAL_REGISTER);
+    long encoder_pos = (long)readRegister(motor,TMC4361_ENCODER_POSITION_REGISTER);
+    messenger.sendCmdStart(kStatus);
+    messenger.sendCmdArg(position);
+    messenger.sendCmdArg(encoder_pos);
+    if (status & (_BV(7) | _BV(9))) {
+      messenger.sendCmdArg(1,DEC);
+    } 
+    else {
+      messenger.sendCmdArg(-1,DEC);
+    }
+    if (status & (_BV(8) | _BV(10))) {
+      messenger.sendCmdArg(1,DEC);
+    } 
+    else {
+      messenger.sendCmdArg(-1,DEC);
+    }
+    messenger.sendCmdArg(encoder_pos);
+    messenger.sendCmdEnd();
+  } 
+  else {
+    long position;
+    if (motor == nr_of_coordinated_motors) {
+      position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+    } 
+    else {
+      position = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+    }
+    messenger.sendCmdStart(kStatus);
+    messenger.sendCmdArg(position);
+    messenger.sendCmdEnd();
+  }
+}  
 
 void onConfigureEndStop() {
   char motor = decodeMotorNumber(true);
@@ -751,3 +794,5 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+

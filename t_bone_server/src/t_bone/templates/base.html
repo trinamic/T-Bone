@@ -98,6 +98,22 @@
         </div>
         </p>
     </div>
+    <div class="container">
+        <div class="col-md-12">
+            <p>
+                <small>
+                    {% for axis_name in axis_names %}
+                    Axis <em>{{ axis_name }}</em>, @<span class="{{axis_name}}_pos">{{'%0.2f' % axis_status[axis_name]['position']}}</span>
+                    (Encoder at <span class="{{axis_name}}_encoder_pos">{{'%0.2f' % axis_status[axis_name]['encoder_pos']}}</span>)
+                    <span class="{{axis_name}}_left_endstop">— Left Endstop active&nbsp;</span>
+                    <span class="{{axis_name}}_right_endstop">— Right Endstop active&nbsp;</span>
+                    {% if not loop.last %},&nbsp;{% endif %}
+                    {% endfor %}
+                </small>
+            </p>
+        </div>
+    </div>
+
 </div>
 
 <!-- Bootstrap core JavaScript

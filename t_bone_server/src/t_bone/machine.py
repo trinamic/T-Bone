@@ -10,9 +10,9 @@ import Adafruit_BBIO.GPIO as GPIO
 __author__ = 'marcus'
 
 _default_timeout = 120
-_commandEndMatcher = re.compile(";")  #needed to search for command ends
+_commandEndMatcher = re.compile(";")  # needed to search for command ends
 _min_command_buffer_free_space = 5  # how much arduino buffer to preserve
-_initial_buffer_length = 20  #how much buffer do we need befoer starting to print
+_initial_buffer_length = 20  # how much buffer do we need befoer starting to print
 _buffer_empyting_wait_time = 0.1
 _buffer_warn_waittime = 10
 clock_frequency = 16000000
@@ -25,7 +25,7 @@ MAXIMUM_FREQUENCY_BOW = 2 ** 24 - 2
 
 class Machine():
     def __init__(self, serial_port, reset_pin):
-        #preapre the reset pin
+        # preapre the reset pin
         self.reset_pin = reset_pin
         _logger.debug("Defining ports & pins")
         GPIO.setup(self.reset_pin, GPIO.OUT)
@@ -39,7 +39,7 @@ class Machine():
     def connect(self):
         _logger.info("resetting arduino at %s", self.serial_port)
         GPIO.output(self.reset_pin, GPIO.LOW)
-        #reset the arduino
+        # reset the arduino
         time.sleep(1)
         GPIO.output(self.reset_pin, GPIO.HIGH)
         time.sleep(15)
@@ -107,18 +107,18 @@ class Machine():
             command.arguments = (
                 int(motor),
                 position_number,
-                1,  #1 is a real endstop
+                1,  # 1 is a real endstop
                 polarity_token
             )
         else:
             command.arguments = (
                 int(motor),
                 position_number,
-                0,  #1 is a virtual endstop
+                0,  # 1 is a virtual endstop
                 int(end_stop_config['position'])
             )
 
-        #send the command
+        # send the command
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
             _logger.fatal("Unable to configure end stops :%s", reply)
@@ -128,12 +128,12 @@ class Machine():
         command = MachineCommand()
         command.command_number = 12
         if 'jerk' in home_config:
-            #TODO why so complicated? can't it be integrated with the addition code later on ?
+            # TODO why so complicated? can't it be integrated with the addition code later on ?
             jerk = int(home_config['jerk'])
         else:
             jerk = None
         if 'followers' in home_config:
-            #we lazily add the motor in the printer - since it is quite easy to remove it here
+            # we lazily add the motor in the printer - since it is quite easy to remove it here
             following = [motor for motor in home_config['followers'] if motor != home_config['motor']]
         else:
             following = None
@@ -217,7 +217,7 @@ class Machine():
             bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)
             command.arguments.append(bow_)
             _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
-                         motor['speed'])
+                          motor['speed'])
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
@@ -233,7 +233,7 @@ class Machine():
                 buffer_free = False
                 wait_time = 0
                 while not buffer_free:
-                    #sleep a bit
+                    # sleep a bit
                     time.sleep(_buffer_empyting_wait_time)
                     wait_time += _buffer_empyting_wait_time
                     info_command = MachineCommand()
@@ -254,7 +254,7 @@ class Machine():
                     else:
                         _logger.warn("Waiting for a free command timed out!")
         else:
-            #while self.machine_connection.internal_queue_length > 0:
+            # while self.machine_connection.internal_queue_length > 0:
             pass  # just wait TODO timeout??
 
     def read_positon(self, motor):
@@ -268,6 +268,36 @@ class Machine():
             _logger.error("Unable read motor position: %s", reply)
             raise MachineError("Unable read motor position", reply)
         return int(reply.arguments[0])
+
+    def read_axis_status(self, motor):
+        command = MachineCommand()
+        command.command_number = 32
+        command.arguments = [
+            int(motor)
+        ]
+        reply = self.machine_connection.send_command(command)
+        if not reply or reply.command_number != 32:
+            _logger.error("Unable read motor stats: %s", reply)
+            raise MachineError("Unable read motor position", reply)
+        status = {
+            "position": int(reply.arguments[0]),
+        }
+        if len(reply.arguments) > 1:
+            status["encoder_pos"] = int(reply.arguments[1])
+
+            if int(reply.arguments[2]) > 0:
+                left_endstop = True
+            else:
+                left_endstop = False
+            status["left_endstop"] = left_endstop
+
+            if int(reply.arguments[3]) > 0:
+                right_endstop = True
+            else:
+                right_endstop = False
+            status["right_endstop"] = right_endstop
+
+        return status
 
     def read_current(self, input):
         command = MachineCommand()
@@ -288,7 +318,7 @@ class _MachineConnection:
         self.machine_serial = machine_serial
         self.remaining_buffer = ""
         self.response_queue = Queue()
-        #let's suck empty the serial connection by reading everything with an extremely short timeout
+        # let's suck empty the serial connection by reading everything with an extremely short timeout
         init_start = time.clock()
         last = ''
         while not last is ';' and time.clock() - init_start < _default_timeout:
@@ -319,7 +349,7 @@ class _MachineConnection:
             _logger.debug("sending command %s", command)
             if not timeout:
                 timeout = _default_timeout
-                #empty the queue?? shouldn't it be empty??
+                # empty the queue?? shouldn't it be empty??
             self.response_queue.empty()
             self.machine_serial.write(str(command.command_number))
             if command.arguments:
@@ -327,7 +357,7 @@ class _MachineConnection:
                 for param in command.arguments[:-1]:
                     if isinstance(param, float):
                         self.machine_serial.write("%.6g" % param)
-                        #todo on the other hand an e representation may as well be helpful?
+                        # todo on the other hand an e representation may as well be helpful?
                     else:
                         self.machine_serial.write(repr(param))
                     self.machine_serial.write(",")
@@ -341,10 +371,10 @@ class _MachineConnection:
                         _logger.debug("Received %s as response to %s", response, command)
                         return response
                     else:
-                        #todo do we timeout here?
+                        # todo do we timeout here?
                         _logger.debug("Still waiting: %s", response)
             except Empty:
-                #disconnect in panic
+                # disconnect in panic
                 self.run_on = False
                 raise MachineError("Machine does not listen!")
 
@@ -368,7 +398,7 @@ class _MachineConnection:
                     else:
                         _logger.warn("did not understand status command %s", command)
                 else:
-                    #we add it to the response queue
+                    # we add it to the response queue
                     self.response_queue.put(command)
                     _logger.debug("received command %s", command)
 

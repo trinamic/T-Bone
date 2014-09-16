@@ -210,6 +210,7 @@ def status():
                        float(connection.internal_queue_length) / float(connection.internal_queue_max_length) * 100.0),
                    'extruder_temperature': "%0.1f" % _printer.extruder_heater.temperature,
                    'extruder_set_temperature': "%0.1f" % _printer.extruder_heater.get_set_temperature(),
+                   'axis_status': _printer.read_axis_status()
     }
     if _printer.heated_bed:
         base_status['bed_temperature'] = "%0.1f" % _printer.heated_bed.temperature
@@ -222,6 +223,7 @@ def status():
     if _printer.heated_bed:
         base_status['bed-temperature'] = "%0.1f" % _printer.heated_bed.temperature
         base_status['bed-set-temperature'] = "%0.1f" % _printer.heated_bed.get_set_temperature()
+
 
     global _print_thread
     if _print_thread and _print_thread.printing:
