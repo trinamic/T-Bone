@@ -143,16 +143,25 @@ class Printer(Thread):
         for axis_name in self.axis:
             axis_config = self.axis[axis_name]
             motor = axis_config['motor']
-            internal_status = self.machine.read_axis_status(motor)
-            position = internal_status['position']
-            position = position / axis_config['steps_per_mm']
-            encoder_pos = internal_status['encoder_pos']
-            encoder_pos = encoder_pos / axis_config['steps_per_mm']
+            if motor:
+                internal_status = self.machine.read_axis_status(motor)
+                position = internal_status['position']
+                position = position / axis_config['steps_per_mm']
+                encoder_pos = internal_status['encoder_pos']
+                encoder_pos = encoder_pos / axis_config['steps_per_mm']
+                left_endstop_ = internal_status['left_endstop']
+                right_endstop_ = internal_status['right_endstop']
+            else:
+                # todo implement
+                position = 0
+                encoder_pos = 0
+                left_endstop_ = False
+                right_endstop_ = False
             status[axis_name] = {
                 "position": position,
                 "encoder_pos": encoder_pos,
-                "left_endstop": internal_status['left_endstop'],
-                "right_endstop": internal_status['right_endstop']
+                "left_endstop": left_endstop_,
+                "right_endstop": right_endstop_
             }
         return status
 
