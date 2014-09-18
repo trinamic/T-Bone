@@ -18,6 +18,12 @@
                 "position": 200.2
             }
         },
+        "encoder": {
+            "increments-per-revolution": 1000,
+            "differential": true,
+            "inverted": false,
+        },
+
         "home-speed": 300,
         "home-acceleration": 2000,
         "home-precision-speed": 5
@@ -89,7 +95,7 @@
             }
         },
         "default-speed": 10,
-        "fan-duty-cycle":20.0,
+        "fan-duty-cycle": 20.0,
         "fan-frequency": 280
     },
     "extruder": {

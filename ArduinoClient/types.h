@@ -32,6 +32,7 @@ struct TMC4361_info{
   //we have a TMC260 at the end so we configure a configurer
   TMC26XGenerator tmc260;
   int steps_per_revolution;
+  int microsteps;
 };
 
 struct TMC5041_motion_info {

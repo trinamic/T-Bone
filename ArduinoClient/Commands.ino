@@ -4,7 +4,7 @@ enum {
 
   //Komandos zur Konfiguration
   kMotorCurrent = 1,
-  kStepsPerRev = 2,
+  kEncoder = 2,
   kEndStops = 3,
   kInvertMotor = 4,
   //intitalize all drivers with default values - TODO or preconfigured??
@@ -35,8 +35,8 @@ void attachCommandCallbacks() {
   messenger.attach(OnUnknownCommand);
   messenger.attach(kInit, onInit);
   messenger.attach(kMotorCurrent, onConfigMotorCurrent);
+  messenger.attach(kEncoder, onConfigureEncoder); 
   messenger.attach(kEndStops,onConfigureEndStop);
-  messenger.attach(kStepsPerRev, onStepsPerRevolution); 
   messenger.attach(kInvertMotor,onInvertMotor);
   messenger.attach(kMove, onMove);
   messenger.attach(kMovement, onMovement);
@@ -106,37 +106,6 @@ void onConfigMotorCurrent() {
   else {
     error = setCurrentTMC5041(motor-nr_of_coordinated_motors,newCurrent);
   }
-  if (error==NULL) {
-    messenger.sendCmd(kOK,0);
-  } 
-  else {
-    messenger.sendCmd(kError,error);
-  }
-}
-
-//set the steps per revolution 
-void onStepsPerRevolution() {
-  char motor = decodeMotorNumber(true);
-  if (motor<0) {
-    return;
-  }
-  if (IS_COORDINATED_MOTOR(motor)) {
-    messenger.sendCmd (kError,-100); 
-  }
-  int newSteps = messenger.readIntArg();
-  if (newSteps==0) {
-    messenger.sendCmdStart(kStepsPerRev);
-    messenger.sendCmdArg(motor+1);
-    messenger.sendCmdArg(motors[motor].steps_per_revolution);
-    messenger.sendCmdEnd();
-    return;
-  }
-  if (newSteps<0) {
-    messenger.sendCmd (kError,-1); 
-    return;
-  }
-  const __FlashStringHelper* error =  setStepsPerRevolutionTMC4361(motor,newSteps);
-  motors[motor].steps_per_revolution=newSteps;
   if (error==NULL) {
     messenger.sendCmd(kOK,0);
   } 
@@ -497,6 +466,60 @@ void onStatus() {
   }
 }  
 
+void onConfigureEncoder() {
+  char motor = decodeMotorNumber(true);
+  if (motor<0) {
+    return;
+  }
+  if (IS_COORDINATED_MOTOR(motor)) {
+    int enableEncoder = messenger.readIntArg();
+#ifdef DEBUG_ENCODER_CONFIG
+    messenger.sendCmdStart(kDebug-40);
+    messenger.sendCmdArg(motor);
+    messenger.sendCmdArg(enableEncoder);
+    messenger.sendCmdEnd();
+#endif
+    if (enableEncoder==0) {
+      messenger.sendCmd(kError, 0);
+      //TODO do we need an method to read out the encoder config??
+    } 
+    else if (enableEncoder<1) {
+      //disable encoder and closed loop
+      configureEncoderTMC4361(motor,0,256, 0, false, false);
+    } 
+    else {
+      //configure encoder
+      unsigned int steps_per_revolution = messenger.readIntArg();
+      if (steps_per_revolution<1) {
+        messenger.sendCmd(kError,-1);
+      }
+      unsigned int microsteps_per_step = messenger.readIntArg();
+      if (microsteps_per_step<1) {
+        messenger.sendCmd(kError,-1);
+      }
+      unsigned int encoder_increments_per_revolution = messenger.readIntArg();
+      if (encoder_increments_per_revolution<1) {
+        messenger.sendCmd(kError,-2);
+      }
+      int encoder_differential = messenger.readIntArg();
+      if (encoder_differential==0) {
+        messenger.sendCmd(kError,-3);
+      }
+      int encoder_inverted = messenger.readIntArg();
+      if (encoder_inverted==0) {
+        messenger.sendCmd(kError,-4);
+      }
+      configureEncoderTMC4361(motor,steps_per_revolution, microsteps_per_step, encoder_increments_per_revolution, encoder_inverted>0,encoder_differential>0);
+    }
+    messenger.sendCmd(kOK, 0);
+  } 
+  else {
+    messenger.sendCmd(kError, -1);
+  }
+}
+
+
+
 void onConfigureEndStop() {
   char motor = decodeMotorNumber(true);
   if (motor<0) {
@@ -794,5 +817,7 @@ int freeRam() {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 from Queue import Queue, Empty
 import logging
 import re
@@ -85,6 +86,39 @@ class Machine():
         if not reply or reply.command_number != 0:
             _logger.fatal("Unable to set motor current:%s", reply)
             raise MachineError("Unable to invert motor", reply)
+
+    def configure_encoder(self, motor, encoder_config):
+        if encoder_config:
+            # enable the encoder
+            if encoder_config['differential']:
+                differential_value = 1
+            else:
+                differential_value = -1
+            if encoder_config['inverted']:
+                inverted_value = 1
+            else:
+                inverted_value = -1
+            arguments = (
+                int(motor),
+                1,  # enable
+                int(encoder_config['steps-per-rev']),
+                256,  # todo this CAN be different …
+                int(encoder_config['increments-per-rev']),
+                differential_value,
+                inverted_value
+            )
+        else:
+            arguments = (
+                int(motor),
+                -1,  # disable
+                0,
+                0,
+                0
+            )
+        reply = self.machine_connection.command(2, arguments)
+        if not reply:
+            _logger.fatal("Unable to configure encoder")
+            raise MachineError("Unable to configure encoder")
 
     def configure_endstop(self, motor, position, end_stop_config):
         command = MachineCommand()

@@ -55,7 +55,11 @@ void initialzeTMC4361() {
 
   //preconfigure the TMC4361
   for (char i=0; i<nr_of_coordinated_motors;i++) {
-    writeRegister(i, TMC4361_GENERAL_CONFIG_REGISTER, 0 | _BV(5)); //we don't use direct values
+    long g_conf = 0 | _BV(5);
+    if (differential_encoder_motors & _BV(i)) {
+      g_conf |= _BV(12) | 0x2000000ul; //we don't use direct values and we forward the clock & diff encoder
+    }
+    writeRegister(i, TMC4361_GENERAL_CONFIG_REGISTER, g_conf); //we don't use direct values
     writeRegister(i, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     writeRegister(i, TMC4361_SH_RAMP_MODE_REGISTER,_BV(2) | 2); //we want to go to positions in nice S-Ramps)
     writeRegister(i,TMC4361_CLK_FREQ_REGISTER,CLOCK_FREQUENCY);
@@ -360,20 +364,20 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
 
   last_target[motor_nr]=target_pos;
-//Might be usefull, but takes a lot of space
-   #ifdef DEBUG_MOTION_REGISTERS
-   Serial.println('S');
-   Serial.println(motor_nr,DEC);
-   Serial.println((long)readRegister(motor_nr,TMC4361_X_TARGET_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_V_MAX_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_A_MAX_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_D_MAX_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_1_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_2_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_3_REGISTER));
-   Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
-   Serial.println();
-   #endif
+  //Might be usefull, but takes a lot of space
+#ifdef DEBUG_MOTION_REGISTERS
+  Serial.println('S');
+  Serial.println(motor_nr,DEC);
+  Serial.println((long)readRegister(motor_nr,TMC4361_X_TARGET_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_V_MAX_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_A_MAX_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_D_MAX_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_1_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_2_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_3_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
+  Serial.println();
+#endif
 }
 
 inline void signal_start() {
@@ -619,7 +623,42 @@ inline unsigned long getClearedEndStopConfigTMC4361(unsigned char motor_nr, bool
   return endstop_config;
 }  
 
-
+void configureEncoderTMC4361(unsigned char motor_nr, unsigned int steps_per_revolution, unsigned int microsteps, unsigned int encoder_increments_per_revolution, boolean encoder_inverted, boolean encoder_differential) {
+  //configure the motor type
+  unsigned long motorconfig = microsteps & 0xff; //256 microsteps?! - check for oriental motors
+  motorconfig |= steps_per_revolution<<4;
+  writeRegister(motor_nr,TMC4361_STEP_CONF_REGISTER,motorconfig);
+  //in the background the tmc4361 can recalulate everything ...
+  motors[motor_nr].steps_per_revolution = steps_per_revolution;
+  motors[motor_nr].microsteps = microsteps;
+  unsigned int enc_res = encoder_increments_per_revolution * 4; //the encoder is always quadrated in the tmc4361
+  writeRegister(motor_nr, TMC4361_ENCODER_INPUT_RESOLUTION_REGISTER, enc_res); // write encoder resolution into register
+  //update the encode differentiality in general config
+  unsigned long general_config = readRegister(motor_nr, TMC4361_GENERAL_CONFIG_REGISTER);
+  //delete the dfferential encoder setting
+  general_config &= ~0x1c00ul;
+  //TODO inthery we can set different encoder types here - but we only know the abn types
+  if (encoder_differential) {
+    differential_encoder_motors |= _BV(motor_nr);
+  } 
+  else {
+    general_config |= 0x1000ul;
+    differential_encoder_motors &= ~_BV(motor_nr);
+  }
+  writeRegister(motor_nr, TMC4361_GENERAL_CONFIG_REGISTER, general_config);
+  //set the encoder inversion in the encoder input config
+  if (steps_per_revolution==0 || microsteps==0 || encoder_increments_per_revolution==0) {
+    writeRegister(motor_nr, TMC4361_ENCODER_INPUT_CONFIG_REGISTER, 0); //no encoder
+  } 
+  else {
+    unsigned long encoder_input_config = 0;
+    //TODO this disables the closed loop effectively - should be caled befor enabling CL - which makes sense anyway
+    if (encoder_inverted) {
+      encoder_input_config |= 0x20000000;
+    }
+    writeRegister(motor_nr, TMC4361_ENCODER_INPUT_CONFIG_REGISTER, encoder_input_config);
+  }
+}
 
 inline void resetTMC4361(boolean shutdown, boolean bringup) {
   if (shutdown) {
@@ -633,6 +672,7 @@ inline void resetTMC4361(boolean shutdown, boolean bringup) {
     PORTE |= _BV(2);
   }
 }
+
 
 
 

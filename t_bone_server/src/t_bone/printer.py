@@ -416,6 +416,26 @@ class Printer(Thread):
         else:
             _logger.debug("No endstops for axis %s", axis_name)
 
+        if 'encoder' in config:
+            # read out the encoder config
+            encoder_config = config['encoder']
+            increments = int(encoder_config['increments-per-revolution'])
+            if 'differential' in encoder_config and encoder_config['differential']:
+                differential = True
+            else:
+                differential = False
+            if 'inverted' in encoder_config and encoder_config['inverted']:
+                inverted = True
+            else:
+                inverted = False
+            axis['encoder'] = {
+                'steps-per-rev': config['steps-per-revolution'],
+                'increments-per-rev': increments,
+                'differential': differential,
+                'inverted': inverted
+            }
+            self.machine.configure_encoder(axis['motor'], deepcopy(axis['encoder']))
+
         current = config["current"]
         if axis["motor"]:
             self.machine.set_current(axis["motor"], current)
