@@ -115,7 +115,10 @@ class Machine():
                 0,
                 0
             )
-        reply = self.machine_connection.command(2, arguments)
+        command = MachineCommand()
+        command.command_number = 2
+        command.arguments = arguments
+        reply = self.machine_connection.send_command(command)
         if not reply:
             _logger.fatal("Unable to configure encoder")
             raise MachineError("Unable to configure encoder")
