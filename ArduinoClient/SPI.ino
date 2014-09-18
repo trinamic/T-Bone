@@ -10,13 +10,7 @@ unsigned long readRegister(unsigned const char cs_squirrel,unsigned const char t
   unsigned long result = sendRegister(cs_squirrel, the_register, 0);
   return result;
 }
-/*
-unsigned long readRegister(unsigned const char cs_squirrel,unsigned const char the_register, unsigned const long datagram) {
-  sendRegister(cs_squirrel,the_register, datagram);
-  unsigned long result = sendRegister(cs_squirrel, the_register, datagram);
-  return result;
-}
-*/
+
 long sendRegister(unsigned const char motor_nr, unsigned const char the_register, unsigned const long datagram) {
   unsigned long i_datagram;
 

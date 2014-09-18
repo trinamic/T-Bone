@@ -118,8 +118,8 @@ volatile unsigned int motor_status;
 volatile unsigned char target_motor_status;
 volatile unsigned char next_target_motor_status;
 volatile unsigned char differential_encoder_motors;
-char next_direction[nr_of_coordinated_motors];
 char direction[nr_of_coordinated_motors];
+char next_direction[nr_of_coordinated_motors];
 unsigned char min_buffer_depth = DEFAULT_COMMAND_BUFFER_DEPTH;
 
 

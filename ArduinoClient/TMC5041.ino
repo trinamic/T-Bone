@@ -67,7 +67,7 @@ void initialzeTMC5041() {
   readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
 }
 
-const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
+const char setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
 #ifdef DEBUG_MOTOR_CONTFIG
   Serial.print(F("Settings current for TMC5041 #"));
   Serial.print(motor_number);
@@ -114,10 +114,10 @@ const __FlashStringHelper*  setCurrentTMC5041(unsigned char motor_number, int ne
   else {
     writeRegister(TMC5041_MOTORS, TMC5041_CHOPPER_CONFIGURATION_REGISTER_2,chopper_config);
   }
-  return NULL;
+  return 0;
 }
 
-const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active, boolean active_high) {
+const char configureEndstopTMC5041(unsigned char motor_nr, boolean left, boolean active, boolean active_high) {
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("Enstop config before "));
   Serial.println(endstop_config_shadow[motor_nr],HEX);
@@ -179,10 +179,10 @@ const __FlashStringHelper* configureEndstopTMC5041(unsigned char motor_nr, boole
   else {
     writeRegister(TMC5041_MOTORS,TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2,endstop_config);
   }
-  return NULL;
+  return 0;
 }
 
-const __FlashStringHelper* configureVirtualEndstopTMC5041(unsigned char motor_nr, boolean left, long positions) {
+const char configureVirtualEndstopTMC5041(unsigned char motor_nr, boolean left, long positions) {
   //todo also with active
   return NULL; //TODO this has to be implemented ...
 }
@@ -245,7 +245,7 @@ void tmc5041_prepare_next_motion() {
   }
 }
 
-const __FlashStringHelper* homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
+const char homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
 double homming_accel,
 char* followers)
@@ -488,7 +488,7 @@ char* followers)
       } 
     } 
   }
-  return NULL;
+  return 0;
 }
 
 boolean invertMotorTMC5041(char motor_nr, boolean inverted) {

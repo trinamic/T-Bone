@@ -99,7 +99,7 @@ void onConfigMotorCurrent() {
     messenger.sendCmd (kError,-1); 
     return;
   }
-  const __FlashStringHelper* error;
+  char error;
   if (IS_COORDINATED_MOTOR(motor)) {
     error = setCurrentTMC260(motor,newCurrent);
   } 
@@ -473,12 +473,6 @@ void onConfigureEncoder() {
   }
   if (IS_COORDINATED_MOTOR(motor)) {
     int enableEncoder = messenger.readIntArg();
-#ifdef DEBUG_ENCODER_CONFIG
-    messenger.sendCmdStart(kDebug-40);
-    messenger.sendCmdArg(motor);
-    messenger.sendCmdArg(enableEncoder);
-    messenger.sendCmdEnd();
-#endif
     if (enableEncoder==0) {
       messenger.sendCmd(kError, 0);
       //TODO do we need an method to read out the encoder config??
@@ -534,7 +528,7 @@ void onConfigureEndStop() {
     messenger.sendCmd(kError,-1);
     return;
   }
-  const __FlashStringHelper* error;
+  char error;
   switch(type) {
   case 0: //virtual endstops
     {
@@ -601,7 +595,7 @@ void onHome() {
     messenger.sendCmd(kError,-4);
     return;
   }
-  const __FlashStringHelper* error;
+  char error;
   if (motor<nr_of_coordinated_motors) {
     long jerk = messenger.readLongArg();
     if (jerk<0) {

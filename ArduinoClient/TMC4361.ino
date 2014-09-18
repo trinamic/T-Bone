@@ -76,7 +76,7 @@ void initialzeTMC4361() {
   }
 }
 
-const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, unsigned int steps) {
+const char setStepsPerRevolutionTMC4361(unsigned char motor_nr, unsigned int steps) {
 #ifdef DEBUG_MOTOR_CONTFIG
   Serial.print(F("Settings steps per rev for #"));
   Serial.print(motor_nr);
@@ -88,10 +88,10 @@ const __FlashStringHelper* setStepsPerRevolutionTMC4361(unsigned char motor_nr, 
   motorconfig |= steps<<4;
   writeRegister(motor_nr,TMC4361_STEP_CONF_REGISTER,motorconfig);
   motors[motor_nr].steps_per_revolution = steps;
-  return NULL;
+  return 0;
 }
 
-const __FlashStringHelper* homeMotorTMC4361(unsigned char motor_nr, unsigned long timeout, 
+const char homeMotorTMC4361(unsigned char motor_nr, unsigned long timeout, 
 double homing_fast_speed, double homing_low_speed, long homing_retraction,
 double homming_accel,
 unsigned long homming_jerk, 
@@ -291,7 +291,7 @@ unsigned long right_homing_point)
   writeRegister(motor_nr,TMC4361_BOW_4_REGISTER,0);
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
 
-  return NULL;
+  return 0;
 }
 
 inline long getMotorPositionTMC4361(unsigned char motor_nr) {
@@ -481,7 +481,7 @@ void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, oldStartRegister);  
 }
 
-const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
+const char configureEndstopTMC4361(unsigned char motor_nr, boolean left, boolean active_high) {
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("Enstop config before "));
   Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
@@ -541,10 +541,6 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
           ;
     }
   }
-  //ensure that the endstops are inverted if the motor is inverted
-  if (inverted_motors & _BV(motor_nr)) {
-    endstop_config |= _BV(4);
-  }
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("New enstop config "));
   Serial.println(endstop_config, HEX);
@@ -554,10 +550,10 @@ const __FlashStringHelper* configureEndstopTMC4361(unsigned char motor_nr, boole
   Serial.print(F("Written enstop config "));
   Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
 #endif
-  return NULL;
+  return 0;
 }
 
-const __FlashStringHelper* configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
+const char configureVirtualEndstopTMC4361(unsigned char motor_nr, boolean left, long positions) {
 #ifdef DEBUG_ENDSTOPS_DETAIL
   Serial.print(F("Enstop config before "));
   Serial.println( readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER),HEX);
