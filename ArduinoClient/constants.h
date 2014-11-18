@@ -1,6 +1,6 @@
 //hard coded value
-#define MAX_MOTOR_CURRENT_260 1500
-#define MAX_MOTOR_CURRENT_5041 1500
+#define MAX_MOTOR_CURRENT_260 2000
+#define MAX_MOTOR_CURRENT_5041 1000
 
 //registers for TMC4361
 #define TMC4361_GENERAL_CONFIG_REGISTER 0x0
@@ -106,7 +106,7 @@
 #define V_LOW_SENSE 0.325
 #define V_HIGH_SENSE 0.18
 #define SQRT_2 (1.414213562373095)
-#define TMC_5041_R_SENSE 0.22        // Lars: 220mOhm on electronic
+#define TMC_5041_R_SENSE 0.29        // Lars: 270mOhm + 20mOhm from datasheet on electronic
 
 //some nice calculation s
 //simple FP math see https://ucexperiment.wordpress.com/2012/10/28/fixed-point-math-on-the-arduino-platform/
