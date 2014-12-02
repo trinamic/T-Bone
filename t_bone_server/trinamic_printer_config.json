@@ -1,0 +1,126 @@
+{
+    "x-axis": {
+        "motor": 2,
+        "current": 1.2,
+        "acceleration-current": 1.2,
+        "high-speed-current": 1.2,
+        "hold-current": 0.5,
+        "downscale-delay": 100,
+        "micro-steps": 256,
+        "full-step-speed": 25.0,
+        "steps-per-mm": 1280,
+        "max-speed": 200,
+        "max-acceleration": 3000.0,
+        "bow-acceleration": 1000.0,
+        "time-reference": "time",
+        "inverted": false,
+        "end-stops": {
+            "left": {
+                "polarity": "virtual",
+                "position": 220
+            },
+            "right": {
+                "polarity": "negative"
+            }
+        },
+        "encoder": {
+            "increments-per-revolution": 1000, "home-speed": 100,
+            "differential": true, "home-acceleration": 1000.0,
+            "inverted": false, "home-precision-speed": 5
+        },    },
+    "y-axis": {
+        "motor": 1,
+        "current": 1.2,
+        "acceleration-current": 1.2,
+        "high-speed-current": 1.2,
+        "hold-current": 0.5,
+        "downscale-delay": 100,
+        "micro-steps": 256,
+        "full-step-speed": 25.0,
+        "steps-per-mm": 1280,
+        "max-speed": 200,
+        "max-acceleration": 3000.0,
+        "bow-acceleration": 1000.0,
+        "time-reference": "time",
+        "end-stops": {
+            "left": {
+                "polarity": "negative"
+            },
+            "right": {
+                "polarity": "virtual",
+                "position": 200
+            }
+        },
+        "home-speed": 100.0,
+        "home-acceleration": 1000.0,
+        "home-precision-speed": 5
+    },
+    "z-axis": {
+        "motors": [4, 5],
+        "current": 0.5,
+        "inverted": {
+            "4": true,
+            "5": true
+        },
+        "inverted_comment": "TMC5041 is easier to invert ...",
+        "steps-per-mm": 32000.0,
+        "max-speed": 10,
+        "max-acceleration": 100.0,
+        "time-reference": "clock signal",
+        "end-stops": {
+            "left": {
+                "polarity": "negative",
+                "motor": 4
+            },
+            "right": {
+                "polarity": "virtual",
+                "position": 20.2
+            }
+        },
+        "home-speed": 2,
+        "home-acceleration": 125.0,
+        "home-precision-speed": 1,
+        "home-retract": 3
+    },
+    "printer": {
+        "print-queue": {
+            "min-length": 20,
+            "max-length": 30
+        },
+        "homing-timeout": 15,
+        "home-retract": 10,
+        "heated-bed": {
+            "remark": "due to https://github.com/adafruit/adafruit-beaglebone-io-python/issues/48 pwm1b is hard to use, hence a 2 point control",
+            "output": 2,
+            "type": "2 Point",
+            "sensor-type": "B57560G104F",
+            "hysteresis": 1
+        },
+        "default-speed": 10,
+        "fan-duty-cycle": 100.0,
+        "fan-frequency": 500
+    },
+    "extruder": {
+        "motor": 3,
+        "current": 0.5,
+        "steps-per-mm": 11792.23,
+        "step-scaling-correction": 0.3,
+        "max-speed": 300,
+        "max-acceleration": 10,
+        "bow-acceleration": 10,
+        "time-reference": "time",
+        "inverted": false,
+        "inverted_comment": "not fully functional yet",
+        "heater": {
+            "output": 1,
+            "type": "PID",
+            "sensor-type": "j-head",
+            "max-duty-cycle": 60,
+            "pid-config": {
+                "Kp": 17.0,
+                "Ki": 0.1,
+                "Kd": 0
+            }
+        }
+    }
+}

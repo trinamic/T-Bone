@@ -1,0 +1,118 @@
+{
+    "x-axis": {
+        "motor": 1,
+        "current": 1.0,
+        "steps-per-mm": 8000.0,
+        "max-speed": 10.0,
+        "max-acceleration": 10,
+        "bow-acceleration": 10,
+        "time-reference": "time",
+        "inverted": false,
+        "inverted_comment": "not fully functional yet",
+        "end-stops": {
+            "left": {
+                "polarity": "negative"
+            },
+            "right-not": {
+                "polarity": "virtual",
+                "position": 200.2
+            }
+        },
+        "home-speed": 6,
+        "home-acceleration": 10,
+        "home-precision-speed": 5
+    },
+    "y-axis": {
+        "motor": 2,
+        "current": 1.0,
+        "steps-per-mm": 8000.0,
+        "max-speed": 10.0,
+        "max-acceleration": 10,
+        "bow-acceleration": 10,
+        "time-reference": "time",
+        "end-stops": {
+            "left": {
+                "polarity": "negative"
+            },
+            "right-not": {
+                "polarity": "virtual",
+                "position": 200.2
+            }
+        },
+        "home-speed": 6,
+        "home-acceleration": 10,
+        "home-precision-speed": 5
+    },
+    "z-axis": {
+        "motors": [4, 5],
+        "current": 0.2,
+        "inverted": {
+            "4": true,
+            "5": true
+        },
+        "inverted_comment": "TMC5041 is easier to invert ...",
+        "steps-per-mm": 40596.72,
+        "max-speed": 10,
+        "max-acceleration": 100,
+        "time-reference": "clock signal",
+        "end-stops": {
+            "left": {
+                "polarity": "positive",
+                "motor": 4
+            },
+            "right": {
+                "polarity": "virtual",
+                "position": 20.2
+            }
+        },
+        "home-speed": 2,
+        "home-acceleration": 10000,
+        "home-precision-speed": 1,
+        "home-retract": 3
+    },
+    "printer": {
+        "print-queue": {
+            "min-length": 20,
+            "max-length": 30
+        },
+        "homing-timeout": 15,
+        "home-retract": 3,
+        "heated-bed-disabled": {
+            "pwm": 2,
+            "sensor": 2,
+            "type": "epcos-100k",
+            "max-duty-cycle": 100,
+            "pid-config": {
+                "Kp": 20.0,
+                "Ki": 160.0,
+                "Kd": 1.66
+            }
+        },
+        "default-speed": 10,
+        "fan-duty-cycle":20.0,
+        "fan-frequency": 280
+    },
+    "extruder": {
+        "motor": 3,
+        "current": 0.1,
+        "steps-per-mm": 12160,
+        "hint": "this may be wrong and  we may want more realistic extrusion values - as in real volume",
+        "max-speed": 300,
+        "max-acceleration": 10,
+        "bow-acceleration": 10,
+        "time-reference": "time",
+        "inverted": false,
+        "inverted_comment": "not fully functional yet",
+        "heater": {
+            "pwm": 2,
+            "sensor": 2,
+            "type": "epcos-100k",
+            "max-duty-cycle": 50,
+            "pid-config": {
+                "Kp": 20.0,
+                "Ki": 160.0,
+                "Kd": 1.66
+            }
+        }
+    }
+}

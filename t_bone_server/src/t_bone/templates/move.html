@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="row">
+    <h1>Manual Control</h1>
+
+</div>
+<div class="row">
+    <h2>Home Axis</h2>
+
+</div>
+{% for axis_name in axis_names %}
+<div class="row">
+    <div class="col-lg-12">
+        <h3>Axis <em>{{ axis_name }}</em></h3>
+
+        <p>
+            <button class="btn btn-lg btn-default printer_function"
+                    onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
+                Move {{ axis_name }} 50mm {{ axis_directions[axis_name]['-'] }}
+            </button>
+            <button class="btn btn-lg btn-default printer_function"
+                    onclick="$.ajax('/move/{{ axis_name }}/-10');return false;">
+                Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['-'] }}
+            </button>
+            <button class="btn btn-lg btn-info printer_function"
+                    onclick="$.ajax('/home/{{ axis_name }}');return false;">
+                Home {{ axis_name }}
+            </button>
+            <button class="btn btn-lg btn-default printer_function"
+                    onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
+                Move {{ axis_name }} 10mm {{ axis_directions[axis_name]['+'] }}
+            </button>
+            <button class="btn btn-lg btn-default printer_function"
+                    onclick="$.ajax('/move/{{ axis_name }}/10');return false;">
+                Move {{ axis_name }} 50mm {{ axis_directions[axis_name]['+'] }}
+            </button>
+        </p>
+    </div>
+</div>
+{% endfor %}
+<div class="row">
+    <div class="col-lg-8">
+        <p>
+            &nbsp;
+        </p>
+    </div>
+    <div class="col-lg-4">
+        <p>
+            <button class="btn btn-lg btn-success printer_function" onclick="$.ajax('/home/all');return false;">Home
+                all axis<em></em></button>
+        </p>
+    </div>
+</div>
+<div class="row">
+    <h2>Control Extruder</h2>
+</div>
+<div class="row">
+    <div class="col-lg-4">
+        <p>
+            <b>Extruder Temperature</b> <span id="extruder-temperature-page-text">0.0</span>°C
+        </p>
+    </div>
+    <div class="col-lg-4">
+        <form action="/control" method="post">
+            <div class="form-group">
+                <label for="set-extruder-temp">New Temperature:</label>
+                <input type="text" id="set-extruder-temp" name="set-extruder-temp" class="form-control"
+                       placeholder="{{ extruder_set_temperature }}">
+                <button class="btn btn-lg btn-success printer_function form-control"
+                        onclick="">
+                    Set<em></em></button>
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-4">
+        <button class="btn btn-lg btn-default printer_function"
+                onclick="$.ajax('/move/e/10');return false;">
+            Extrude 10mm
+        </button>
+        <button class="btn btn-lg btn-default printer_function"
+                onclick="$.ajax('/move/e/-10');return false;">
+            Retract 10mm
+        </button>
+    </div>
+</div>
+{%if heated_bed %}
+<div class="row">
+    <h2>Control Heated Bed</h2>
+</div>
+<div class="row">
+    <div class="col-lg-4">
+        <p>
+            <b>Heated Bed Temperature</b> <span id="bed-temperature-page-text">0.0</span>°C
+        </p>
+    </div>
+    <div class="col-lg-4">
+        <form action="/control" method="post">
+            <div class="form-group">
+                <label for="set-bed-temp">New Temperature:</label>
+                <input type="text" id="set-bed-temp" name="set-bed-temp" class="form-control"
+                       placeholder="{{ bed_set_temperature }}">
+                <button class="btn btn-lg btn-success printer_function form-control"
+                        onclick="">
+                    Set<em></em></button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock %}
