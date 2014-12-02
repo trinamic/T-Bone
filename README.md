@@ -2,7 +2,7 @@ T-Bone
 ======
 Electronic for up to 5 axes DIY desktop manufacturing platforms
 
-ArduinoClient Folder
+"Software/ArduinoClient" Folder
 =======================
 The ArduinoClient folder  contains the Arduino software.
 
@@ -39,22 +39,30 @@ Arduino Pin – Atmel Pin & function - connection
     TXLED - PD5 . TX LED
     HWB - PE2 HWB - Reset for motion drivers
 
-ArduinoLibraries Folder
+"Software/ArduinoLibraries" Folder
 =======================
 This folder contains the used Arduino Libraries needed to compile the code.
 !!Attention!!
 The used libraries are standard ones, BUT customized. So be sure to use these!
 !!Attention!!
 
-t_bone_server Folder
+"Software/t_bone_server" Folder
 ====================
 This folder contains the software running on the Beagle Bone Black for the Deluxe version.
 
 It's prepared to run a 3D-Printer Hardware. But can be customized to control different kind of desktop manufacturing platforms.
 
+"Hardware/T-Bone Folder"
+======================
+Contains schematic and board design of the latest version of the T-Bone HW
 
+"Hardware/Programming board" Folder
+===================================
+Contains schematic of a programming board adapter
 
-
+"Hardware/BBQ" Folder
+===================================
+Contains schematic and board design for BBQ breakout board to evaluate TMC chipsets
 
 
 
