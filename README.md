@@ -2,6 +2,11 @@ T-Bone
 ======
 Electronic for up to 5 axes DIY desktop manufacturing platforms
 
+LICENSE Files
+=============
+"LICENSE_HW" --> Attribution-ShareAlike 4.0 International license effective for the hardware part
+"LICENSE_SW" --> agpl-3.0 license effective for the software part
+
 "Software/ArduinoClient" Folder
 ===============================
 The ArduinoClient folder  contains the Arduino software.
