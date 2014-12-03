@@ -1,0 +1,61 @@
+Set Motor Current
+1,<motor 1..5>,<current [mA]>;
+
+Configure Encoder
+2,<motor 1..3>,<enable=1/disable=-1>,<fs/rev motor>,<ustepping>,<increments encoder>,<1=differential/-1=single ended>,<inverted>;
+
+Configure Endstops
+Virtual Endstop:  3,<motor 1..5>,<1=right/-1=left>,0,<virtual endstop position>;
+Real Endstop:     3,<motor 1..5>,<1=right/-1=left>,1,<-1=active low/1=active high>;
+
+Invert Motor (not tested)
+4,<motor 1..5>,<1=non inverted/-1=inverted>
+
+Initialize Motion
+9;
+
+Add Move
+10,<motor 1..5>,<target position>,<115=stop at target/119=continue motion>,<Vmax>,<Amax>,0;
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  Can be repeated, e.g.:
+  10,1,1000,115,100000,500000,0,2,2000,115,200000,1000000,0,3,1500,115,150000,750000,0;
+
+Movement information
+11,0;
+
+Finish Movement
+run from queue: 11,1;
+empty queue:    11,-1;  
+
+Home axis (not tested)
+12,<motor 1..5>,<timeout>,<fast speed>,<slow speed>,<retract>,<aMax>...
+
+Set Position (not tested)
+13,<motor 1..5>,<new position>;
+
+Read Position
+30,<motor 1..5>;
+
+Queue status readout
+31;
+
+Read motor status
+32,<motor 1..5>;
+  Returns: 32,<status register>,<Xactual>,<left endstop: 1=active/-1=inactive>,<right endstop: 1=active/-1=inactive>,<encoder position>;
+  
+Example:
+Run motor 3 with 750mA (RMS):
+Position    Velocity    Acceleration
+102400      204800      819200
+0           204800      819200
+102400      204800      819200
+0           204800      819200
+
+9;
+1,3,750;
+10,3,102400,115,204800,819200,0;
+10,3,0,115,204800,819200,0;
+10,3,102400,115,204800,819200,0;
+10,3,0,115,204800,819200,0;
+11,1;
+11,-1;
