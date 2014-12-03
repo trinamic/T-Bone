@@ -76,7 +76,7 @@ Contains schematic and board design for BBQ breakout board to evaluate TMC chips
 
 "Hardware/TMC2100" Folder
 =========================
-Contains startup instructions for TMC2100 breakout board
+Contains startup instructions for TMC2100 breakout board and schematics + board design
 
 
 
