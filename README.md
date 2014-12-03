@@ -6,6 +6,14 @@ Electronic for up to 5 axes DIY desktop manufacturing platforms
 =======================
 The ArduinoClient folder  contains the Arduino software.
 
+"Documentation/SoftwareDocumentation.pdf" File
+==============================================
+Documentation for the implemented protocol to communicate with the T-Bone via the UART interface.
+
+"Documentation/T-bone_command_documentation.txt" File
+=====================================================
+Example file for the communication between Beagle Bone Black and the T-Bone (Arduino Leonardo)
+
 Arduino Leonardo Pinout
 =======================
 Adapted from pins.h in the Arduino software.
@@ -61,10 +69,18 @@ Contains schematic and board design of the latest version of the T-Bone HW
 Contains schematic of a programming board adapter
 
 "Hardware/BBQ" Folder
-===================================
+=====================
 Contains schematic and board design for BBQ breakout board to evaluate TMC chipsets
 
+"Hardware/TMC2100" Folder
+=====================
+Contains startup instructions for TMC2100 breakout board
 
+
+
+
+
+LJ
 
 The T-Bone Team
 2014
