@@ -84,6 +84,9 @@ Contains schematic and board design for BBQ breakout board to evaluate TMC chips
 Contains startup instructions for TMC2100 breakout board and schematics + board design
 
 
+
+
+
 LJ
 
 The T-Bone Team
