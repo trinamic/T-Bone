@@ -16,6 +16,8 @@ int set_currents[2];
 
 TMC5041_motion_info tmc5031_next_movement[2];
 
+extern char active_motors;
+
 void prepareTMC5041() {
   //configure the cs pin
   pinMode(CS_5041_PIN, OUTPUT);
@@ -89,7 +91,6 @@ const char setCurrentTMC5041(unsigned char motor_number, int newCurrent) {
   unsigned char run_current = calculateCurrentValue(motor_number, newCurrent);
   unsigned char hold_current = run_current;
   unsigned long current_register=0;
-
 
   //set the holding delay
   current_register  = I_HOLD_DELAY;
@@ -246,6 +247,7 @@ void tmc5041_prepare_next_motion() {
 
     writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, tmc5031_next_movement[0].vMax);
     writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,tmc5031_next_movement[0].target);
+    active_motors |= (1<<nr_of_coordinated_motors);
     tmc5031_next_movement[0].vMax=0;
   }
   if (tmc5031_next_movement[1].vMax!=0) {
@@ -260,142 +262,255 @@ void tmc5041_prepare_next_motion() {
 
     writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, tmc5031_next_movement[1].vMax);
     writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,tmc5031_next_movement[1].target);
+    active_motors |= (1<<(nr_of_coordinated_motors+1));
     tmc5031_next_movement[1].vMax=0;
   }
 }
 
-// just parallel homing for axes 4 and 5, 
-const char homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, double homing_fast_speed, double homing_low_speed, long homing_retraction, double homing_accel, boolean home_right)
+const char homeMotorTMC5041(unsigned char motor_nr, unsigned long timeout, 
+double homing_fast_speed, double homing_low_speed, long homing_retraction,
+double homming_accel,
+char* followers)
 {
-  unsigned char homing_state = 0;
-  unsigned long ref_conf[2];
-  unsigned long status;
-  long time_start;
-  unsigned char pos_reached[2];
+  //TODO shouldn't we check if there is a motion going on??
+  unsigned long acceleration_value = 1000;// min((unsigned long) homming_accel,0xFFFFul);
 
-  //comfigire homing movement config - acceleration
-  writeRegister5041P(TMC5041_RAMP_MODE_REGISTER_1, 0);
-  
-  writeRegister5041P(TMC5041_A_MAX_REGISTER_1, homing_accel);
-  writeRegister5041P(TMC5041_D_MAX_REGISTER_1, homing_accel);
-  writeRegister5041P(TMC5041_A_1_REGISTER_1, 0);
-  writeRegister5041P(TMC5041_D_1_REGISTER_1, 1);
-  writeRegister5041P(TMC5041_V_START_REGISTER_1, 0);
-  writeRegister5041P(TMC5041_V_STOP_REGISTER_1, 1);
-  writeRegister5041P(TMC5041_V_1_REGISTER_1, 0);
-  writeRegister5041P(TMC5041_V_MAX_REGISTER_1, homing_fast_speed);
+#ifdef DEBUG_HOMING
+  Serial.print(F("Homing for motor "));
+  Serial.print(motor_nr,DEC);
+  Serial.print(F(", timeout="));
+  Serial.print(timeout);
+  Serial.print(F(", fast="));
+  Serial.print(homing_fast_speed);
+  Serial.print(F(", slow="));
+  Serial.print(homing_low_speed);
+  Serial.print(F(", retract="));
+  Serial.print(homing_retraction);
+  Serial.print(F(", aMax="));
+  Serial.print(acceleration_value);
+  Serial.print(F(": follow=("));
+  for (char i = 0; i< homing_max_following_motors ;i++) {
+    Serial.print(followers[i],DEC);
+    Serial.print(F(", "));
+  }
+  Serial.print(')');
+  Serial.println();
+#endif
+  //configure acceleration for homing
+  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_1,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_1,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_1,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_1,acceleration_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_1, 0);
+  writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_1,1); //needed acc to the datasheet?
+  writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_1,0);
 
-  ref_conf[0] = readRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1);
-  ref_conf[1] = readRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2);
-  
+  writeRegister(TMC5041_MOTORS, TMC5041_A_MAX_REGISTER_2,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_MAX_REGISTER_2,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_A_1_REGISTER_2,acceleration_value);
+  writeRegister(TMC5041_MOTORS, TMC5041_D_1_REGISTER_2,acceleration_value); //the datahseet says it is needed
+  writeRegister(TMC5041_MOTORS, TMC5041_V_START_REGISTER_2, 0);
+  writeRegister(TMC5041_MOTORS,TMC5041_V_STOP_REGISTER_2,1); //needed acc to the datasheet?
+  writeRegister(TMC5041_MOTORS, TMC5041_V_1_REGISTER_2,0);
 
-  time_start = millis();
+  //so here is the theoretic trick:
+  /*
+  homing is just a homing the 4361
+   go down a bit until RAMP_STAT velocity_ reached or event_pos_ reached
+   if event_stop_r the x_latch can be read 
+   
+   the following motor is a bit trickier:
+   zero all motors before we start - they will be zerored anyway (x_actual)
+   closely monitor event_stop_r
+   if it is hit stop the motor manually
+   - should be fast enough
+   - and is an excuse to implement the home moving blocking 
+   */
 
-  while (homing_state != 255) {
-    if (((millis() - time_start)&0xFF) == 0) {
-      messenger.sendCmd(kWait,homing_state);
-    }
-    if ((millis() - time_start) > timeout) {
-      messenger.sendCmd(kError,-1);
-      homing_state = 255;
-    }
+  //TODO obey the timeout!!
+  long last_wait_time = millis();
 
-    switch (homing_state) {
-      case 0:  // start movement towards the endstop
-        if (!home_right) {
-          // homing to the left
-          writeRegister5041P(TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, ((1<<3)|(1<<2)|(1<<0)));
-        } else {
-          // homing to the right
-          writeRegister5041P(TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, ((1<<3)|(1<<2)|(1<<1)));
-        }
-        writeRegister5041P(TMC5041_RAMP_MODE_REGISTER_1, (home_right?1:2));
-        homing_state = 1;
-        messenger.sendCmd(kWait,homing_state);
-        break;
-
-      case 1:  // wait until endstop is reached, start retraction
-        status =  (readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1) & ((1<<5)|(1<<4))) | 
-                  (readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2) & ((1<<5)|(1<<4)));
-        if (status) {
-          writeRegister5041P(TMC5041_V_MAX_REGISTER_1, 0);
-          writeRegister5041P(TMC5041_X_ACTUAL_REGISTER_1, 0);
-          if (!home_right) {
-            // retract to the right
-            writeRegister5041P(TMC5041_X_TARGET_REGISTER_1, homing_retraction);
-          } else {
-            // retract to the left
-            writeRegister5041P(TMC5041_X_TARGET_REGISTER_1, -homing_retraction);
-          }
-          writeRegister5041P(TMC5041_RAMP_MODE_REGISTER_1, 0);
-          writeRegister5041P(TMC5041_V_MAX_REGISTER_1, homing_fast_speed);
-          homing_state = 2;
-          pos_reached[0] = pos_reached[1] = 0;
-          messenger.sendCmd(kWait,homing_state);
-        }
-        break;
-      
-      case 2:  // wait until retracted, abort with error -2 if endstop stays active, start slow movement towards endstop
-        status   = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2) & 0xFFFF;
-        status <<= 16;
-        status  |= readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1) & 0xFFFF;
-        if ((status & (1ul<<25ul)) && (status & (1ul<<9ul))) { // check both position reached flags
-          if (!((status & (1ul<<17ul)) || (status & (1ul<<16ul)) || (status & (1ul<<1ul)) || (status & (1ul<<0ul)))) { // check all endstop flags
-            writeRegister5041P(TMC5041_V_MAX_REGISTER_1, homing_low_speed);
-            writeRegister5041P(TMC5041_RAMP_MODE_REGISTER_1, (home_right?1:2));
-            homing_state = 3;
-            messenger.sendCmd(kWait,homing_state);
-          } else {
-            homing_state = 255;
-            messenger.sendCmd(kError,-2);
-          }
-        }
-        break;
-
-      case 3:  // wait until endstop is reached, this is the home position
-        status =  (readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1) & ((1<<5)|(1<<4))) | 
-                  (readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2) & ((1<<5)|(1<<4)));
-        if (status) {
-          writeRegister5041P(TMC5041_V_MAX_REGISTER_1, 0);
-          writeRegister5041P(TMC5041_X_TARGET_REGISTER_1, 0);
-          writeRegister5041P(TMC5041_X_ACTUAL_REGISTER_1, 0);
-
-          homing_state = 255;
-          messenger.sendCmd(kWait,homing_state);
-        }
-        break;
-      
-
-      default: // end homing
-        homing_state = 255;
-    }
+  unsigned char homed = 0; //this is used to track where at homing we are 
+  long target = 0;
+#ifdef DEBUG_HOMING_STATUS_5041
+  unsigned long old_status = -1;
+#endif
+  //to ensure a easier homing we make both motors use the same refence heigt from here on  so they must be parallel at this point
+  if (motor_nr==0) {
+    long actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,actual);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,actual);
+  } 
+  else {          
+    long actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,actual);
+    writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,actual);
   }
 
-  //reset everything
-  writeRegister5041P(TMC5041_V_MAX_REGISTER_1, 0);
-  writeRegister5041P(TMC5041_RAMP_MODE_REGISTER_1, 0);
-  writeRegister5041P(TMC5041_A_MAX_REGISTER_1, 0);
-  writeRegister5041P(TMC5041_D_MAX_REGISTER_1, 0);
-  writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_1, ref_conf[0]);
-  writeRegister(TMC5041_MOTORS, TMC5041_REFERENCE_SWITCH_CONFIG_REGISTER_2, ref_conf[1]);
-
+  while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
+    status_wait_ping(&last_wait_time, homed);
+    unsigned long status=0;
+    if (homed==0 || homed==1) {
+      unsigned long homing_speed=(unsigned long) homing_fast_speed; 
+      if (homed==1) {
+        homing_speed = (unsigned long) homing_low_speed;
+      }  
+      if (motor_nr==0) {
+        status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
+      } 
+      else {
+        status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
+      }
+#ifdef DEBUG_HOMING_STATUS_5041
+      if (status!=old_status) {
+        Serial.print("Status1 ");
+        Serial.println(status,HEX);
+        Serial.print(F("Position "));
+        Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
+        Serial.print(F(", Targe "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1));
+        Serial.print(F(", Velocity "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
+        old_status=status;
+      }
+#endif
+      if ((status & (_BV(4) | _BV(0)))==0){ //reference switches not hit
+        if (status & (_BV(12) | _BV(10) | _BV(9))) { //not moving or at or beyond target
+          target -= 9999999l;
+#ifdef DEBUG_HOMING
+          Serial.print(F("Homing to "));
+          Serial.print(target);
+          Serial.print(F(" @ "));
+          Serial.println(homing_speed);
+          Serial.print(F("Status "));
+          Serial.print(status,HEX);
+          Serial.print(F(" phase "));
+          Serial.println(homed,DEC);
+          Serial.print(F("Position "));
+          Serial.print(readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
+          Serial.print(F(", Velocity "));
+          Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
+#endif
+          if (motor_nr==0) {
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
+          } 
+          else {            
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
+          }
+          for (char i = 0; i< homing_max_following_motors ;i++) {
+            if (followers[i]==0) {
+              writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1, homing_speed);
+              writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,target);
+            } 
+            else if (followers[i]==1) {
+              writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+              writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,target);
+            }
+          }
+        }
+      } 
+      else{ //reference switches hit
+        long go_back_to;
+        if (homed==0) {
+          long actual;
+          if (motor_nr==0) {
+            actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+          } 
+          else {          
+            actual = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2);
+          }
+          go_back_to = actual + homing_retraction;
+#ifdef DEBUG_HOMING
+          Serial.print(F("home near "));
+          Serial.print(actual);
+          Serial.print(F(" - going back to "));
+          Serial.println(go_back_to);
+#endif
+        } 
+        else {
+          if (motor_nr==0) {
+            go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_LATCH_REGISTER_1);
+          } 
+          else {          
+            go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_LATCH_REGISTER_2);
+          }
+          if (go_back_to==0) {
+            //&we need some kiond of backu if there is something wrong with x_latch 
+            if (motor_nr==0) {
+              go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+            } 
+            else {          
+              go_back_to = (long) readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1);
+            }
+          }
+#ifdef DEBUG_HOMING
+          Serial.print(F("homed at "));
+          Serial.println(go_back_to);
+#endif
+        }
+        if (motor_nr==0) {
+          writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+          writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
+        } 
+        else {
+          writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+          writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
+        }        
+        for (char i = 0; i< homing_max_following_motors ;i++) {
+          if (followers[i]==0) {
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_1,homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,go_back_to);
+          } 
+          else if (followers[i]==1) {
+            writeRegister(TMC5041_MOTORS,TMC5041_V_MAX_REGISTER_2, homing_speed);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,go_back_to);
+          }
+        }
+        delay(10ul);
+        if (motor_nr==0) {
+          status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
+        } 
+        else {
+          status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
+        }
+        while (!(status & _BV(9))) { //are we there yet??
+          if (motor_nr==0) {
+            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
+          } 
+          else {
+            status = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
+          }
+        }
+        if (homed==0) {
+          homed = 1;
+        } 
+        else {
+          if (motor_nr==0) {
+            writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0);
+          } 
+          else {
+            writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,0);
+            writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,0);
+          }        
+          for (char i = 0; i< homing_max_following_motors ;i++) {
+            if (followers[i]==0) {
+              writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1,0);
+              writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1,0);
+            } 
+            else if (followers[i]==1) {
+              writeRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_2,0);
+              writeRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_2,0);
+            }
+          }
+          homed=0xff;
+        }     
+      } 
+    } 
+  }
   return 0;
-}
-
-void writeRegister5041P(unsigned const char the_register, unsigned const long datagram) {
-  char regs[2];
-  if ((the_register >= 0x20) && (the_register < 0x60)) {
-    regs[0] = (the_register & 0x1F) | 0xA0;
-    regs[1] = (the_register & 0x1F) | 0xC0;
-  } else if ((the_register >= 0x60) && (the_register < 0x80)) {
-    regs[0] = (the_register & 0x6F) | 0x80;
-    regs[1] = (the_register & 0x6F) | 0x90;
-  } else {
-    return;
-  }
-  sendRegister(TMC5041_MOTORS, regs[0], datagram);
-  sendRegister(TMC5041_MOTORS, regs[1], datagram);
-//  Serial1.print("wRR 0x");  Serial1.print(regs[0],HEX);   Serial1.print(", 0x");   Serial1.print(regs[1],HEX);   Serial1.print(" <= 0x");   Serial1.println(datagram,HEX);
 }
 
 boolean invertMotorTMC5041(char motor_nr, boolean inverted) {
@@ -453,19 +568,19 @@ unsigned long getClearedEndstopConfigTMC5041(char motor_nr, boolean left) {
   return endstop_config;
 }
 
-void checkTMC5041Motion() {
-  if (tmc5041_read_position_read_status) {
-    tmc5041_read_position_read_status=false;
-    //We are only interested in the first 8 bits 
-    unsigned char events0 = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
-    unsigned char events1 = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
-    if ((events0 | events1) & _BV(7)) {
-      //we are only interested in target reached
-      //TODO is that enough?? should not we track each motor??
-      motor_target_reached(nr_of_coordinated_motors);
-    }
-  }  
-}
+//void checkTMC5041Motion() {
+//  if (tmc5041_read_position_read_status) {
+//    tmc5041_read_position_read_status=false;
+//    //We are only interested in the first 8 bits 
+//    unsigned char events0 = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_1);
+//    unsigned char events1 = readRegister(TMC5041_MOTORS, TMC5041_RAMP_STATUS_REGISTER_2);
+//    if ((events0 | events1) & _BV(7)) {
+//      //we are only interested in target reached
+//      //TODO is that enough?? should not we track each motor??
+//      motor_target_reached(nr_of_coordinated_motors);
+//    }
+//  }  
+//}
 
 ISR(PCINT0_vect)
 {

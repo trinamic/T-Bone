@@ -1,6 +1,7 @@
 # coding=utf-8
 from Adafruit_BBIO import PWM
 from Queue import Queue, Empty
+from collections import deque
 from copy import deepcopy
 import logging
 from math import copysign, sqrt
@@ -53,7 +54,7 @@ class Printer(Thread):
         self._x_step_conversion = None
         self._y_step_conversion = None
 
-        self._homing_timeout = 10
+        self._homing_timeout = 10000
         self._print_queue_wait_time = 0.1
         self.homed = False
 
@@ -197,29 +198,29 @@ class Printer(Thread):
                 if self.axis[home_axis]['motor']:
                     homing_config = {
                         'motor': self.axis[home_axis]['motor'],
-                        'timeout': 0,
+                        'timeout': self._homing_timeout,
                         'home_speed': home_speed,
                         'home_slow_speed': home_precision_speed,
                         'home_retract': home_retract,
                         'acceleration': home_acceleration,
                         'homing_right_position': homing_right_position,
                     }
-                    if self.axis[home_axis]['bow_step']:
-                        homing_config['jerk'] = self.axis[home_axis]['bow_step']
+                    #if self.axis[home_axis]['bow_step']:
+                    #    homing_config['jerk'] = self.axis[home_axis]['bow_step']
                 else:
                     # todo we should check if there is a motor for the left endstop??
                     homing_config = {
                         'motor': self.axis[home_axis]['end-stops']['left']['motor'],
                         'followers': self.axis[home_axis]['motors'],
-                        'timeout': 0,
+                        'timeout': self._homing_timeout,
                         'home_speed': home_speed,
                         'home_slow_speed': home_precision_speed,
                         'home_retract': home_retract,
                         'acceleration': home_acceleration,
                         'homing_right_position': homing_right_position,
                     }
-                    if self.axis[home_axis]['bow_step']:
-                        homing_config['bow'] = self.axis[home_axis]['bow_step']
+                    #if self.axis[home_axis]['bow_step']:
+                    #    homing_config['bow'] = self.axis[home_axis]['bow_step']
 
                 # and do the homing
                 self.machine.home(homing_config, timeout=self._homing_timeout)
@@ -231,7 +232,7 @@ class Printer(Thread):
         if positions:
             positions['type'] = 'set_position'
             # todo and what if there is no movement??
-            self._print_queue.add_movement(positions)
+            self._print_queue.plan_new_movement(positions)#old: self._print_queue.add_movement(positions)
 
     def relative_move_to(self, position):
         movement = {}
@@ -242,25 +243,27 @@ class Printer(Thread):
             movement[axis_name] = new_pos
         self.move_to(movement)
 
-    # tuple with x/y/e coordinates - if left out no change is intended
+    # tuple with x/y/e coordinates - left out if no change is intended
     def move_to(self, position):
         if self.printing:
             position['type'] = 'move'
-            self._print_queue.add_movement(position)
+            self._print_queue.plan_new_movement(position)#old: self._print_queue.add_movement(position)
         else:
             self.start_print()
             position['type'] = 'move'
-            self._print_queue.add_movement(position)
+            position['target_speed'] = self.default_speed;
+            self._print_queue.plan_new_movement(position)#old: self._print_queue.add_movement(position)
             self.finish_print()
 
     def execute_movement(self, movement):
         if movement['type'] == 'move':
+            _logger.debug("Execute: Entered to type 'move'")
             step_pos, step_speed_vector = self._add_movement_calculations(movement)
             x_move_config, y_move_config, z_move_config, e_move_config = self._generate_move_config(movement,
-                                                                                                    step_pos,
-                                                                                                    step_speed_vector)
+                                                                                        step_pos,step_speed_vector)
             self._move(movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config)
         elif movement['type'] == 'set_position':
+            _logger.debug("Execute: Entered to type 'set_position'")
             for axis_name in self.axis:
                 set_pos_name = "s%s" % axis_name
                 if set_pos_name in movement:
@@ -289,10 +292,12 @@ class Printer(Thread):
             if self.printing:
                 try:
                     # get the next movement from stack
-                    movement = self._print_queue.next_movement(self._print_queue_wait_time)
+                    movement = self._print_queue.next_movement_to_execute(self._print_queue_wait_time)#old: movement
+                    #  = self._print_queue.next_movement(self._print_queue_wait_time)
                     self.execute_movement(movement)
                 except Empty:
-                    _logger.debug("Print Queue did not return a value - this can be pretty normal")
+                    _logger.debug("Print Queue did not return a value - this can be pretty normal. Queue: %s Ex: %s",
+                                  len(self._print_queue.planning_queue),self._print_queue.execution_queue.qsize())
             else:
                 time.sleep(0.1)
         self.led_manager.light(0, False)
@@ -520,16 +525,41 @@ class Printer(Thread):
             'z': convert_mm_to_steps(movement['z'], self.axis['z']['steps_per_mm']),
             'e': convert_mm_to_steps(movement['e'], self.axis['e']['steps_per_mm'])
         }
+        movement['entry_speed'] = sqrt(movement['entry_speed_sqr'])
+        movement['nominal_speed'] = sqrt(movement['nominal_speed_sqr'])
+        movement['exit_speed'] = sqrt(movement['exit_speed_sqr'])
+        _logger.debug("Execute - add calculations: entry(%s) nominal(%s) exit(%s)",movement['entry_speed'],
+                      movement['nominal_speed'],movement['exit_speed'])
+        for axis in _axis_config:
+            if ('delta_' + axis) in movement:
+                _logger.debug("Execute - add calculations: delta %s %s", axis, movement['delta_' + axis])
         relative_move_vector = movement['relative_move_vector']
         z_speed = min(abs(relative_move_vector['v'] * relative_move_vector['z']), self.axis['z']['max_speed'])
         e_speed = min(abs(relative_move_vector['v'] * relative_move_vector['e']), self.axis['e']['max_speed'])
         step_speed_vector = {
             # todo - this can be clock signal referenced - convert acc. to  axis['clock-referenced']
-            'x': max(convert_mm_to_steps(abs(movement['speed']['x']), self.axis['x']['steps_per_mm']), 1),
-            'y': max(convert_mm_to_steps(abs(movement['speed']['y']), self.axis['y']['steps_per_mm']), 1),
-            'z': max(convert_mm_to_steps(z_speed, self.axis['z']['steps_per_mm']), 1),
-            'e': max(convert_mm_to_steps(e_speed, self.axis['e']['steps_per_mm']), 1)
+            'nominal_speed_x':max(convert_mm_to_steps(abs(movement['nominal_speed']),self.axis['x']['steps_per_mm']),1),
+            'nominal_speed_y':max(convert_mm_to_steps(abs(movement['nominal_speed']),self.axis['y']['steps_per_mm']),1),
+            'nominal_speed_z':max(convert_mm_to_steps(abs(movement['nominal_speed']),self.axis['z']['steps_per_mm']),1),#todo
+            'nominal_speed_e':max(convert_mm_to_steps(abs(movement['nominal_speed']),self.axis['e']['steps_per_mm']),1),
+            'entry_speed_x':max(convert_mm_to_steps(abs(movement['entry_speed']),self.axis['x']['steps_per_mm']),1),
+            'entry_speed_y':max(convert_mm_to_steps(abs(movement['entry_speed']),self.axis['y']['steps_per_mm']),1),
+            'entry_speed_z':max(convert_mm_to_steps(abs(movement['entry_speed']), self.axis['z']['steps_per_mm']),1),#todo
+            'entry_speed_e':max(convert_mm_to_steps(abs(movement['entry_speed']), self.axis['e']['steps_per_mm']),1),
+            'exit_speed_x':max(convert_mm_to_steps(abs(movement['exit_speed']),self.axis['x']['steps_per_mm']),1),
+            'exit_speed_y':max(convert_mm_to_steps(abs(movement['exit_speed']),self.axis['y']['steps_per_mm']),1),
+            'exit_speed_z':max(convert_mm_to_steps(abs(movement['exit_speed']), self.axis['z']['steps_per_mm']),1),#todo
+            'exit_speed_e':max(convert_mm_to_steps(abs(movement['exit_speed']), self.axis['e']['steps_per_mm']),1),
+            'acceleration_x':max(convert_mm_to_steps(abs(movement['acceleration']),self.axis['x']['steps_per_mm']),1),
+            'acceleration_y':max(convert_mm_to_steps(abs(movement['acceleration']),self.axis['y']['steps_per_mm']),1),
+            'acceleration_z':max(convert_mm_to_steps(abs(movement['acceleration']), self.axis['z']['steps_per_mm']),1),
+            'acceleration_e':max(convert_mm_to_steps(abs(movement['acceleration']), self.axis['e']['steps_per_mm']),1)
         }
+        for axis in _axis_config:
+            step_speed_vector['entry_speed_'+axis] = min(step_speed_vector['entry_speed_'+axis],
+                                                         step_speed_vector['nominal_speed_'+axis])
+            step_speed_vector['exit_speed_'+axis] = min(step_speed_vector['exit_speed_'+axis],
+                                                         step_speed_vector['nominal_speed_'+axis])
         return step_pos, step_speed_vector
 
     def _generate_move_config(self, movement, step_pos, step_speed_vector):
@@ -537,28 +567,35 @@ class Printer(Thread):
             return {
                 'motor': axis['motor'],
                 'acceleration': axis['max_step_acceleration'],
-                'startBow': axis['bow_step'],
             }
-
+        debug_axis = "Execute - generate: "
         if movement['delta_x']:
             x_move_config = _axis_movement_template(self.axis['x'])
             x_move_config['target'] = step_pos['x']
-            x_move_config['speed'] = abs(step_speed_vector['x'])
+            x_move_config['entry_speed'] = step_speed_vector['entry_speed_x']
+            x_move_config['nominal_speed'] = step_speed_vector['nominal_speed_x']
+            x_move_config['exit_speed'] = step_speed_vector['exit_speed_x']
+            x_move_config['acceleration'] = step_speed_vector['acceleration_x']
             if 'x_stop' in movement:
                 x_move_config['type'] = 'stop'
             else:
                 x_move_config['type'] = 'way'
+            debug_axis += "x_axis "
         else:
             x_move_config = None
 
         if movement['delta_y']:
             y_move_config = _axis_movement_template(self.axis['y'])
             y_move_config['target'] = step_pos['y']
-            y_move_config['speed'] = abs(step_speed_vector['y'])
+            y_move_config['entry_speed'] = step_speed_vector['entry_speed_y']
+            y_move_config['nominal_speed'] = step_speed_vector['nominal_speed_y']
+            y_move_config['exit_speed'] = step_speed_vector['exit_speed_y']
+            y_move_config['acceleration'] = step_speed_vector['acceleration_y']
             if 'y_stop' in movement:
                 y_move_config['type'] = 'stop'
             else:
                 y_move_config['type'] = 'way'
+            debug_axis += "y_axis "
         else:
             y_move_config = None
 
@@ -567,106 +604,118 @@ class Printer(Thread):
                 {
                     'motor': self.axis['z']['motors'][0],
                     'target': step_pos['z'],
-                    'acceleration': self.axis['z']['max_step_acceleration'],
-                    'speed': abs(step_speed_vector['z']),
-                    'type': 'stop',
-                    'startBow': 0
+                    'acceleration': step_speed_vector['acceleration_z'],#self.axis['z']['max_step_acceleration'],
+                    'entry_speed': step_speed_vector['entry_speed_z'],
+                    'exit_speed': step_speed_vector['exit_speed_z'],
+                    'nominal_speed': step_speed_vector['nominal_speed_z'],
+                    'type': 'stop'
                 },
                 {
                     'motor': self.axis['z']['motors'][1],
                     'target': step_pos['z'],
-                    'acceleration': self.axis['z']['max_step_acceleration'],
-                    'speed': abs(step_speed_vector['z']),
-                    'type': 'stop',
-                    'startBow': 0
+                    'acceleration': step_speed_vector['acceleration_z'],#self.axis['z']['max_step_acceleration'],
+                    'entry_speed': step_speed_vector['entry_speed_z'],
+                    'exit_speed': step_speed_vector['exit_speed_z'],
+                    'nominal_speed': step_speed_vector['nominal_speed_z'],
+                    'type': 'stop'
                 }
             ]
+            debug_axis += "z_axis "
         else:
             z_move_config = None
 
         if movement['delta_e']:
             e_move_config = _axis_movement_template(self.axis['e'])
             e_move_config['target'] = step_pos['e']
-            e_move_config['speed'] = abs(step_speed_vector['e'])
-            if movement['e_stop']:
+            e_move_config['entry_speed'] = abs(step_speed_vector['entry_speed_e'])
+            e_move_config['nominal_speed'] = abs(step_speed_vector['nominal_speed_e'])
+            e_move_config['exit_speed'] = abs(step_speed_vector['exit_speed_e'])
+            if 'e_stop' in movement:
                 e_move_config['type'] = 'stop'
             else:
                 e_move_config['type'] = 'way'
+            debug_axis += "e_axis "
         else:
             e_move_config = None
-
+        _logger.debug(debug_axis)
         return x_move_config, y_move_config, z_move_config, e_move_config
 
     def _move(self, movement, step_pos, x_move_config, y_move_config, z_move_config, e_move_config):
         move_vector = movement['relative_move_vector']
         move_commands = []
-        if x_move_config and not y_move_config:  # silly, but simpler to understand
+
+        if x_move_config and not y_move_config and not z_move_config:
             # move x motor
-            _logger.debug("Moving X axis to %s", step_pos['x'])
+            _logger.debug("Execute - move: X axis to %s", step_pos['x'])
 
             move_commands = [
                 x_move_config
             ]
 
-        elif y_move_config and not x_move_config:  # still silly, but stil easier to understand
+        elif y_move_config and not x_move_config and not z_move_config:
             # move y motor to position
-            _logger.debug("Moving Y axis to %s", step_pos['y'])
+            _logger.debug("Execute - move: Y axis to %s", step_pos['y'])
 
             move_commands = [
                 y_move_config
             ]
+
+        elif z_move_config and not x_move_config and not y_move_config:
+            # move y motor to position
+            _logger.debug("Execute - move: Z axis to %s", step_pos['z'])
+
+            move_commands = [
+                z_move_config
+            ]
+
         elif x_move_config and y_move_config:
             # ok we have to see which axis has bigger movement
             if abs(movement['delta_x']) > abs(movement['delta_y']):
                 y_factor = abs(move_vector['y'] / move_vector['x'] * self._y_step_conversion)
                 _logger.debug(
-                    "Moving X axis to %s gearing Y by %s to %s"
+                    "Execute - move: X axis to %s gearing Y by %s to %s"
                     , step_pos['x'], y_factor, step_pos['y'])
 
-                y_move_config['speed'] = x_move_config[
-                                             'speed'] * y_factor
-                y_move_config['acceleration'] = x_move_config[
-                                                    'acceleration'] * y_factor  # todo or the max of the config/scaled??
-                y_move_config['startBow'] = x_move_config['startBow'] * y_factor
+                y_move_config['entry_speed'] = x_move_config['entry_speed'] * y_factor
+                y_move_config['nominal_speed'] = x_move_config['nominal_speed'] * y_factor
+                y_move_config['exit_speed'] = x_move_config['exit_speed'] * y_factor
+                y_move_config['acceleration'] = x_move_config['acceleration'] * y_factor
                 # move
                 move_commands = [
                     x_move_config,
                     y_move_config
                 ]
+
             else:
                 x_factor = abs(move_vector['x'] / move_vector['y'] * self._x_step_conversion)
                 _logger.debug(
-                    "Moving Y axis to %s gearing X by %s  to %s"
+                    "Execute - move: Y axis to %s gearing X by %s  to %s"
                     , step_pos['x'], x_factor, step_pos['y'])
 
-                x_move_config['speed'] = y_move_config[
-                                             'speed'] * x_factor
-                x_move_config['acceleration'] = y_move_config[
-                                                    'acceleration'] * x_factor  # todo or the max of the config/scaled??
-                x_move_config['startBow'] = y_move_config['startBow'] * x_factor
-                # move
+                x_move_config['entry_speed'] = y_move_config['entry_speed'] * x_factor
+                x_move_config['nominal_speed'] = y_move_config['nominal_speed'] * x_factor
+                x_move_config['exit_speed'] = y_move_config['exit_speed'] * x_factor
+                x_move_config['acceleration'] = y_move_config['acceleration'] * x_factor
                 move_commands = [
                     y_move_config,
                     x_move_config
                 ]
+
         if e_move_config:
             if x_move_config and not (y_move_config and abs(move_vector['x']) < abs(move_vector['y'])):
                 factor = abs(move_vector['e'] / move_vector['x'] * self._e_x_step_conversion)
-                e_move_config['speed'] = factor * x_move_config['speed']
-                e_move_config['acceleration'] = factor * x_move_config[
-                    'acceleration']
-                e_move_config['startBow'] = factor * x_move_config['startBow']
+                e_move_config['entry_speed'] = x_move_config['entry_speed'] * factor
+                e_move_config['nominal_speed'] = x_move_config['nominal_speed'] * factor
+                e_move_config['exit_speed'] = x_move_config['exit_speed'] * factor
+                e_move_config['acceleration'] = factor * x_move_config['acceleration']
             elif y_move_config:
                 factor = abs(move_vector['e'] / move_vector['y'] * self._e_y_step_conversion)
-                e_move_config['speed'] = factor * y_move_config['speed']
-                e_move_config['acceleration'] = factor * y_move_config[
-                    'acceleration']
-                e_move_config['startBow'] = factor * y_move_config['startBow']
+                e_move_config['entry_speed'] = y_move_config['entry_speed'] * factor
+                e_move_config['nominal_speed'] = y_move_config['nominal_speed'] * factor
+                e_move_config['exit_speed'] = y_move_config['exit_speed'] * factor
+                e_move_config['acceleration'] = factor * y_move_config['acceleration']
             move_commands.append(e_move_config)
-
-        if z_move_config:
-            # todo we know that the z_move config is a list - is this too specific?
-            move_commands.extend(z_move_config)
+            _logger.debug("Execute - move: also e")
 
         # we update our position
         # todo isn't there a speedier way
@@ -681,343 +730,312 @@ class Printer(Thread):
 class PrintQueue():
     def __init__(self, axis_config, min_length, max_length, default_target_speed=None, led_manager=None):
         self.axis = axis_config
-        self.planning_list = list()
+        self.planning_queue = deque()
         self.queue_size = min_length - 1  # since we got one extra
-        self.queue = Queue(maxsize=(max_length - min_length))
-        self.previous_movement = None
-        # we will use the last_movement as special case since it may not fully configured
+        self.execution_queue = Queue(maxsize=(max_length - min_length))
+        self.last_planned = 0
+        self.planner = Planner()
         self.default_target_speed = default_target_speed
         self.led_manager = led_manager
+        #todo move these parameters to configuration file
+        self.DEFAULT_JUNCTION_DEVIATION = 0.02 # mm
+        self.MINIMUM_JUNCTION_SPEED = 0.0 #mm/min
+        self.MINIMUM_FEED_RATE = 0.1666 #mm/s #1.0 #mm/min
 
-    def add_movement(self, target_position, timeout=None):
-        # calculate the target
-        move = self._extract_movement_values(target_position)
-        # and see how fast we can allowable go
-        # TODO currently the maximum achievable speed only considers x & y movements
-        maximum_achievable_speed = self._maximum_achievable_speed(move)
-        move['max_achievable_speed_vector'] = maximum_achievable_speed
-        # and since we do not know it better the first guess is that the final speed is the max speed
-        move['speed'] = maximum_achievable_speed
-        # now we can push the previous move to the queue and recalculate the whole queue
-        if self.previous_movement:
-            self.planning_list.append(self.previous_movement)
-            # if the list is long enough we can give it to the queue so that readers can get it
-        if len(self.planning_list) > self.queue_size:
+    def add_movement_to_planning_queue(self, new_movement):
+        self.planning_queue.append(new_movement)
+
+    def get_movement_from_planning_queue(self):
+        movement = self.planning_queue.popleft()
+        if len(self.planning_queue) > 0:
+            movement['exit_speed_sqr'] = max(self.planning_queue[0]['entry_speed_sqr'],movement['entry_speed_sqr'])
+        else:
+            movement['exit_speed_sqr'] = movement['entry_speed_sqr']
+        if movement['exit_speed_sqr'] < movement['entry_speed_sqr']:
+            _logger.warning("Push - get: Vstop smaller than Vstart")
+        if self.last_planned > 0:
+            self.last_planned -= 1
+        return movement
+
+    def plan_new_movement(self, target_position, timeout=None):
+        if 'type' in target_position:
+            _logger.debug("Planner: Begin movement (%s)", target_position['type'])
+        else:
+            _logger.error("Planner: Movement with no type")
+        movement = self._extract_movement_values(target_position)
+        #Compute speed, unit vector and other parameters of the movement
+        unit_vec = movement['relative_move_vector']
+        if target_position['type'] == 'move':
+            _logger.debug("Planner: Plan movement. Type: Move")
+            if movement['distance_event_count'] == 0.0:
+                return
+            if movement['target_speed'] < self.MINIMUM_FEED_RATE:#todo or could exist a movement with 0 feed_rate?
+                movement['target_speed'] = self.MINIMUM_FEED_RATE
+                _logger.debug("Planner: target speed set to minimum")
+            self.planner.set_previous_feed_rate(movement['target_speed'])
+            for axis in _axis_names:
+                planner_previous_unit_vec = self.planner.get_previous_unit_vec()
+                if unit_vec[axis] == 0:
+                    inverted_unit_vec_axis = float("inf")
+                else:
+                    inverted_unit_vec_axis = 1.0 / abs(unit_vec[axis])
+                movement['target_speed'] = min(movement['target_speed'],self.axis[axis]['max_speed']\
+                                               *inverted_unit_vec_axis)
+                movement['acceleration'] = min(movement['acceleration'],
+                                               self.axis[axis]['max_acceleration']*inverted_unit_vec_axis)
+                movement['junction_cos_theta'] -= planner_previous_unit_vec[axis] * unit_vec[axis]
+            #todo acceleration will be infinity if movement is also in e axis
+            if movement['acceleration'] == float("inf"):
+                if unit_vec['e'] == 0:
+                    inverted_unit_vec_axis = float("inf")
+                else:
+                    inverted_unit_vec_axis = 1.0 / abs(unit_vec['e'])
+                movement['acceleration'] = min(movement['acceleration'],
+                                               self.axis['e']['max_acceleration']*inverted_unit_vec_axis)
+            _logger.debug("Planner: target_speed(%s) acceleration(%s) junction_cos (%s)",movement['target_speed'],
+                          movement['acceleration'],movement['junction_cos_theta'])
+            if self.is_planning_queue_empty():
+                movement['max_junction_speed_sqr'] = 0.0
+            else:
+                sin_theta_d2 = sqrt(0.5*(1.0-movement['junction_cos_theta']))
+                if (1.0 - sin_theta_d2) == 0:
+                    _logger.error("Planner: Zero division error")
+                movement['max_junction_speed_sqr'] = max(self.MINIMUM_JUNCTION_SPEED*self.MINIMUM_JUNCTION_SPEED,
+                             (movement['acceleration']*self.DEFAULT_JUNCTION_DEVIATION*sin_theta_d2)/(1.0-sin_theta_d2))
+            movement['nominal_speed_sqr']=movement['target_speed']*movement['target_speed']
+            movement['max_entry_speed_sqr'] = min(movement['max_junction_speed_sqr'],min(movement['nominal_speed_sqr'],
+                                                  self.planner.get_previous_nominal_speed_sqr()))
+            _logger.debug("Planner: max entry speed (%s) max junction speed (%s) and nominal speed (%s) calculated",
+                          movement['max_entry_speed_sqr'],movement['max_junction_speed_sqr'],
+                          movement['nominal_speed_sqr'])
+            unit_vec['v']=movement['target_speed']/movement['millimeters']#only computed in T-Bone, not grbl
+            movement['relative_move_vector'] = unit_vec
+            #Save movement data in Planner -> will be previous movement info for the next one
+            self.planner.set_previous_unit_vec(unit_vec)
+            self.planner.set_previous_nominal_speed_sqr(movement['nominal_speed_sqr'])
+            position = {}
+            for axis in _axis_config.keys():
+                position[axis] = movement[axis]
+            self.planner.set_position(position)
+        elif target_position['type'] == 'set_position':
+            _logger.debug("Planner: Plan movement. Type: Set Position")
+            movement['target_speed'] = 0.0
+            movement['acceleration'] = 0.0
+            movement['entry_speed_sqr'] = 0.0
+            movement['nominal_speed_sqr'] = 0.0
+            movement['max_junction_speed_sqr'] = 0.0
+            movement['max_entry_speed_sqr'] = 0.0
+
+        #If there are enough planned movements, move one to execution queue
+        if len(self.planning_queue) > self.queue_size:
             self._push_from_planning_to_execution(timeout)
-        self.previous_movement = move
-        # and recalculate the maximum allowed speed
+            _logger.debug("Planner: planning queue big enough. push to execution")
+        #Add new movement to planning queue
+        self.add_movement_to_planning_queue(movement)
+        _logger.debug("Planner: movement added to planning queue (%s) (%s in execution)",len(self.planning_queue),
+                      self.execution_queue.qsize())
+        #Recalculate the plan using the new movement
         self._recalculate_move_speeds()
 
-    def next_movement(self, timeout=None):
-        return self.queue.get(timeout=timeout)
+    def is_planning_queue_empty(self):
+        if len(self.planning_queue) == 0:
+            return True
+        else:
+            return False
+
+    def next_movement_to_execute(self, timeout=None):
+        return self.execution_queue.get(timeout=timeout)
 
     def finish(self, timeout=None):
-        if self.previous_movement:
-            self.previous_movement['x_stop'] = True
-            self.previous_movement['y_stop'] = True
-            self.previous_movement['e_stop'] = True
-            self.planning_list.append(self.previous_movement)
-            self.previous_movement = None
-        while len(self.planning_list) > 0:
+        if not self.is_planning_queue_empty():
+            self.planning_queue[-1]['x_stop'] = True
+            self.planning_queue[-1]['y_stop'] = True
+            self.planning_queue[-1]['e_stop'] = True
+            _logger.debug("Finish: adding axis stop")
+        while len(self.planning_queue) > 0:
             self._push_from_planning_to_execution(timeout)
-        while not self.queue.empty():
+        while not self.execution_queue.empty():
             pass
 
     def _push_from_planning_to_execution(self, timeout):
-        executed_move = self.planning_list.pop(0)
-        self.queue.put(executed_move, timeout=timeout)
-        _logger.debug("adding to execution queue, now at %s/%s entries", len(self.planning_list), self.queue.qsize())
+        executed_move = self.get_movement_from_planning_queue()
+        #todo calculate parameters of the old interface from the new one
+
+        self.execution_queue.put(executed_move, timeout=timeout)
 
     def _extract_movement_values(self, target_position):
-        move = {}
-        if self.previous_movement:
-            last_x = self.previous_movement['x']
-            last_y = self.previous_movement['y']
-            last_z = self.previous_movement['z']
-            last_e = self.previous_movement['e']
+        movement = {'type':target_position['type'], 'millimeters': 0.0, 'acceleration': float("inf"),
+                    'junction_cos_theta': 0.0, 'distance_event_count':0.0, 'entry_speed_sqr':0.0}
+        #test: reduced speed
+        reduction_factor = 1
+        if 'target_speed' in target_position:
+            movement['target_speed'] = target_position['target_speed'] / reduction_factor
+            _logger.debug("Planner - Extract Movement: Target Speed 1 %s", movement['target_speed'])
         else:
-            last_x = 0
-            last_y = 0
-            last_z = 0
-            last_e = 0
-
+            movement['target_speed'] = self.planner.get_previous_feed_rate()
+            _logger.debug("Planner - Extract Movement: Target Speed 2 %s", movement['target_speed'])
+        delta = {}
+        unit_vec = {}
+        planner_position = self.planner.get_position()
         if target_position['type'] == 'move':
-            move['type'] = 'move'
-            # extract values
-            # todo this can be for loop over axis_names
-            if 'x' in target_position:
-                move['x'] = target_position['x']
-            else:
-                if self.previous_movement:
-                    move['x'] = self.previous_movement['x']
+            for axis_i in _axis_config.keys():
+                if axis_i in target_position:
+                    movement[axis_i] = target_position[axis_i]
+                    delta[axis_i] = target_position[axis_i] - planner_position[axis_i]
+                    if axis_i in ["x","y"]:
+                        _logger.debug("Planner - Extract Movement: %s target(%s) last(%s) difference(%s)",
+                                      axis_i,target_position[axis_i],planner_position[axis_i],delta[axis_i])
                 else:
-                    move['x'] = 0
-            if 'y' in target_position:
-                move['y'] = target_position['y']
-            else:
-                if self.previous_movement:
-                    move['y'] = self.previous_movement['y']
-                else:
-                    move['y'] = 0
-            if 'z' in target_position:
-                move['z'] = target_position['z']
-            else:
-                if self.previous_movement:
-                    move['z'] = self.previous_movement['z']
-                else:
-                    move['z'] = 0
-            if 'e' in target_position:
-                move['e'] = target_position['e']
-            else:
-                if self.previous_movement:
-                    move['e'] = self.previous_movement['e']
-                else:
-                    move['e'] = 0
-            if 'target_speed' in target_position:
-                move['target_speed'] = target_position['target_speed']
-            elif self.previous_movement:
-                move['target_speed'] = self.previous_movement['target_speed']
-            elif self.default_target_speed:
-                move['target_speed'] = self.default_target_speed
-            else:
-                raise PrinterError("movement w/o a set speed and no default speed is set!")
-            _logger.debug("moving to: X:%s, Y:%s, Z:%s", move['x'], move['z'], move['z'])
-
-            move['delta_x'] = move['x'] - last_x
-            move['delta_y'] = move['y'] - last_y
-            move['delta_z'] = move['z'] - last_z
-            move['delta_e'] = move['e'] - last_e
-            move_vector = calculate_relative_vector(move['delta_x'], move['delta_y'], move['delta_z'], move['delta_e'])
-            try:
-                move_vector['v'] = move['target_speed'] / move_vector['l']
-            except ZeroDivisionError:
-                move_vector['v'] = 0
-            # save the move vector for later use ...
-            move['relative_move_vector'] = move_vector
+                    movement[axis_i] = planner_position[axis_i]
+                    delta[axis_i] = 0.0
+                _logger.debug("Planner - Extract Movement: axis %s target %s, delta %s",axis_i,
+                              movement[axis_i],delta[axis_i])
+                movement['distance_event_count'] = max(movement['distance_event_count'],movement[axis_i])
+                unit_vec[axis_i] = delta[axis_i]
+                movement['delta_'+axis_i] = delta[axis_i]
+                movement['millimeters'] += delta[axis_i]*delta[axis_i]
+            movement['millimeters'] = sqrt(movement['millimeters'])
+            _logger.debug("Planner - Extract Movement: total mm (%s)",movement['millimeters'])
+            movement['relative_move_vector'] = unit_vec
+            for axis_i in _axis_config.keys():
+                unit_vec[axis_i] /= movement['millimeters']#make unitary: divide by total length
+            return movement
         elif target_position['type'] == 'set_position':
-            # a set position also means that we do not move it …
-            move['x'] = last_x
-            move['y'] = last_y
-            move['z'] = last_z
-            move['e'] = last_e
-            move['delta_x'] = 0
-            move['delta_y'] = 0
-            move['delta_z'] = 0
-            move['delta_e'] = 0
-            move['relative_move_vector'] = {
-                'x': 0.0,
-                'z': 0.0,
-                'y': 0.0,
-                'e': 0.0,
-                'l': 0.0,
-            }
-            move['target_speed'] = 0
-            move['type'] = 'set_position'
-            for axis, value in target_position.iteritems():
-                if not axis == 'type':
-                    move['s%s' % axis] = value
-                    move[axis] = value
-
-        return move
-
-    def _maximum_achievable_speed(self, current_movement):
-        if self.previous_movement and self.previous_movement['type'] == 'move':
-            last_x_speed = self.previous_movement['speed']['x']
-            last_y_speed = self.previous_movement['speed']['y']
-        else:
-            last_x_speed = 0
-            last_y_speed = 0
-        delta_x = current_movement['delta_x']
-        delta_y = current_movement['delta_y']
-        delta_e = current_movement['delta_e']
-        normalized_move_vector = current_movement['relative_move_vector']
-        # derive the various speed vectors from the movement … for desired head and maximum axis speed
-        speed_vectors = [
-            {
-                # add the desired speed vector as initial value
-                'x': current_movement['target_speed'] * normalized_move_vector['x'],
-                'y': current_movement['target_speed'] * normalized_move_vector['y']
-            }
-        ]
-        if delta_x != 0:
-            scaled_y = normalized_move_vector['y'] / normalized_move_vector['x']
-            speed_vectors.append({
-                # what would the speed vector for max x speed look like
-                'x': copysign(self.axis['x']['max_speed'], normalized_move_vector['x']),
-                'y': copysign(self.axis['x']['max_speed'], normalized_move_vector['y']) * scaled_y
-            })
-            if not self.previous_movement or sign(delta_x) == sign(self.previous_movement['delta_x']):
-                # ww can accelerate further
-                start_velocity = last_x_speed
-            else:
-                # we HAVE to turn around!
-                if self.previous_movement:
-                    self.previous_movement['x_stop'] = True
-                start_velocity = 0
-            max_speed_x = get_target_velocity(start_velocity=start_velocity,
-                                              length=delta_x,
-                                              max_acceleration=self.axis['x']['max_acceleration'],
-                                              jerk=self.axis['x']['bow'])
-            speed_vectors.append({
-                # how fast can we accelerate in X direction anyway
-                'x': max_speed_x,
-                'y': max_speed_x * scaled_y
-            })
-        else:
-            # we HAVE to turn around!
-            if self.previous_movement:
-                self.previous_movement['x_stop'] = True
-
-        if delta_y != 0:
-            scaled_x = normalized_move_vector['x'] / normalized_move_vector['y']
-            speed_vectors.append({
-                # what would the maximum speed vector for y movement look like
-                'x': copysign(self.axis['y']['max_speed'], normalized_move_vector['x']) * scaled_x,
-                'y': copysign(self.axis['y']['max_speed'], normalized_move_vector['y'])
-            })
-            if not self.previous_movement or sign(delta_y) == sign(self.previous_movement['delta_y']):
-                # ww can accelerate further
-                start_velocity = last_y_speed
-            else:
-                # we HAVE to turn around!
-                if self.previous_movement:
-                    self.previous_movement['y_stop'] = True
-                start_velocity = 0
-            max_speed_y = get_target_velocity(start_velocity=start_velocity,
-                                              length=delta_y,
-                                              max_acceleration=self.axis['y']['max_acceleration'],
-                                              jerk=self.axis['y']['bow'])
-            speed_vectors.append({
-                # how fast can we accelerate in X direction anyway
-                'x': max_speed_y * scaled_x,
-                'y': max_speed_y
-            })
-        else:
-            # we HAVE to turn around!
-            if self.previous_movement:
-                self.previous_movement['y_stop'] = True
-        if self.previous_movement:
-            if delta_e != 0 and sign(delta_e) == sign(self.previous_movement['delta_e']):
-                e_stop = ('x_stop' in self.previous_movement and self.previous_movement['x_stop']) \
-                         and \
-                         ('y_stop' in self.previous_movement and self.previous_movement['y_stop'])
-                self.previous_movement['e_stop'] = e_stop
-            else:
-                self.previous_movement['e_stop'] = True
-
-        max_local_speed_vector = find_shortest_vector(speed_vectors)
-        # the minimum achievable speed is the minimum of all those local vectors
-
-        return max_local_speed_vector
-
+            for axis_i in _axis_config.keys():
+                movement[axis_i] = planner_position[axis_i]
+                delta[axis_i] = 0.0
+                movement['delta_'+axis_i] = delta[axis_i]
+                unit_vec[axis_i]=0.0
+            movement['millimeters'] = 0.0
+            movement['relative_move_vector'] = unit_vec
+            for axis_name, value in target_position.iteritems():
+                if not axis_name == 'type':
+                    movement['s%s' % axis_name] = value
+                    movement[axis_name] = value
+                    _logger.debug("Planner - Extract Movement: set axis(%s) to (%s)", axis_name,value)
+            return movement
 
     def _recalculate_move_speeds(self):
         if self.led_manager:
             self.led_manager.light(2, True)
 
-        x_bow_ = self.axis['x']['bow']
-        y_bow_ = self.axis['y']['bow']
-        x_max_acceleration = self.axis['x']['max_acceleration']
-        y_max_acceleration = self.axis['y']['max_acceleration']
-
-        next_move = self.previous_movement
-        # we go back in the list and ensure that we can achieve the target speed with acceleration
-        # and deceleration over the distance
-        for current_move in reversed(self.planning_list):
-            # if the next move is no move we ensure that we got a stop - hence most values are ignored
-            if not next_move['type'] == 'move':
-                current_move['x_stop'] = True
-                current_move['y_stop'] = True
-            next_target_speed = next_move['speed']
-            # the movement we have calculated as achievable has to be considered anyway
-            speed_vectors = [
-                current_move['speed']
-            ]
-            current_move_vector = current_move['relative_move_vector']
-            if current_move_vector['x'] != 0:
-                if 'x_stop' in current_move and current_move['x_stop']:
-                    # we must be able to stop in this move
-                    start_velocity = 0.0
-                    length = current_move['delta_x']
-                elif 'x_stop' in next_move and next_move['x_stop']:
-                    # we must be abel to stop in the next move
-                    start_velocity = 0.0
-                    length = next_move['delta_x']
+        current_id = len(self.planning_queue) - 1
+        if current_id == self.last_planned:
+            return
+        _logger.debug("Planner - Recalculate: At least 2 movements in queue. Current id (%s), last planned (%s)",
+                      current_id, self.last_planned)
+        self.planning_queue[current_id]['entry_speed_sqr'] = min(self.planning_queue[current_id]['max_entry_speed_sqr'],
+                    2*self.planning_queue[current_id]['acceleration']*self.planning_queue[current_id]['millimeters'])
+        _logger.debug("Planner - Recalculate: entry_speed_sqr[%s] is (%s)",current_id,
+                      self.planning_queue[current_id]['entry_speed_sqr'])
+        #Reverse order calculation
+        current_id -= 1
+        while current_id != self.last_planned:
+            next_id = current_id + 1
+            _logger.debug("Planner - Recalculate: Reverse order between current(%s) and next(%s)",current_id,next_id)
+            if self.planning_queue[current_id]['entry_speed_sqr'] != \
+                    self.planning_queue[current_id]['max_entry_speed_sqr']:
+                entry_speed_sqr = self.planning_queue[next_id]['entry_speed_sqr'] + \
+                                  2*self.planning_queue[current_id]['acceleration']*\
+                                  self.planning_queue[current_id]['millimeters']
+                if entry_speed_sqr < self.planning_queue[current_id]['max_entry_speed_sqr']:
+                    self.planning_queue[current_id]['entry_speed_sqr'] = entry_speed_sqr
                 else:
-                    # we have to achieve the target speed of the next move in the next move
-                    start_velocity = next_target_speed['x']
-                    length = next_move['delta_x']
-                max_speed_x = get_target_velocity(start_velocity=start_velocity,
-                                                  length=length,
-                                                  max_acceleration=x_max_acceleration,
-                                                  jerk=x_bow_)
-                speed_vectors.append({
-                    # what would the speed vector for max x speed look like
-                    'x': max_speed_x,
-                    'y': max_speed_x * current_move_vector['y'] / current_move_vector['x']
-                })
-            if current_move_vector['y'] != 0:
-                if 'y_stop' in current_move and current_move['y_stop']:
-                    # we must be able to stop in this move
-                    start_velocity = 0.0
-                    length = current_move['delta_y']
-                elif 'y_stop' in next_move and next_move['y_stop']:
-                    # we must be abel to stop in the next move
-                    start_velocity = 0.0
-                    length = next_move['delta_y']
-                else:
-                    # we have to achieve the target speed of the next move in the next move
-                    start_velocity = next_target_speed['y']
-                    length = next_move['delta_y']
-                max_speed_y = get_target_velocity(start_velocity=start_velocity,
-                                                  length=length,
-                                                  max_acceleration=y_max_acceleration,
-                                                  jerk=y_bow_)
-                speed_vectors.append({
-                    # what would the speed vector for max x speed look like
-                    'x': max_speed_y * current_move_vector['x'] / current_move_vector['y'],
-                    'y': max_speed_y
-                })
-            current_move['speed'] = find_shortest_vector(speed_vectors)
-            # todo in theory we can stop if we did not change the speed vector ...
-            next_move = current_move
-
+                    self.planning_queue[current_id]['entry_speed_sqr'] = \
+                        self.planning_queue[current_id]['max_entry_speed_sqr']
+            _logger.debug("Planner - Recalculate: Reverse order, entry_speed of current (%s)",
+                          self.planning_queue[current_id]['entry_speed_sqr'])
+            current_id -= 1
+        #Forward order calculation
+        next_id = self.last_planned
+        while next_id != (len(self.planning_queue)-1):
+            current_id = next_id
+            next_id += 1
+            #If next movement doesn't have displacement in one axis, previous one has "stop" parameter
+            factor = {}
+            if self.planning_queue[next_id]["delta_y"] == 0:
+                _logger.debug("Planner - Recalculate: Forward. factor y fixed")
+                factor["y"] = 5000.0
+            else:
+                _logger.debug("Planner - Recalculate: Forward. factor x calc")
+                factor["y"] = abs(self.planning_queue[next_id]["delta_x"] / self.planning_queue[next_id]["delta_y"])
+                _logger.debug("Planner - Recalculate: Forward. factor y %s",factor["y"])
+            if self.planning_queue[next_id]["delta_x"] == 0:
+                factor["x"] = 5000.0
+                _logger.debug("Planner - Recalculate: Forward. factor x fixed")
+            else:
+                _logger.debug("Planner - Recalculate: Forward. factor x calc")
+                factor["x"] = abs(self.planning_queue[next_id]["delta_y"] / self.planning_queue[next_id]["delta_x"])
+                _logger.debug("Planner - Recalculate: Forward. factor x %s",factor["x"])
+            for axis in ["x", "y"]:
+                #if factor[axis] > 500.0:
+                self.planning_queue[current_id][axis+"_stop"] = True
+                _logger.debug("Planner - Recalculate: Forward. Adding stop to axis %s",axis)
+            #If x and y will stop, e will as well
+            if "x_stop" in self.planning_queue[current_id] and "y_stop" in self.planning_queue[current_id]:
+                self.planning_queue[current_id]["e_stop"] = True
+                _logger.debug("Planner - Recalculate: Forward. Adding stop to axis e")
+            _logger.debug("Planner - Recalculate: Forward order between current(%s) and next(%s)",current_id,next_id)
+            if self.planning_queue[current_id]['entry_speed_sqr'] < self.planning_queue[next_id]['entry_speed_sqr']:
+                entry_speed_sqr = self.planning_queue[current_id]['entry_speed_sqr'] + \
+                                      2*self.planning_queue[current_id]['acceleration']*\
+                                      self.planning_queue[current_id]['millimeters']
+                if entry_speed_sqr < self.planning_queue[next_id]['max_entry_speed_sqr']:
+                    self.planning_queue[next_id]['entry_speed_sqr'] = entry_speed_sqr
+                    self.last_planned = next_id
+            if self.planning_queue[next_id]['entry_speed_sqr'] == self.planning_queue[next_id]['max_entry_speed_sqr']:
+                self.last_planned = next_id
+            _logger.debug("Planner - Recalculate: Forward order, entry_speed of next (%s)",
+                          self.planning_queue[next_id]['entry_speed_sqr'])
         if self.led_manager:
             self.led_manager.light(2, False)
 
+class Planner():
+    def __init__(self, position = None, previous_unit_vec = None, previous_nominal_speed_sqr = None,
+                 previous_feed_rate = None):
+        if position:
+            self.position = position
+        else:
+            self.position = {'x': 0.0, 'y': 0.0, 'z': 0.0, 'e': 0.0}
 
-def get_target_velocity(start_velocity, length, max_acceleration, jerk):
-    # the simple case is simple
-    if not length or length == 0:
-        return start_velocity
-    # sanitize the values and convert to 'mathematics' form
-    s = abs(float(length))
-    v0 = abs(float(start_velocity))
-    j = jerk
-    # according to 'constant jerk equations for a trajectory generator'
-    j_p2 = j * j
-    ideal_s_curve_acceleration = calculate_ideal_s_curve_acceleration(j, v0, s)
-    if ideal_s_curve_acceleration <= max_acceleration:
-        # everything is fne we can go with a perfect s ramp
-        velocity = v0 + ideal_s_curve_acceleration ** 2 / j
-    else:
-        # we have to include a constant acceleration phase
-        a = max_acceleration
-        a_p2 = a * a
-        velocity = a_p2 / j + v0 - 1.0 / 2.0 * (3.0 * a_p2 + 2.0 * j * v0 - sqrt(
-            a_p2 * a_p2 + 8.0 * a * j_p2 * s - 4.0 * a_p2 * j * v0 + 4.0 * j_p2 * v0 * v0)) / j
-    return copysign(velocity / 2.0, start_velocity)  # todo this correction is neccessary - check fomula again
+        if previous_unit_vec:
+            self.previous_unit_vec = previous_unit_vec
+        else:
+            self.previous_unit_vec = {'x': 0.0, 'y': 0.0, 'z': 0.0, 'e': 0.0}
 
+        if previous_nominal_speed_sqr:
+            self.previous_nominal_speed_sqr = previous_nominal_speed_sqr
+        else:
+            self.previous_nominal_speed_sqr = 0.0
 
-def calculate_ideal_s_curve_acceleration(j, v0, s):
-    j_p2 = j * j
-    sqrt_1_third = sqrt(1.0 / 3.0)
-    term1 = pow((1.0 / 2.0 * j_p2 * s + 1.0 / 6.0 * sqrt_1_third *
-                 sqrt((27.0 * j * s * s + 32.0 * v0 ** 3) * j) * j),
-                (1.0 / 3.0))
-    ideal_s_curve_acceleration = -2.0 / 3.0 * j * v0 / term1 + term1
-    return ideal_s_curve_acceleration
+        if previous_feed_rate:
+            self.previous_feed_rate = previous_feed_rate
+        else:
+            self.previous_feed_rate = 0.0
 
+    def get_position(self):
+        return self.position
+
+    def set_position(self,position):
+        self.position = position
+
+    def get_previous_unit_vec(self):
+        return self.previous_unit_vec
+
+    def set_previous_unit_vec(self,previous_unit_vec):
+        self.previous_unit_vec = previous_unit_vec
+
+    def get_previous_nominal_speed_sqr(self):
+        return self.previous_nominal_speed_sqr
+
+    def set_previous_nominal_speed_sqr(self,previous_nominal_speed_sqr):
+        self.previous_nominal_speed_sqr = previous_nominal_speed_sqr
+
+    def get_previous_feed_rate(self):
+        return self.previous_feed_rate
+
+    def set_previous_feed_rate(self, new_previous_feed_rate):
+        self.previous_feed_rate = new_previous_feed_rate
 
 # from http://www.physics.rutgers.edu/~masud/computing/WPark_recipes_in_python.html
 def cbrt(x):
@@ -1032,4 +1050,3 @@ def cbrt(x):
 class PrinterError(Exception):
     def __init__(self, msg):
         self.msg = msg
-

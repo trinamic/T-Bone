@@ -28,14 +28,14 @@ class GCodePrintThread(Thread):
         self.printing = True
         try:
             gcode_input = open(self.file)
-            _logger.info("starting GCODE interptretation from %s to %s", input, self.printer)
+            _logger.info("starting GCODE interpretation from %s to %s", input, self.printer)
             self.lines_printed = 0
             self.printer.start_print()
             for line in gcode_input:
                 read_gcode_to_printer(line, self.printer)
                 self.lines_printed += 1
             self.printer.finish_print()
-            _logger.info("fininshed gcode reading to %s ", self.printer)
+            _logger.info("finished gcode reading to %s ", self.printer)
             # todo and here we need some more or less clever plan - since we cannot restart the print thread
         finally:
             self.printing = False

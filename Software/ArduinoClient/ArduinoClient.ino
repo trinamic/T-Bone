@@ -37,7 +37,7 @@
 //#define DEBUG_TMC5041_STATUS
 //#define DEBUG_TMC4361_STATUS
 
-#define RX_TX_BLINKY
+//#define RX_TX_BLINKY
 //#define RX_TX_BLINKY_1
 
 //how many motors do we know?
@@ -114,9 +114,9 @@ unsigned char inverted_motors;
 
 volatile boolean next_move_prepared = false;
 volatile boolean move_executing = false;
-volatile unsigned int motor_status;
-volatile unsigned char target_motor_status;
-volatile unsigned char next_target_motor_status;
+//volatile unsigned int motor_status;
+//volatile unsigned char target_motor_status;
+//volatile unsigned char next_target_motor_status;
 volatile unsigned char differential_encoder_motors;
 char direction[nr_of_coordinated_motors];
 char next_direction[nr_of_coordinated_motors];
@@ -197,10 +197,17 @@ void setup() {
 unsigned long last_millis=0;
 
 void loop() {
-  //move if neccessary
-  checkMotion();
-  // Process incoming serial data, and perform callbacks
-  messenger.feedinSerialData();
+//  static char loopidx = 0; // this was a test to give the communication a lower priority
+
+//  if (loopidx < 10) {
+//    loopidx++;
+    //move if neccessary
+    checkMotion();
+//  } else {
+    // Process incoming serial data, and perform callbacks
+    messenger.feedinSerialData();
+//    loopidx = 0;
+//  } 
 
   if (millis()-last_millis>1000) {
 #ifdef RX_TX_BLINKY

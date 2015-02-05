@@ -1,11 +1,18 @@
 volatile long pos_comp[nr_of_coordinated_motors];
 volatile long next_pos_comp[nr_of_coordinated_motors];
 long last_target[nr_of_coordinated_motors];
+volatile long next_targets[nr_of_coordinated_motors];
+volatile long last_targets[nr_of_coordinated_motors];
+volatile boolean is_new_position[nr_of_coordinated_motors];
+volatile boolean enable_start;
+volatile boolean is_homing;
 const unsigned long default_4361_start_config = 0
 | _BV(0) //x_target requires start
 | _BV(4)  //use shaddow motion profiles
 | _BV(5) //external start is an start
 ;
+
+extern char active_motors;
 
 void prepareTMC4361() {
   pinModeFast(START_SIGNAL_PIN,INPUT);
@@ -30,12 +37,13 @@ void prepareTMC4361() {
 
   digitalWriteFast(START_SIGNAL_PIN,HIGH);
   pinModeFast(START_SIGNAL_PIN,OUTPUT);
+  
 }
 
 void initialzeTMC4361() {
 //  //reset the quirrel
 //  resetTMC4361(true,false);
-
+  is_homing = false;
   digitalWriteFast(START_SIGNAL_PIN,HIGH);
 
   //initialize CS pin
@@ -76,8 +84,11 @@ void initialzeTMC4361() {
 //    Serial.println(filter);
     writeRegister(i,TMC4361_INPUT_FILTER_REGISTER,filter);
 
+//    readRegister(i, TMC4361_EVENTS_REGISTER);
+
     last_target[i]=0;
   }
+//  motor_status |= (_BV(nr_of_coordinated_motors)-1);
 }
 
 const char setStepsPerRevolutionTMC4361(unsigned char motor_nr, unsigned int steps) {
@@ -96,120 +107,199 @@ const char setStepsPerRevolutionTMC4361(unsigned char motor_nr, unsigned int ste
 }
 
 const char homeMotorTMC4361(unsigned char motor_nr, unsigned long timeout, 
-  double homing_fast_speed, double homing_low_speed, long homing_retraction,
-  double homming_accel, boolean right_homing_point) 
+double homing_fast_speed, double homing_low_speed, long homing_retraction,
+double homming_accel,
+unsigned long right_homing_point)
 {
-  unsigned char homing_state = 0;
-  unsigned long ref_conf;
-  unsigned long status;
-  long time_start;
+  const boolean homing_right = (right_homing_point!=0);
+  is_homing = true;
+  //todo shouldn't we check if there is a movement going??
+#ifdef DEBUG_HOMING
+  Serial.print(F("Homing for TMC4361 motor "));
+  Serial.print(motor_nr,DEC);
+  if (homing_right) {
+    Serial.print(F(" right to pos="));
+    Serial.print(right_homing_point);
+  }
+  Serial.print(F(", timeout="));
+  Serial.print(timeout);
+  Serial.print(F(", fast="));
+  Serial.print(homing_fast_speed);
+  Serial.print(F(", slow="));
+  Serial.print(homing_low_speed);
+  Serial.print(F(", retract="));
+  Serial.print(homing_retraction);
+  Serial.print(F(", aMax="));
+  Serial.print(homming_accel);
+  Serial.println();
+#endif
 
+  //comfigure homing movement
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, 0
     | _BV(10)//immediate start        
     | _BV(5) //external start is an start (to ensure start is an input)
     //since we just start 
   );   
 
+  long fixed_a_max = FIXED_22_2_MAKE(homming_accel);
+
   //comfigire homing movement config - acceleration
-  writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, 0);
-  writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER, 0); 
-  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,FIXED_22_2_MAKE(homming_accel)); //set maximum acceleration
-  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,FIXED_22_2_MAKE(homming_accel)); //set maximum deceleration
-  ref_conf = readRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER);
+  writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+  writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
 
-  time_start = millis();
-  while (homing_state != 255) {
-    if (((millis() - time_start)&0xFF) == 0) {
-      messenger.sendCmd(kWait,homing_state);
-    }
-    if ((millis() - time_start) > timeout) {
-      messenger.sendCmd(kError,-1);
-      homing_state = 255;
-    }
-    switch (homing_state) {
-      case 0:  // start movement towards the endstop
-        readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
-        if (!right_homing_point) {
-          // homing to the left
-          writeRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER, 0x00000901);
-          writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(-homing_fast_speed));
-        } else {
-          // homing to the right
-          writeRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER, 0x00002102);
-          writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_fast_speed));
-        }
-        writeRegister(motor_nr, TMC4361_RAMP_MODE_REGISTER, 1);
-        homing_state = 1;
-        messenger.sendCmd(kWait,homing_state);
-        break;
+  //TODO obey the timeout!!
+  long start = millis();
+  long last_wait_time = start;
 
-      case 1:  // wait until endstop is reached, start retraction
-        status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
-        if (status & ((1<<8)|(1<<7))) {
-          readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
-          writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, 0);
-          writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER, 0); 
-          writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, 0); 
-          writeRegister(motor_nr, TMC4361_RAMP_MODE_REGISTER, 5);
-          writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_fast_speed));
-          if (!right_homing_point) {
-            // retract to the right
-            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, homing_retraction);
-          } else {
-            // retract to the left
-            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, -homing_retraction);
+  unsigned char homed = 0; //this is used to track where at homing we are 
+  long target = 0;
+#ifdef DEBUG_HOMING_STATUS
+  unsigned long old_status = -1;
+#endif
+  while (homed!=0xff) { //we will never have 255 homing phases - but whith this we not have to think about it 
+    status_wait_ping(&last_wait_time, homed);
+    if (homed==0 || homed==1) {
+      double homing_speed=homing_fast_speed; 
+      if (homed==1) {
+        homing_speed = homing_low_speed;
+      }  
+      unsigned long status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+      unsigned long events = readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
+      unsigned long end_stop_mask;
+      if (homing_right) {
+        end_stop_mask = _BV(8) | _BV(10);
+      } 
+      else {
+        end_stop_mask = _BV(7) | _BV(9);
+      }
+#ifdef DEBUG_HOMING_STATUS
+      if (status!=old_status) {
+        Serial.print(F("Status1 "));
+        Serial.println(status,HEX);
+        Serial.print(F("Position "));
+        Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
+        Serial.print(F(", Targe "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1));
+        Serial.print(F(", Velocity "));
+        Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
+        Serial.println(status & end_stop_mask,HEX);
+        old_status=status;
+      }
+#endif
+      if (!(status & end_stop_mask)) { //stopl not active
+        if ((status & (_BV(0) | _BV(6))) || (!(status && (_BV(4) | _BV(3))))) { //at target or not moving
+#ifdef DEBUG_HOMING
+          Serial.print(F("Homing to "));
+          Serial.print(target);
+          Serial.print(F(" @ "));
+          Serial.println(homing_speed);
+          Serial.print(F("Status "));
+          Serial.println(status,HEX);
+          Serial.print(F("Events "));
+          Serial.print(events,HEX);
+          Serial.print(F(" phase "));
+          Serial.println(homed,DEC);
+#endif
+          if (homing_right) {
+            target += 100000l;
+          } 
+          else {
+            target -=100000l;
           }
-          homing_state = 2;
-          messenger.sendCmd(kWait,homing_state);
+          writeRegister(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_speed));
+          writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,X_TARGET_IN_DIRECTION(motor_nr,target));
         }
-        break;
-      
-      case 2:  // wait until retracted, abort with error -2 if endstop stays active, start slow movement towards endstop
-        status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
-        if (status & (1<<0)) {
-          if (!(status & ((1<<8)|(1<<7)))) {
-            readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
-            if (!right_homing_point) {
-              // homing to the left
-              writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(-homing_low_speed));
-            } else {
-              // homing to the right
-              writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_low_speed));
+      } 
+      else {
+        long go_back_to;
+        if (homed==0) {
+          long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER));
+          if (homing_right) {
+            go_back_to = actual - homing_retraction;
+            if (go_back_to<=0) {
+              writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,homing_retraction*2);
+              writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,homing_retraction*2);
+              go_back_to = homing_retraction;
             }
-            writeRegister(motor_nr, TMC4361_RAMP_MODE_REGISTER, 1);
-            homing_state = 3;
-            messenger.sendCmd(kWait,homing_state);
-          } else {
-            homing_state = 255;
-            messenger.sendCmd(kError,-2);
-          }
+          } 
+          else {
+            go_back_to = actual + homing_retraction;
+          } 
+#ifdef DEBUG_HOMING
+          Serial.print(F("home near "));
+          Serial.print(actual);
+          Serial.print(F(" - going back to "));
+          Serial.println(go_back_to);
+          Serial.print(F("Status "));
+          Serial.println(status,HEX);
+#endif
+        } 
+        else {
+          long actual = X_TARGET_IN_DIRECTION(motor_nr,readRegister(motor_nr, TMC4361_X_LATCH_REGISTER));
+          go_back_to = actual;
+#ifdef DEBUG_HOMING
+          Serial.print(F("homed at "));
+          Serial.println(actual);
+#endif
         }
-        break;
-      
-      case 3:  // wait until endstop is reached, this is the home position
+        writeRegister(motor_nr,TMC4361_V_MAX_REGISTER, FIXED_23_8_MAKE(homing_fast_speed));
+        writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, X_TARGET_IN_DIRECTION(motor_nr,go_back_to));
+        delay(10ul);
         status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
-        if (status & ((1<<8)|(1<<7))) {
-          readRegister(motor_nr, TMC4361_EVENTS_REGISTER);
-          writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, 0);
-          writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER, 0); 
-          writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, 0); 
-          homing_state = 255;
-          messenger.sendCmd(kWait,homing_state);
+        while (!(status & _BV(0))) {
+#ifdef DEBUG_HOMING_STATUS
+          if (status!=old_status) {
+            Serial.print(F("Status2 "));
+            Serial.println(status,HEX);
+            Serial.print(F("Position "));
+            Serial.print((long)readRegister(TMC5041_MOTORS, TMC5041_X_ACTUAL_REGISTER_1));
+            Serial.print(F(", Targe "));
+            Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_X_TARGET_REGISTER_1));
+            Serial.print(F(", Velocity "));
+            Serial.println((long)readRegister(TMC5041_MOTORS, TMC5041_V_ACTUAL_REGISTER_1));
+            Serial.println(status & end_stop_mask,HEX);
+            old_status=status;
+          }
+#endif
+          status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+          status_wait_ping(&last_wait_time, homed);
         }
-        break;
-      
-      default: // end homing
-        homing_state = 255;
-    }
+        if (homed==0) {
+          homed = 1;
+        } 
+        else {
+          if (homing_right) {
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,right_homing_point);
+            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,right_homing_point);
+            //go back to zero
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER, 0);
+            delay(10ul);
+            status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+            while (!(status & _BV(0))) {
+              status_wait_ping(&last_wait_time, homed);
+              status = readRegister(motor_nr, TMC4361_STATUS_REGISTER);
+            } 
+          } 
+          else {
+            writeRegister(motor_nr, TMC4361_X_ACTUAL_REGISTER,0);
+            writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,0);
+          }
+          last_target[motor_nr]=0;
+          homed=0xff;
+        }     
+      } 
+    } 
   }
 
-  //reset everything
-  writeRegister(motor_nr, TMC4361_V_MAX_REGISTER, 0);
-  writeRegister(motor_nr, TMC4361_RAMP_MODE_REGISTER, 5);
+  //reset everything to 0
+  writeRegister(motor_nr, TMC4361_V_MAX_REGISTER,0); 
   writeRegister(motor_nr, TMC4361_A_MAX_REGISTER,0); 
   writeRegister(motor_nr, TMC4361_D_MAX_REGISTER,0); 
+  writeRegister(motor_nr, TMC4361_V_START_REGISTER,0); 
+  writeRegister(motor_nr, TMC4361_V_STOP_REGISTER,0); 
   writeRegister(motor_nr, TMC4361_START_CONFIG_REGISTER, default_4361_start_config);   
-  writeRegister(motor_nr, TMC4361_REFERENCE_CONFIG_REGISTER, ref_conf);
+
+  is_homing = false;
 
   return 0;
 }
@@ -220,11 +310,12 @@ inline long getMotorPositionTMC4361(unsigned char motor_nr) {
   //vactual!=0 -> x_target, x_pos sonst or similar
 }
 
-void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, double aMax, long jerk, boolean isWaypoint) {
+void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, double aMax, double vStart, double vStop, boolean isWaypoint) {
   long aim_target;
   //calculate the value for x_target so taht we go over pos_comp
   long last_pos = last_target[motor_nr]; //this was our last position
   next_direction[motor_nr]=(target_pos)>last_pos? 1:-1;  //and for failsafe movement we need to write down the direction
+
   if (isWaypoint) {
     aim_target = target_pos+(target_pos-last_pos); // 2*(target_pos-last_pos)+last_pos;
   } 
@@ -253,8 +344,10 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   Serial.print(vMax);
   Serial.print(F(", aMax="));
   Serial.print(aMax);
-  Serial.print(F(": jerk="));
-  Serial.print(jerk);
+  Serial.print(F(", vStart="));
+  Serial.print(vStart);
+  Serial.print(F(", vStop="));
+  Serial.print(vStop);
   Serial.println();
 #endif    
 #ifdef DEBUG_MOTION_SHORT
@@ -270,20 +363,60 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   Serial.println(vMax);
 #endif
 
+/*
+  Serial.print(motor_nr,DEC);
+  Serial.print(';');
+  Serial.print(vMax,DEC);
+  Serial.print(';');
+  Serial.print(aMax,DEC);
+  Serial.print(';');
+  Serial.print(target_pos);
+  Serial.print(vStart,DEC);
+  Serial.print(';');
+  Serial.print(vStop,DEC);
+  Serial.println(';');
+*/
+/*
+  Serial.print(motor_nr,DEC);
+  Serial.print(';');
+  Serial.print(vMax,DEC);
+  Serial.print(';');
+  Serial.print(aMax,DEC);
+  Serial.print(';');
+  Serial.print(target_pos);
+  Serial.print(';');
+  Serial.print(vStart,DEC);
+  Serial.print(';');
+  Serial.print(vStop,DEC);
+  Serial.println(';');
+*/
   long fixed_a_max = FIXED_22_2_MAKE(aMax);
 
-  writeRegister(motor_nr, TMC4361_SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
-  writeRegister(motor_nr, TMC4361_SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
-  writeRegister(motor_nr, TMC4361_SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
-  writeRegister(motor_nr, TMC4361_SH_BOW_1_REGISTER,jerk);
-  writeRegister(motor_nr, TMC4361_SH_BOW_2_REGISTER,jerk);
-  writeRegister(motor_nr, TMC4361_SH_BOW_3_REGISTER,jerk);
-  writeRegister(motor_nr, TMC4361_SH_BOW_4_REGISTER,jerk);
-  //pos comp is not shaddowed
-  next_pos_comp[motor_nr] = target_pos;
-  writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
+  if (aim_target != next_targets[motor_nr]) { // only change parameters if the target position is different than the last time
+    writeRegister(motor_nr, TMC4361_SH_RAMP_MODE_REGISTER,_BV(2) |1); // trapezoidal positioning
+    writeRegister(motor_nr, TMC4361_SH_V_MAX_REGISTER,FIXED_23_8_MAKE(vMax)); //set the velocity 
+    writeRegister(motor_nr, TMC4361_SH_A_MAX_REGISTER,fixed_a_max); //set maximum acceleration
+    writeRegister(motor_nr, TMC4361_SH_D_MAX_REGISTER,fixed_a_max); //set maximum deceleration
 
-  last_target[motor_nr]=target_pos;
+//    writeRegister(motor_nr, TMC4361_SH_V_START_REGISTER,FIXED_23_8_MAKE(vMax/2)); //set start velocity
+//    writeRegister(motor_nr, TMC4361_SH_V_STOP_REGISTER,FIXED_23_8_MAKE(vMax/2)); //set stop velocity
+
+    writeRegister(motor_nr, TMC4361_SH_V_START_REGISTER,FIXED_23_8_MAKE(0)); //set start velocity
+    writeRegister(motor_nr, TMC4361_SH_V_STOP_REGISTER,FIXED_23_8_MAKE(0)); //set stop velocity
+
+//    writeRegister(motor_nr, TMC4361_SH_V_START_REGISTER,FIXED_23_8_MAKE(vStart)); //set start velocity
+//    writeRegister(motor_nr, TMC4361_SH_V_STOP_REGISTER,FIXED_23_8_MAKE(vStop)); //set stop velocity
+    //pos comp is not shaddowed
+    next_pos_comp[motor_nr] = target_pos;
+    //writeRegister(motor_nr, TMC4361_X_TARGET_REGISTER,aim_target);
+    next_targets[motor_nr]  = aim_target;
+    is_new_position[motor_nr] = true;
+    last_target[motor_nr]   = target_pos;
+  } else {
+    is_new_position[motor_nr] = false;
+  }
+
+  
   //Might be usefull, but takes a lot of space
 #ifdef DEBUG_MOTION_REGISTERS
   Serial.println('S');
@@ -292,10 +425,8 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   Serial.println(readRegister(motor_nr,TMC4361_SH_V_MAX_REGISTER));
   Serial.println(readRegister(motor_nr,TMC4361_SH_A_MAX_REGISTER));
   Serial.println(readRegister(motor_nr,TMC4361_SH_D_MAX_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_1_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_2_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_3_REGISTER));
-  Serial.println(readRegister(motor_nr,TMC4361_SH_BOW_4_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_V_START_REGISTER));
+  Serial.println(readRegister(motor_nr,TMC4361_SH_V_STOP_REGISTER));
   Serial.println();
 #endif
 }
@@ -317,19 +448,85 @@ inline void signal_start() {
     direction[i] = next_direction[i];
   }
 
-    readRegister(2,TMC4361_START_CONFIG_REGISTER);
+/*
+  unsigned char positions_reached = 0;
+  for (char mn=0; mn < nr_of_coordinated_motors; mn++) {
+    unsigned long motor_pos = readRegister(mn, TMC4361_X_ACTUAL_REGISTER);
+    unsigned long motor_trg = readRegister(mn, TMC4361_X_TARGET_REGISTER);
+    Serial.print(mn,DEC);
+    Serial.print(':');
+    Serial.print(motor_pos);
+    if (motor_pos == motor_trg) {
+      positions_reached |= (1<<mn);
+    } else {
+      positions_reached &= ~(1<<mn);
+      Serial.print('/');
+    }      
+    Serial.print('=');
+    Serial.println(motor_trg);
+  }
+  Serial.println((positions_reached & 7), DEC);
+  Serial.println();
+  // all coordinated motors have reached target position
+  if ((positions_reached & 7) == 7){
+*/
+  if (enable_start) {
+    for (char i=0; i< nr_of_coordinated_motors; i++) {
+      if (is_new_position[i]) {
+        writeRegister(i, TMC4361_X_TARGET_REGISTER,next_targets[i]);
+        is_new_position[i] = false;
+        last_targets[i] = next_targets[i];
+        active_motors |= (1<<i);
+      }
+    }
+//    if (is_new_position[1]) {
+//      writeRegister(1, TMC4361_X_TARGET_REGISTER,next_targets[1]);
+//      is_new_position[1] = false;
+////      Serial.print(next_targets[1],DEC);
+//      last_targets[1] = next_targets[1];
+//      active_motors |= (1<<1);
+//    } else {
+////      Serial.print(last_targets[1],DEC);
+//    }
+////    Serial.print(';');
+//    if (is_new_position[0]) {
+//      writeRegister(0, TMC4361_X_TARGET_REGISTER,next_targets[0]);
+//      is_new_position[0] = false;
+////      Serial.print(next_targets[0],DEC);
+//      last_targets[0] = next_targets[0];
+//      active_motors |= (1<<0);
+//    } else {
+////      Serial.print(last_targets[0],DEC);
+//    }
+////    Serial.print(';');
+//    if (is_new_position[2]) {
+//      writeRegister(2, TMC4361_X_TARGET_REGISTER,next_targets[2]);
+//      is_new_position[2] = false;
+//      last_targets[2] = next_targets[2];
+//      active_motors |= (1<<2);
+////      Serial.print(next_targets[2],DEC);
+////    } else {
+////      Serial.print(last_targets[2],DEC);
+//    }
+////    Serial.println(';');
+//  //  readRegister(2,TMC4361_START_CONFIG_REGISTER);
+  
+    //start the motors, please
+    digitalWriteFast(START_SIGNAL_PIN,LOW);
+    delayMicroseconds(3); //the call by itself may have been enough
+    digitalWriteFast(START_SIGNAL_PIN,HIGH);
+    enable_start = false;
+  }
 
-  //start the motors, please
-  digitalWriteFast(START_SIGNAL_PIN,LOW);
-  delayMicroseconds(3); //the call by itself may have been enough
-  digitalWriteFast(START_SIGNAL_PIN,HIGH);
-
-    readRegister(2,TMC4361_X_ACTUAL_REGISTER);
-    readRegister(2,TMC4361_X_TARGET_REGISTER);
-    readRegister(2,TMC4361_POSITION_COMPARE_REGISTER);
-    readRegister(2,TMC4361_V_MAX_REGISTER);
-    readRegister(2,TMC4361_A_MAX_REGISTER);
-    readRegister(2,TMC4361_D_MAX_REGISTER);
+/*  
+    }
+*/
+//    readRegister(2,TMC4361_X_ACTUAL_REGISTER);
+//    readRegister(2,TMC4361_X_TARGET_REGISTER);
+//    readRegister(2,TMC4361_POSITION_COMPARE_REGISTER);
+//    readRegister(2,TMC4361_V_MAX_REGISTER);
+//    readRegister(2,TMC4361_A_MAX_REGISTER);
+//    readRegister(2,TMC4361_D_MAX_REGISTER);
 
 #ifdef DEBUG_MOTION_REGISTERS
   //and deliver some additional logging
@@ -342,10 +539,8 @@ inline void signal_start() {
     Serial.println(readRegister(i,TMC4361_V_MAX_REGISTER));
     Serial.println(readRegister(i,TMC4361_A_MAX_REGISTER));
     Serial.println(readRegister(i,TMC4361_D_MAX_REGISTER));
-    Serial.println(readRegister(i,TMC4361_BOW_1_REGISTER));
-    Serial.println(readRegister(i,TMC4361_BOW_2_REGISTER));
-    Serial.println(readRegister(i,TMC4361_BOW_3_REGISTER));
-    Serial.println(readRegister(i,TMC4361_BOW_4_REGISTER));
+    Serial.println(readRegister(i,TMC4361_V_START_REGISTER));
+    Serial.println(readRegister(i,TMC4361_V_STOP_REGISTER));
     Serial.println();
   }
 #endif
@@ -364,31 +559,47 @@ inline void signal_start() {
 #endif
 }
 
-//this method is needed to manually verify that the motors are to running beyond their targe
-void checkTMC4361Motion() {
-  if (target_motor_status & (_BV(nr_of_coordinated_motors)-1)) {
-    //now check for every motor if iis alreaday ove the target..
-    for (unsigned char i=0; i< nr_of_coordinated_motors; i++) {
-      //and deliver some additional logging
-      if (target_motor_status & _BV(i) & ~motor_status) {
-#ifdef RX_TX_BLINKY
-        RXLED1;
-#endif
-        unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
-        if ((direction[i]==1 && motor_pos>=pos_comp[i])
-          || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
-#ifdef DEBUG_MOTION_TRACE_SHORT
-          Serial.print('*');
-#endif
-          motor_target_reached(i);
-        }
-#ifdef RX_TX_BLINKY
-        RXLED0;
-#endif
-      }
-    }
-  }
-}  
+////this method is needed to manually verify that the motors are to running beyond their targe
+//void checkTMC4361Motion() {
+////  if (target_motor_status & (_BV(nr_of_coordinated_motors)-1)) {
+//    //now check for every motor if iis alreaday ove the target..
+//    for (unsigned char i=0; i< nr_of_coordinated_motors; i++) {
+//      //and deliver some additional logging
+////      if (target_motor_status & _BV(i) & ~motor_status) {
+//#ifdef RX_TX_BLINKY
+//        RXLED1;
+//#endif
+//
+///*
+//        unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
+//        if ((direction[i]==1 && motor_pos>=pos_comp[i])
+//          || (direction[i]==-1 && motor_pos<=pos_comp[i])) {
+//*/
+//        unsigned long motor_trg = readRegister(i, TMC4361_X_TARGET_REGISTER);
+//        unsigned long motor_pos = readRegister(i, TMC4361_X_ACTUAL_REGISTER);
+//        if (motor_pos==motor_trg) {
+////        if ((direction[i]==1 && motor_pos>=motor_trg)
+////          || (direction[i]==-1 && motor_pos<=motor_trg)) {
+//
+//#ifdef DEBUG_MOTION_TRACE_SHORT
+//          Serial.print('*');
+//#endif
+//          motor_target_reached(i);
+//          // make sure motor doesn't move until next start signal copies shadow registers
+////          if (i < nr_of_coordinated_motors) {
+// //           writeRegister(i, TMC4361_V_MAX_REGISTER,0); // don't move
+////            writeRegister(i, TMC4361_A_MAX_REGISTER,0); // don't move
+////            writeRegister(i, TMC4361_D_MAX_REGISTER,0); // don't move
+//            //writeRegister(i, TMC4361_RAMP_MODE_REGISTER,_BV(2) | 0); // hold mode
+////          }
+//        }
+//#ifdef RX_TX_BLINKY
+//        RXLED0;
+//#endif
+////      }
+//    }
+////  }
+//}  
 
 void setMotorPositionTMC4361(unsigned char motor_nr, long position) {
 #ifdef DEBUG_MOTION_SHORT

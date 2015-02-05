@@ -22,7 +22,8 @@ struct movement {
   long target;
   double vMax;
   double aMax;
-  long jerk;
+  double vStart;
+  double vStop;
 };
 
 struct TMC4361_info{

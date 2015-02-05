@@ -21,7 +21,7 @@ enum {
   //weiteres
   kCurrentReading = 41,
   // direkter SPI-Zugriff
-  kSPI = 44,
+//  kSPI = 44,
   //Sonstiges
   kOK = 0,
   kWait = -1,
@@ -47,8 +47,8 @@ void attachCommandCallbacks() {
   messenger.attach(kStatus, onStatus);
   messenger.attach(kHome, onHome);
   messenger.attach(kCommands, onCommands);
-//  messenger.attach(kCurrentReading, onCurrentReading);
-  messenger.attach(kSPI, onSPI);
+  //messenger.attach(kCurrentReading, onCurrentReading);
+  //messenger.attach(kSPI, onSPI);
 }
 
 // ------------------  C A L L B A C K S -----------------------
@@ -198,6 +198,13 @@ void onMove() {
     return;
   }
   int following_motors=0;
+
+//  Serial.print("m;");
+//  Serial.print(motor,DEC);
+//  Serial.print(';');
+//  Serial.print(move.target);
+//  Serial.print(";");
+
 #ifdef DEBUG_MOTOR_QUEUE
   Serial.print(F("Adding movement for motor "));
   Serial.print(motor,DEC);
@@ -213,8 +220,10 @@ void onMove() {
   Serial.print(move.vMax);
   Serial.print(F(", aMax="));
   Serial.print(move.aMax);
-  Serial.print(F(": jerk="));
-  Serial.print(move.jerk);
+  Serial.print(F(": vStart="));
+  Serial.print(move.vStart);
+  Serial.print(F(": vStop="));
+  Serial.print(move.vStop);
 #endif    
 #endif
 
@@ -227,6 +236,10 @@ void onMove() {
         //if there was an error return 
         return;
       } 
+//      Serial.print(motor,DEC);
+//      Serial.print(";");
+//      Serial.print(move.target);
+//      Serial.print(";");
 #ifdef DEBUG_MOTOR_QUEUE
       Serial.print(F(", following motor "));
       Serial.print(motor - 1,DEC);
@@ -242,8 +255,10 @@ void onMove() {
       Serial.print(followers[following_motors].vMax);
       Serial.print(F(", aMax="));
       Serial.print(followers[following_motors].aMax);
-      Serial.print(F(": jerk="));
-      Serial.print(followers[following_motors].jerk);
+      Serial.print(F(": vStart="));
+      Serial.print(followers[following_motors].vStart);
+      Serial.print(F(": vStop="));
+      Serial.print(followers[following_motors].vStop);
 #endif    
 #endif
       following_motors++;
@@ -265,7 +280,8 @@ void onMove() {
   messenger.sendCmdStart(kOK);
   messenger.sendCmdArg(moveQueue.count());
   messenger.sendCmdArg(COMMAND_QUEUE_LENGTH);
-  if (in_motion) {
+//  if (in_motion) {
+  if (current_motion_state==in_motion) {
     messenger.sendCmdArg(1);
   } 
   else {
@@ -313,10 +329,15 @@ char readMovementParameters(movement* move) {
     messenger.sendCmd(kError,-4);
     return -5;
   }
-  long jerk = messenger.readLongArg();
-  if (jerk<0) {
-    messenger.sendCmd (kError,-5); 
+  double vStart = messenger.readFloatArg();
+  if ((vStart<0)||(vStart>vMax)) {
+    messenger.sendCmd (kError,-5);
     return -6;
+  }
+  double vStop = messenger.readFloatArg();
+  if ((vStop<0)||(vStop>vMax)) {
+    messenger.sendCmd (kError,-6);
+    return -7;
   }
 
   move->target = newPos;
@@ -330,7 +351,8 @@ char readMovementParameters(movement* move) {
   }
   move->vMax=vMax;
   move->aMax=aMax;
-  move->jerk=jerk;
+  move->vStart=vStart;
+  move->vStop=vStop;
 
   return 0;
 }
@@ -737,14 +759,15 @@ void onHome() {
     return;
   }
   char error;
-  unsigned long home_right = messenger.readIntArg();
-  
   if (motor<nr_of_coordinated_motors) {
-    error =  homeMotorTMC4361(motor, timeout, homeFastSpeed, homeSlowSpeed, homeRetract, aMax, home_right);
-  } else {
-    error =  homeMotorTMC5041(motor, timeout, homeFastSpeed, homeSlowSpeed, homeRetract, aMax, home_right);
-//    error = -1;  
-/*
+
+    unsigned long home_right_position = messenger.readLongArg();
+
+    error =  homeMotorTMC4361(
+    motor, timeout,
+    homeFastSpeed, homeSlowSpeed, homeRetract, aMax, home_right_position);
+  } 
+  else {
     char following_motors[homing_max_following_motors]; //we can only home follow controlled motors
     for (char i = 0; i<homing_max_following_motors ;i++) {
       following_motors[i] = decodeMotorNumber(false);
@@ -758,13 +781,13 @@ void onHome() {
     error =  homeMotorTMC5041(
     motor-nr_of_coordinated_motors,timeout,
     homeFastSpeed, homeSlowSpeed,homeRetract,aMax,following_motors);
-*/
   }
   if (error==NULL) {
     messenger.sendCmdStart(kOK);
     messenger.sendCmdArg(motor,DEC);
     messenger.sendCmdEnd();
-  } else {
+  } 
+  else {
     messenger.sendCmd(kError,error);
     messenger.sendCmdStart(kError);
     messenger.sendCmdArg(error);
@@ -819,6 +842,7 @@ void onCurrentReading() {
   messenger.sendCmdEnd();
 }
 
+/*
 void onSPI() {
   char axis_number = decodeMotorNumber(true);
   char reg = messenger.readIntArg();
@@ -861,6 +885,7 @@ void onSPI() {
   messenger.sendCmdArg(data_i,HEX);
   messenger.sendCmdEnd();
 }
+*/
 
 void watchDogPing() {
 

@@ -38,7 +38,7 @@ void set260Register(unsigned char motor_number, unsigned long value) {
   value &= 0xFFFFF;
   writeRegister(motor_number, TMC4361_COVER_LOW_REGISTER,value);  //Cover-Register: Einstellung des SMARTEN=aus
 
-  writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
-  writeRegister(motor_number, TMC4361_STATUS_REGISTER,0x0); //Abfrage Status, um SPI-Transfer zu beenden
+  readRegister(motor_number, TMC4361_STATUS_REGISTER); //Abfrage Status, um SPI-Transfer zu beenden
+  readRegister(motor_number, TMC4361_STATUS_REGISTER); //Abfrage Status, um SPI-Transfer zu beenden
+  readRegister(motor_number, TMC4361_STATUS_REGISTER); //Abfrage Status, um SPI-Transfer zu beenden
 }

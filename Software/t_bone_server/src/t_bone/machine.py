@@ -6,6 +6,7 @@ from threading import Thread
 import serial
 import threading
 import time
+from math import floor
 import Adafruit_BBIO.GPIO as GPIO
 
 __author__ = 'marcus'
@@ -14,7 +15,7 @@ _default_timeout = 120
 _commandEndMatcher = re.compile(";")  # needed to search for command ends
 _min_command_buffer_free_space = 5  # how much arduino buffer to preserve
 _initial_buffer_length = 20  # how much buffer do we need befoer starting to print
-_buffer_empyting_wait_time = 0.1
+_buffer_empyting_wait_time = 0.05
 _buffer_warn_waittime = 10
 clock_frequency = 16000000
 
@@ -183,15 +184,15 @@ class Machine():
             int(home_config['home_retract']),
             float(home_config['acceleration']),
         ]
-        if jerk:
-            command.arguments.append(jerk)
+        # if jerk:
+        #     command.arguments.append(jerk)
         if following:
             for motor in following:
                 command.arguments.append(int(motor))
         if 'homing_right_position' in home_config:
             command.arguments.append(int(home_config['homing_right_position']))
 
-        command.arguments.append(int(0))
+        #command.arguments.append(int(0))
         reply = self.machine_connection.send_command(command, timeout)
         if not reply or reply.command_number != 0:
             _logger.fatal("Unable to home axis %s: %s", home_config, reply)
@@ -235,26 +236,52 @@ class Machine():
 
     def move_to(self, motors):
         if not motors:
-            logging.warn("no motor to move??")
+            _logger.debug("Move_to: Warning! no motor to move??")
             return
         command = MachineCommand()
         command.command_number = 10
         command.arguments = []
-        _logger.debug("Adding Move:")
         for motor in motors:
-            command.arguments.append(int(motor['motor']))
-            command.arguments.append(int(motor['target']))
-            if motor['type'] == 'stop':
-                command.arguments.append(ord('s'))
+            if 'motor' in motor:
+                command.arguments.append(int(motor['motor']))
+                command.arguments.append(int(motor['target']))
+                if motor['type'] == 'stop':
+                    command.arguments.append(ord('s'))
+                else:
+                    command.arguments.append(ord('w'))
+                #command.arguments.append(abs(float(motor['speed'])))
+                command.arguments.append(abs(float(motor['nominal_speed'])))
+                acceleration_ = min(float(motor['acceleration']), MAXIMUM_FREQUENCY_ACCELERATION)
+                command.arguments.append(acceleration_)
+                #bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)
+                #command.arguments.append(bow_)
+                command.arguments.append(abs(float(min(floor(motor['entry_speed']),motor['nominal_speed']))))
+                command.arguments.append(abs(float(min(floor(motor['exit_speed']),motor['nominal_speed']))))
+                _logger.debug("Move_to: %s to target %s as %s with nominal speed %s, entry speed %s and exit speed %s."
+                    " Accel: %s", int(motor['motor']), int(motor['target']), motor['type'],motor['nominal_speed'],
+                    motor['entry_speed'],motor['exit_speed'],motor['acceleration'])
             else:
-                command.arguments.append(ord('w'))
-            command.arguments.append(abs(float(motor['speed'])))
-            acceleration_ = min(float(motor['acceleration']), MAXIMUM_FREQUENCY_ACCELERATION)
-            command.arguments.append(acceleration_)
-            bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)
-            command.arguments.append(bow_)
-            _logger.debug("Motor %s to %s as %s with %s", int(motor['motor']), int(motor['target']), motor['type'],
-                          motor['speed'])
+                for index, axis_motor in enumerate(motor):
+                    command.arguments.append(int(axis_motor['motor']))
+                    command.arguments.append(int(axis_motor['target']))
+                    if axis_motor['type'] == 'stop':
+                        command.arguments.append(ord('s'))
+                    else:
+                        command.arguments.append(ord('w'))
+                    #command.arguments.append(abs(float(motor['speed'])))
+                    command.arguments.append(abs(float(axis_motor['nominal_speed'])))
+                    acceleration_ = min(float(axis_motor['acceleration']), MAXIMUM_FREQUENCY_ACCELERATION)
+                    command.arguments.append(acceleration_)
+                    #bow_ = min(int(motor['startBow']), MAXIMUM_FREQUENCY_BOW)
+                    #command.arguments.append(bow_)
+                    command.arguments.append(abs(float(min(floor(axis_motor['entry_speed']),axis_motor['nominal_speed']))))
+                    command.arguments.append(abs(float(min(floor(axis_motor['exit_speed']),axis_motor['nominal_speed']))))
+                    _logger.debug("Move_to: %s to target %s as %s with nominal speed %s, entry speed %s and exit speed %s."
+                    " Accel: %s", int(axis_motor['motor']), int(axis_motor['target']), axis_motor['type'],
+                    axis_motor['nominal_speed'],axis_motor['entry_speed'],axis_motor['exit_speed'],
+                    axis_motor['acceleration'])
+
+
 
         reply = self.machine_connection.send_command(command)
         if not reply or reply.command_number != 0:
@@ -293,6 +320,7 @@ class Machine():
         else:
             # while self.machine_connection.internal_queue_length > 0:
             pass  # just wait TODO timeout??
+            #time.sleep(0.05)
 
     def read_positon(self, motor):
         command = MachineCommand()

@@ -22,10 +22,6 @@
  *
  *  ---
  *
- *   2014-11-19 Simon Langhof <langhof@trinamic.com>
- *     - removed the blinking and locking up in case of error, LED pin is used as CLK output on T-Bone
- *     - shortened error messages to save flash space
- * 
  *   2013-11-07 Marcus Nowotny <interactive-matter.eu>
  *     - pushing to a full array does not crash but returns false
  * 
@@ -99,6 +95,12 @@ class QueueArray {
     // exit report method in case of error.
     void exit(const __FlashStringHelper*) const;
 
+    // led blinking method in case of error.
+    void blink () const;
+
+    // the pin number of the on-board led.
+    static const int ledPin = 13;
+
     Stream * stream; // the printer of the queue.
     T * contents;    // the array of the queue.
 
@@ -125,7 +127,7 @@ QueueArray<T>::QueueArray (const unsigned char initialSize) {
 
   // if there is a memory allocation error.
   if (contents == NULL)
-    exit (F("QUEUE: malloc error"));
+    exit (F("QUEUE: insufficient memory to initialize queue."));
 
   // set the initial size of the queue.
   size = initialSize;
@@ -172,7 +174,7 @@ template<typename T>
 T QueueArray<T>::pop () {
   // check if the queue is empty.
   if (isEmpty ())
-    exit (F("QUEUE: pop error"));
+    exit (F("QUEUE: can't pop item from queue: queue is empty."));
 
   // fetch the item from the array.
   T item = contents[head++];
@@ -192,7 +194,7 @@ template<typename T>
 T QueueArray<T>::peek () const {
   // check if the queue is empty.
   if (isEmpty ())
-    exit (F("QUEUE: peek error"));
+    exit (F("QUEUE: can't peek item from queue: queue is empty."));
 
   // get the item from the array.
   return contents[head];
@@ -228,6 +230,26 @@ void QueueArray<T>::exit (const __FlashStringHelper * m) const {
   // print the message if there is a printer.
   if (stream)
     stream->println (m);
+
+  // loop blinking until hardware reset.
+  blink ();
+}
+
+// led blinking method in case of error.
+template<typename T>
+void QueueArray<T>::blink () const {
+  // set led pin as output.
+  pinMode (ledPin, OUTPUT);
+
+  // continue looping until hardware reset.
+  while (true) {
+    digitalWrite (ledPin, HIGH); // sets the LED on.
+    delay (250);                 // pauses 1/4 of second.
+    digitalWrite (ledPin, LOW);  // sets the LED off.
+    delay (250);                 // pauses 1/4 of second.
+  }
+
+  // solution selected due to lack of exit() and assert().
 }
 
 #endif // _QUEUEARRAY_H
