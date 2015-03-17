@@ -50,6 +50,8 @@ void checkMotion() {
   char motor_number;
   unsigned long motor_trg;
   unsigned long motor_pos;
+  
+  unsigned int countdown = 0;
 //  unsigned long vact;
 
 //  checkTMC5041Motion();
@@ -89,13 +91,16 @@ void checkMotion() {
           motor_pos = readRegister(nr_of_coordinated_motors, TMC5041_X_ACTUAL_REGISTER_2);
 //          vact = readRegister(nr_of_coordinated_motors, TMC5041_V_ACTUAL_REGISTER_2);
         }
-        if ((motor_pos == motor_trg) /*&& (vact == 0)*/) {
+//        if ((motor_pos == motor_trg) /*&& (vact == 0)*/) {
+        if ((motor_pos == motor_trg) && (active_motors & (1<<motor_number))) {
           active_motors &= ~(1<<motor_number);
+          
         } else {
           active_motors |=  (1<<motor_number);
         }
       }
     }
+
     
     if ((next_move_prepared) && (active_motors == 0)) {
       tmc5041_prepare_next_motion();
@@ -111,13 +116,15 @@ void checkMotion() {
 
 //        byte moving_motors=0;
         //analysze the movement (nad take a look at the next
-        movement move = moveQueue.pop();
+        movement move = moveQueue.peek();
         //check out which momtors are geared with this
 
         if (move.type == move_to || move.type== move_over) {
+          moveQueue.pop();
 
           if (move.motor<nr_of_coordinated_motors) {
-            moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.vStart, move.vStop, move.type==move_over);
+            moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, 0, 0, move.type==move_over);
+//            moveMotorTMC4361(move.motor, move.target, move.vMax, move.aMax, move.vStart, move.vStop, move.type==move_over);
 //            moving_motors |= _BV(move.motor);
           }
           else {
@@ -153,11 +160,14 @@ void checkMotion() {
 
         }
         else if (move.type == set_position) {
-          if (IS_COORDINATED_MOTOR(move.motor)) {
-            setMotorPositionTMC4361(move.motor,move.target);
-          }
-          else {
-            setMotorPositionTMC5041(move.motor-nr_of_coordinated_motors,move.target);
+          // Only set motor position if motor has reached target
+          if (!(active_motors & (1<<move.motor))) {
+            moveQueue.pop();
+            if (IS_COORDINATED_MOTOR(move.motor)) {
+              setMotorPositionTMC4361(move.motor,move.target);
+            } else {
+              setMotorPositionTMC5041(move.motor-nr_of_coordinated_motors,move.target);
+            }
           }
         }
         else {

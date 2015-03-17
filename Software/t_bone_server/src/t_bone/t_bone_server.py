@@ -225,6 +225,11 @@ def status():
         base_status['bed-temperature'] = "%0.1f" % _printer.heated_bed.temperature
         base_status['bed-set-temperature'] = "%0.1f" % _printer.heated_bed.get_set_temperature()
 
+    if _printer.printing:
+        if not _print_thread.isAlive():
+            logging.warning("Gcode thread stopped")
+        if not _printer.isAlive():
+            logging.warning("printer thread stopped")
 
     global _print_thread
     if _print_thread and _print_thread.printing:
@@ -283,6 +288,7 @@ if __name__ == '__main__':
         )
     except KeyboardInterrupt:
         _printer.stop()
+        logging.warning('Printer stopped due to KeyboardInterrupt exception')
     finally:
         #reset the printer
         _printer = None

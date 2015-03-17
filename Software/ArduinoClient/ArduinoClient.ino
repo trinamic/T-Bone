@@ -74,6 +74,7 @@ const char homing_max_following_motors = nr_of_controlled_motors - 1;
 
 #define PWM1_PIN 9
 #define PWM2_PIN 10
+#define PWM3_PIN 5
 
 #define TEMP1_PIN A0
 #define TEMP2_PIN A1
@@ -133,10 +134,12 @@ CmdMessenger messenger = CmdMessenger(Serial1);
 
 void setup() {
   //pwm is done in the bbb
-  pinModeFast(PWM1_PIN,INPUT);
+  pinModeFast(PWM1_PIN,OUTPUT);
   digitalWriteFast(PWM1_PIN,LOW);
-  pinModeFast(PWM2_PIN,INPUT);
+  pinModeFast(PWM2_PIN,OUTPUT);
   digitalWriteFast(PWM2_PIN,LOW);
+  pinModeFast(PWM3_PIN,OUTPUT);
+  digitalWriteFast(PWM3_PIN,LOW);
 
   //switch the analog pins as innput to hand them over to the BBB
   pinModeFast(TEMP1_PIN,INPUT);

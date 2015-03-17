@@ -555,11 +555,12 @@ class Printer(Thread):
             'acceleration_z':max(convert_mm_to_steps(abs(movement['acceleration']), self.axis['z']['steps_per_mm']),1),
             'acceleration_e':max(convert_mm_to_steps(abs(movement['acceleration']), self.axis['e']['steps_per_mm']),1)
         }
+        #Keep entry and exit speeds low, to cause no errors in arduino
         for axis in _axis_config:
             step_speed_vector['entry_speed_'+axis] = min(step_speed_vector['entry_speed_'+axis],
-                                                         step_speed_vector['nominal_speed_'+axis])
+                                                         (step_speed_vector['nominal_speed_'+axis]/2))
             step_speed_vector['exit_speed_'+axis] = min(step_speed_vector['exit_speed_'+axis],
-                                                         step_speed_vector['nominal_speed_'+axis])
+                                                        (step_speed_vector['nominal_speed_'+axis]/2))
         return step_pos, step_speed_vector
 
     def _generate_move_config(self, movement, step_pos, step_speed_vector):
@@ -767,12 +768,13 @@ class PrintQueue():
         unit_vec = movement['relative_move_vector']
         if target_position['type'] == 'move':
             _logger.debug("Planner: Plan movement. Type: Move")
-            if movement['distance_event_count'] == 0.0:
-                return
             if movement['target_speed'] < self.MINIMUM_FEED_RATE:#todo or could exist a movement with 0 feed_rate?
                 movement['target_speed'] = self.MINIMUM_FEED_RATE
                 _logger.debug("Planner: target speed set to minimum")
             self.planner.set_previous_feed_rate(movement['target_speed'])
+            if movement['distance_event_count'] == 0.0 or movement['millimeters'] == 0.0 or 'invalid_movement' in movement:
+                _logger.debug("Planner: Invalid movement. Not planned")
+                return
             for axis in _axis_names:
                 planner_previous_unit_vec = self.planner.get_previous_unit_vec()
                 if unit_vec[axis] == 0:
@@ -799,8 +801,10 @@ class PrintQueue():
             else:
                 sin_theta_d2 = sqrt(0.5*(1.0-movement['junction_cos_theta']))
                 if (1.0 - sin_theta_d2) == 0:
-                    _logger.error("Planner: Zero division error")
-                movement['max_junction_speed_sqr'] = max(self.MINIMUM_JUNCTION_SPEED*self.MINIMUM_JUNCTION_SPEED,
+                    _logger.warning("Planner: Zero division error avoided")
+                    movement['max_junction_speed_sqr'] = self.MINIMUM_JUNCTION_SPEED*self.MINIMUM_JUNCTION_SPEED
+                else:
+                    movement['max_junction_speed_sqr'] = max(self.MINIMUM_JUNCTION_SPEED*self.MINIMUM_JUNCTION_SPEED,
                              (movement['acceleration']*self.DEFAULT_JUNCTION_DEVIATION*sin_theta_d2)/(1.0-sin_theta_d2))
             movement['nominal_speed_sqr']=movement['target_speed']*movement['target_speed']
             movement['max_entry_speed_sqr'] = min(movement['max_junction_speed_sqr'],min(movement['nominal_speed_sqr'],
@@ -894,11 +898,15 @@ class PrintQueue():
                 unit_vec[axis_i] = delta[axis_i]
                 movement['delta_'+axis_i] = delta[axis_i]
                 movement['millimeters'] += delta[axis_i]*delta[axis_i]
-            movement['millimeters'] = sqrt(movement['millimeters'])
+            if movement['millimeters'] == 0:
+                _logger.debug("Planner - Extract Movement: Movement with no displacement!")
+                movement['invalid_movement'] = True
+            else:
+                movement['millimeters'] = sqrt(movement['millimeters'])
+                for axis_i in _axis_config.keys():
+                    unit_vec[axis_i] /= movement['millimeters']#make unitary: divide by total length
             _logger.debug("Planner - Extract Movement: total mm (%s)",movement['millimeters'])
             movement['relative_move_vector'] = unit_vec
-            for axis_i in _axis_config.keys():
-                unit_vec[axis_i] /= movement['millimeters']#make unitary: divide by total length
             return movement
         elif target_position['type'] == 'set_position':
             for axis_i in _axis_config.keys():

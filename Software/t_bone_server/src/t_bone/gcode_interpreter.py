@@ -21,6 +21,7 @@ class GCodePrintThread(Thread):
         self.callback = callback
         #let's see how many lines the print file got and reset progress
         self.lines_to_print = file_len(file)
+        _logger.info("Number of lines in file: %s, with %s comments", self.lines_to_print)
         self.lines_printed = 0
         self.printing = False
 

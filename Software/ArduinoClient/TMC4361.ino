@@ -376,20 +376,7 @@ void moveMotorTMC4361(unsigned char motor_nr, long target_pos, double vMax, doub
   Serial.print(vStop,DEC);
   Serial.println(';');
 */
-/*
-  Serial.print(motor_nr,DEC);
-  Serial.print(';');
-  Serial.print(vMax,DEC);
-  Serial.print(';');
-  Serial.print(aMax,DEC);
-  Serial.print(';');
-  Serial.print(target_pos);
-  Serial.print(';');
-  Serial.print(vStart,DEC);
-  Serial.print(';');
-  Serial.print(vStop,DEC);
-  Serial.println(';');
-*/
+
   long fixed_a_max = FIXED_22_2_MAKE(aMax);
 
   if (aim_target != next_targets[motor_nr]) { // only change parameters if the target position is different than the last time
