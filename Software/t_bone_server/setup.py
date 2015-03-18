@@ -10,7 +10,7 @@ def params():
     name = "T Bone Server"
     version = VERSION
     description = "3D Printer for T Bone CNC cape"
-    long_description = open("../README.md").read()
+    long_description = open("../../README.md").read()
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
